@@ -5,6 +5,7 @@ import Image from "next/image";
 import { React, useState } from "react";
 import { navLinks } from "../constants/ContentConstants";
 import { Menu, X } from "lucide-react";
+import Link from "next/link";
 
 function Header() {
   // const pathname = usePathname();
@@ -16,7 +17,10 @@ function Header() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 w-full z-50 px-5 backdrop-blur shadow-sm">
+      <header
+        id="home"
+        className="fixed top-0 left-0 w-full z-50 px-5 backdrop-blur shadow-sm"
+      >
         <div className="mx-auto max-w-screen-xl px-4 sm:px-6">
           <div className="flex h-16 items-center justify-between">
             <div className="md:flex md:items-center md:gap-12">
@@ -37,12 +41,12 @@ function Header() {
                 <ul className="flex items-center gap-6 text-sm">
                   {navLinks.map((links) => (
                     <li key={links.id}>
-                      <a
+                      <Link
                         className={`text-gray-600 transition hover:text-primary hover:font-medium text-[0.9rem]`}
                         href={`#${links.id}`}
                       >
                         {links.title}
-                      </a>
+                      </Link>
                     </li>
                   ))}
                 </ul>
