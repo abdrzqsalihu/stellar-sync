@@ -1,3 +1,4 @@
+import Cta from "./_components/Cta";
 import Features from "./_components/Features";
 import GetStarted from "./_components/GetStarted";
 import Header from "./_components/Header";
@@ -12,6 +13,7 @@ export default function Home() {
       <GetStarted />
       <Features />
       <Pricing />
+      <Cta />
     </main>
   );
 }
