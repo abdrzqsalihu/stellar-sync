@@ -81,7 +81,7 @@ function Features() {
               <FolderHeart size={35} color="#5056FD" />
 
               <h2 className="mt-4 text-xl font-bold text-white">
-                Favorites/Bookmarking
+                Favorites / Bookmarking
               </h2>
 
               <p className="mt-2 text-sm text-gray-300">

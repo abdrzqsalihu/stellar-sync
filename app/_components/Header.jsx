@@ -15,11 +15,15 @@ function Header() {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const closeMenu = () => {
+    setIsMenuOpen(false);
+  };
+
   return (
     <>
       <header
         id="home"
-        className="fixed top-0 left-0 w-full z-50 px-5 backdrop-blur shadow-sm"
+        className="fixed top-0 left-0 w-full z-50 px-5 backdrop-blur-lg shadow-sm"
       >
         <div className="mx-auto max-w-screen-xl px-4 sm:px-6">
           <div className="flex h-16 items-center justify-between">
@@ -101,7 +105,13 @@ function Header() {
                     key={nav.id}
                     className={`cursor-pointer p-1 font-primary leading-6 text-secondary hover:text-primary hover:font-medium mr-0}`}
                   >
-                    <a href={`#${nav.id}`}>{nav.title}</a>
+                    <Link
+                      href={`#${nav.id}`}
+                      className="w-full block"
+                      onClick={() => closeMenu()}
+                    >
+                      {nav.title}
+                    </Link>
                   </li>
                 ))}
               </ul>
