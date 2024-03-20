@@ -1,5 +1,6 @@
 import Cta from "./_components/Cta";
 import Features from "./_components/Features";
+import Footer from "./_components/Footer";
 import GetStarted from "./_components/GetStarted";
 import Header from "./_components/Header";
 import Hero from "./_components/Hero";
@@ -14,6 +15,7 @@ export default function Home() {
       <Features />
       <Pricing />
       <Cta />
+      <Footer />
     </main>
   );
 }
