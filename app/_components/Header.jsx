@@ -67,14 +67,14 @@ function Header() {
                 </a>
 
                 <div className="hidden sm:flex">
-                  <a
+                  <Link
                     className="rounded-md bg-gray-100 px-5 py-2.5 text-sm font-medium text-primary flex items-center"
-                    href="#"
+                    href="/home"
                   >
                     <span className="pr-[0.4rem]">Get Started</span>
                     {/* <LogIn size={15} /> */}
                     <CircleArrowOutUpRight size={16} />
-                  </a>
+                  </Link>
                 </div>
               </div>
 
