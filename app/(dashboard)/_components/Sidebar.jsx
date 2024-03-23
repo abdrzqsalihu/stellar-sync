@@ -5,14 +5,39 @@ import { useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useState, useEffect } from "react";
 
-function Sidebar() {
+function Sidebar({ openNavigation, toggleNavigation }) {
   const { user } = useUser();
   const pathname = usePathname();
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (openNavigation && !event.target.closest(".side-nav")) {
+        toggleNavigation();
+      }
+    };
+
+    document.addEventListener("click", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [openNavigation]);
+
+  const handleClick = () => {
+    if (openNavigation) {
+      toggleNavigation();
+    }
+  };
+
   return (
     <div>
-      <div className="flex h-screen flex-col justify-between border-e bg-secondary">
+      <div
+        className={`side-nav ${
+          openNavigation ? "flex" : "hidden md:flex"
+        }  h-screen w-full flex-col justify-between border-e bg-secondary z-40`}
+      >
         <div className="px-4 py-6">
           <Link href="/" className="grid h-10 w-32 place-content-center">
             <Image
@@ -20,6 +45,7 @@ function Sidebar() {
               width={100}
               height={100}
               style={{ width: "auto", height: "auto" }}
+              alt="Logo"
             />
           </Link>
 
@@ -27,6 +53,9 @@ function Sidebar() {
             {sidebarLinks.map((item, index) => (
               <li key={index}>
                 <Link
+                  onClick={() => {
+                    handleClick();
+                  }}
                   href={item.path}
                   className={`rounded-lg px-4 py-3 text-sm font-medium flex items-center ${
                     pathname === item.path
@@ -40,7 +69,6 @@ function Sidebar() {
                     color={`${pathname == item.path ? "#5056FD" : "#D1D5DB"}`}
                     className="mr-2"
                   />{" "}
-                  {/* Adjust margin if needed */}
                   <span>{item.name}</span>
                 </Link>
               </li>
@@ -56,7 +84,6 @@ function Sidebar() {
                 <strong className="block font-medium mb-[0.1rem]">
                   {user?.fullName}
                 </strong>
-
                 <span> {user?.primaryEmailAddress.emailAddress} </span>
               </p>
             </div>
