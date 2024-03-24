@@ -1,4 +1,5 @@
 "use client";
+import Logo from "../../../public/white-logo.png";
 import { sidebarLinks } from "@/app/constants/ContentConstants";
 import { UserButton } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
@@ -41,10 +42,12 @@ function Sidebar({ openNavigation, toggleNavigation }) {
         <div className="px-4 py-6">
           <Link href="/" className="grid h-10 w-32 place-content-center">
             <Image
-              src="/white-logo.png"
+              src={Logo}
               width={100}
               height={100}
               style={{ width: "auto", height: "auto" }}
+              quality={100}
+              placeholder="empty"
               alt="Logo"
             />
           </Link>
