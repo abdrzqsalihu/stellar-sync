@@ -63,10 +63,10 @@ function Favorites() {
                 There are no stared files available.
               </h2>
               <Link
-                href="/"
+                href="/files"
                 className="p-2 text-white bg-primary rounded-md mt-2 w-[50%] lg:w-[14%] text-center"
               >
-                Upload Now
+                Go to Files
               </Link>
             </div>
           </div>

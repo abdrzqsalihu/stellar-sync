@@ -60,7 +60,7 @@ function Files() {
                 There are no files available.
               </h2>
               <Link
-                href="/"
+                href="/home"
                 className="p-2 text-white bg-primary rounded-md mt-2 w-[50%] lg:w-[14%] text-center"
               >
                 Upload Now

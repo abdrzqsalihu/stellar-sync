@@ -6,7 +6,9 @@ function StaredTotalCard({ totalStaredFile }) {
       className="p-3 border rounded-md grid grid-cols-2
 md:grid-cols-3 lg:grid-cols-4 mt-3"
     >
-      <h2 className="text-gray-500">Total Stared File : {totalStaredFile}</h2>
+      <h2 className="text-gray-500">
+        Total stared {totalStaredFile > 2 ? "files" : "file"}: {totalStaredFile}
+      </h2>
     </div>
   );
 }
