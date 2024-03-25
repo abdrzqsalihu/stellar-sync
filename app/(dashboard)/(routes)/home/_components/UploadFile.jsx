@@ -54,7 +54,7 @@ function UploadFile({ uploadBtnClick, progress }) {
               drop
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400">
-              SVG, PNG, JPG or GIF (MAX Size: 3mb)
+              SVG, PNG, JPG, PDF or GIF (MAX Size: 3mb)
             </p>
           </div>
           <input
