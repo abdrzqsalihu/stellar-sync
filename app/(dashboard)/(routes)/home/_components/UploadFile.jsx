@@ -28,7 +28,7 @@ function UploadFile({ uploadBtnClick, progress }) {
 
   return (
     <div>
-      <div className="flex items-center justify-center w-full mt-8">
+      <div className="flex items-center justify-center w-full mt-6">
         <label
           htmlFor="dropzone-file"
           className="flex flex-col items-center justify-center w-full h-64 border-[1px] border-gray-200 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-50 hover:bg-gray-100 dark:border-secondary dark:hover:bg-gray-100"

@@ -16,8 +16,8 @@ function FileInfo({ file }) {
       >
         <Image
           src={fileType == "image" ? file?.fileUrl : "/file.png"}
-          width={320}
-          height={320}
+          width={fileType == "image" ? 320 : 150}
+          height={fileType == "image" ? 320 : 150}
           alt="logo"
           className="rounded-md object-contain"
           //   style={{ width: "auto", height: "auto" }}

@@ -67,6 +67,9 @@ function HomePage() {
   return (
     <div className="mx-auto px-10 mt-10">
       <Overview />
+      <h1 className="text-[1.3rem] font-medium text-primary opacity-90 mt-12 text-center">
+        Upload your file here
+      </h1>
       <UploadFile
         uploadBtnClick={(file) => uploadFile(file)}
         progress={progress}
