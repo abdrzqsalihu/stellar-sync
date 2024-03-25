@@ -16,7 +16,7 @@ function Layout({ children }) {
     }
   };
   return (
-    <div className="relative md:flex">
+    <div className="relative lg:flex">
       <div
         className={`flex md:h-full md:w-64 flex-col fixed inset-y-0 z-50 ${
           openNavigation

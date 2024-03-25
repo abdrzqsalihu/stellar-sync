@@ -2,7 +2,7 @@ import { Star } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
-function FileList({ fileList }) {
+function FileList({ fileList, updateStared }) {
   return (
     <div className="overflow-x-auto sm:rounded-lg mt-6">
       <table className="min-w-full text-sm text-left text-gray-500">
@@ -43,27 +43,28 @@ function FileList({ fileList }) {
                   View
                 </Link>
 
-                {/* <button> */}
-                {file.stared === false ? (
-                  <Star size={18} className="cursor-pointer" />
-                ) : (
-                  <svg
-                    className="cursor-pointer"
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="19"
-                    height="19"
-                    viewBox="0 0 24 24"
-                    style={{
-                      fill: "#212837",
-                      transform: "",
-                      msFilter: "",
-                    }}
-                  >
-                    <path d="M21.947 9.179a1.001 1.001 0 0 0-.868-.676l-5.701-.453-2.467-5.461a.998.998 0 0 0-1.822-.001L8.622 8.05l-5.701.453a1 1 0 0 0-.619 1.713l4.213 4.107-1.49 6.452a1 1 0 0 0 1.53 1.057L12 18.202l5.445 3.63a1.001 1.001 0 0 0 1.517-1.106l-1.829-6.4 4.536-4.082c.297-.268.406-.686.278-1.065z"></path>
-                  </svg>
-                )}
-
-                {/* </button> */}
+                <button
+                  className="cursor-pointer ml-10 lg:ml-0"
+                  onClick={() => updateStared(file.id, file.stared)}
+                >
+                  {file.stared === false ? (
+                    <Star size={18} />
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="19"
+                      height="19"
+                      viewBox="0 0 24 24"
+                      style={{
+                        fill: "#212837",
+                        transform: "",
+                        msFilter: "",
+                      }}
+                    >
+                      <path d="M21.947 9.179a1.001 1.001 0 0 0-.868-.676l-5.701-.453-2.467-5.461a.998.998 0 0 0-1.822-.001L8.622 8.05l-5.701.453a1 1 0 0 0-.619 1.713l4.213 4.107-1.49 6.452a1 1 0 0 0 1.53 1.057L12 18.202l5.445 3.63a1.001 1.001 0 0 0 1.517-1.106l-1.829-6.4 4.536-4.082c.297-.268.406-.686.278-1.065z"></path>
+                    </svg>
+                  )}
+                </button>
               </td>
             </tr>
           ))}

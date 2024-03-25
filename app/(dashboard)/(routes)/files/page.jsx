@@ -7,6 +7,8 @@ import {
   getFirestore,
   query,
   where,
+  doc,
+  updateDoc,
 } from "firebase/firestore";
 import app from "./../../../../firebaseConfig";
 import FileTotalCard from "./_components/FileTotalCard";
@@ -35,6 +37,17 @@ function Files() {
       setFileList((fileList) => [...fileList, doc.data()]);
     });
   };
+
+  // Define a function to update the stared property in Firebase
+  const updateStared = async (fileId, stared) => {
+    const docRef = doc(db, "uploadedFiles", fileId);
+    // Assuming `stared` is the correct property name
+    await updateDoc(docRef, {
+      stared: !stared, // Toggle the value of `stared`
+    });
+    getAllUserFiles();
+  };
+
   return (
     <div className="mx-auto px-10 mt-10">
       <h1 className="text-[1.2rem] font-medium text-primary mb-4">My Files</h1>
@@ -58,7 +71,7 @@ function Files() {
       ) : (
         <>
           <FileTotalCard totalFile={fileList?.length} />
-          <FileList fileList={fileList} />
+          <FileList fileList={fileList} updateStared={updateStared} />
         </>
       )}
     </div>
