@@ -58,8 +58,8 @@ function HomePage() {
       id: docId,
       shortUrl: process.env.NEXT_PUBLIC_BASE_URL + docId,
     });
-    // setFileDocId(docId);
-    // router.push("/file-preview/" + docId); // Push to router after saving info
+    setFileDocId(docId);
+    router.push("/file-preview/" + docId); // Push to router after saving info
     // setUploadCompleted(true); // Trigger upload completion after saving info
     // return docId; // Return the generated docId
   };
