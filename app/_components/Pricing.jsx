@@ -1,4 +1,5 @@
 import { Check } from "lucide-react";
+import Link from "next/link";
 import React from "react";
 
 function Pricing() {
@@ -61,12 +62,12 @@ function Pricing() {
               </li> */}
             </ul>
 
-            <a
-              href="#"
+            <Link
+              href="/home"
               className="mt-8 block rounded-full border border-primary bg-primary px-12 py-3 text-center text-sm font-medium text-white hover:bg-primary hover:ring-1 hover:ring-primary focus:outline-none focus:ring active:text-primary hover:opacity-90"
             >
               Get Started
-            </a>
+            </Link>
           </div>
 
           <div className="rounded-2xl border border-gray-200 p-6 shadow-sm sm:px-8 lg:p-12">
@@ -111,7 +112,7 @@ function Pricing() {
             </ul>
 
             <a
-              href="#"
+              href="/home"
               className="mt-8 block rounded-full border border-primary bg-white px-12 py-3 text-center text-sm font-medium text-primary hover:ring-1 hover:ring-primary focus:outline-none focus:ring active:text-primary"
             >
               Get Started

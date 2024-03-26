@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React from "react";
 
 function Cta() {
@@ -14,12 +15,12 @@ function Cta() {
               Secure file sharing made easy. Keep your files safe and
               collaborate effortlessly with ShareSync.
             </p>
-            <a
-              href="#"
+            <Link
+              href="/home"
               className="mt-8 inline-block rounded-full border border-white bg-transparent px-12 py-3 text-center text-sm font-medium text-white hover:ring-1 hover:ring-white focus:outline-none focus:ring active:text-white"
             >
               Start for Free
-            </a>
+            </Link>
           </div>
         </div>
       </footer>

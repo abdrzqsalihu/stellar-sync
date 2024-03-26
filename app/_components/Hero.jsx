@@ -1,3 +1,4 @@
+import Link from "next/link";
 import React from "react";
 
 function Hero() {
@@ -17,19 +18,19 @@ function Hero() {
             </p>
 
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <a
+              <Link
                 className="block w-[90%] rounded border border-primary bg-primary px-12 py-3 text-sm font-medium text-white transition duration-500 ease-in-out hover:text-primary hover:bg-transparent focus:outline-none focus:ring active:text-opacity-75 md:w-auto"
-                href="#"
+                href="/home"
               >
                 Get Started
-              </a>
+              </Link>
 
-              <a
+              <Link
                 className="block w-[90%] rounded border border-primary px-12 py-3 text-sm font-medium text-primary hover:text-white transition duration-500 ease-in-out hover:bg-primary focus:outline-none focus:ring active:bg-primary  md:w-auto"
-                href="#"
+                href="#features"
               >
                 Learn More
-              </a>
+              </Link>
             </div>
           </div>
         </div>
