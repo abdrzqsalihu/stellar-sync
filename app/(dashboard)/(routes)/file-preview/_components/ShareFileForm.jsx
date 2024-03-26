@@ -1,9 +1,13 @@
 import { Copy } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
+import Alert from "@/app/(dashboard)/_components/Alert";
 
 function ShareFileForm({ file, onPasswordSave }) {
-  const [isPasswordEnable, setIsEnablePassword] = useState(false);
+  const [isPasswordEnable, setIsEnablePassword] = useState(
+    file?.password !== ""
+  );
+  const [alert, setAlert] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
   const { user } = useUser();
@@ -17,17 +21,33 @@ function ShareFileForm({ file, onPasswordSave }) {
   //     shortUrl: file?.shortUrl,
   //   };
 
+  useEffect(() => {
+    // Update isPasswordEnable state based on file password
+    setIsEnablePassword(file?.password !== "");
+  }, [file?.password]);
+
   const onCopyClick = () => {
     navigator.clipboard.writeText(file.shortUrl);
-    // setToast({
-    //     status:'Copied',
-    //     msg:'Url Copied!'
-    // })
+    setAlert({
+      status: "Copied",
+      msg: "Url copied successfully!",
+    });
   };
-
+  const handlePasswordSave = async () => {
+    // Your logic to save the password
+    // Assuming you've successfully saved the password
+    await onPasswordSave(password);
+    setAlert({
+      status: "Password added",
+      msg: "Password added successfully!",
+    });
+    // Clear the password
+    setPassword("");
+  };
   return (
     file && (
       <div className="flex flex-col gap-2">
+        <Alert alert={alert} />
         <div>
           <label className="text-[14px] text-gray-500">Short Url</label>
           <div className="flex gap-5 p-2 border rounded-md justify-between">
@@ -48,7 +68,7 @@ function ShareFileForm({ file, onPasswordSave }) {
         <div className="gap-3 flex mt-5">
           <input
             type="checkbox"
-            defaultChecked={file.password != ""}
+            checked={isPasswordEnable}
             onChange={(e) => setIsEnablePassword(e.target.checked)}
           />
           <label>Enable Password?</label>
@@ -59,7 +79,7 @@ function ShareFileForm({ file, onPasswordSave }) {
             <div className="border rounded-md w-full p-2">
               <input
                 type="password"
-                defaultValue={file.password}
+                defaultValue={file?.password}
                 className="disabled:text-gray-500 bg-transparent w-full
            outline-none"
                 onChange={(e) => setPassword(e.target.value)}
@@ -69,7 +89,7 @@ function ShareFileForm({ file, onPasswordSave }) {
               className="w-full p-2 bg-primary text-white
           rounded-md disabled:bg-gray-300 hover:opacity-90"
               disabled={password?.length < 4}
-              onClick={() => onPasswordSave(password)}
+              onClick={handlePasswordSave}
             >
               Set Password
             </button>

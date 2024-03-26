@@ -15,11 +15,13 @@ import Link from "next/link";
 import Image from "next/image";
 import StaredTotalCard from "./_components/StaredTotalCard";
 import StaredList from "./_components/StaredList";
+import Alert from "../../_components/Alert";
 
 function Stared() {
   const db = getFirestore(app);
   const { user } = useUser();
   const [staredList, setstaredList] = useState([]);
+  const [alert, setAlert] = useState("");
   useEffect(() => {
     user && getAllStaredFiles();
   }, [user]);
@@ -47,10 +49,15 @@ function Stared() {
       stared: !stared, // Toggle the value of `stared`
     });
     getAllStaredFiles();
+    setAlert({
+      status: "File unstarred",
+      msg: "file unstarred successfully!",
+    });
   };
 
   return (
     <div className="mx-auto px-10 mt-10">
+      <Alert alert={alert} />
       <h1 className="text-[1.2rem] font-medium text-primary mb-4">
         Stared Files
       </h1>

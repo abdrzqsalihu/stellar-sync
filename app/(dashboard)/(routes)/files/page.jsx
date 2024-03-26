@@ -15,11 +15,13 @@ import FileTotalCard from "./_components/FileTotalCard";
 import FileList from "./_components/FileList";
 import Link from "next/link";
 import Image from "next/image";
+import Alert from "../../_components/Alert";
 
 function Files() {
   const db = getFirestore(app);
   const { user } = useUser();
   const [fileList, setFileList] = useState([]);
+  const [alert, setAlert] = useState("");
   useEffect(() => {
     user && getAllUserFiles();
   }, [user]);
@@ -46,10 +48,22 @@ function Files() {
       stared: !stared, // Toggle the value of `stared`
     });
     getAllUserFiles();
+
+    // Determine the status and message based on the action taken
+    const status = stared ? "File unstarred" : "File starred";
+    const msg = stared
+      ? "file unstarred successfully!"
+      : "file starred successfully!";
+
+    setAlert({
+      status: status,
+      msg: msg,
+    });
   };
 
   return (
     <div className="mx-auto px-10 mt-10">
+      <Alert alert={alert} />
       <h1 className="text-[1.2rem] font-medium text-primary mb-4">My Files</h1>
       {fileList.length == 0 ? (
         <>

@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import Sidebar from "./_components/Sidebar";
 import Header from "./_components/Header";
+import Alert from "./_components/Alert";
 
 function Layout({ children }) {
   const [openNavigation, setOpenNavigation] = useState(false);
@@ -16,7 +17,7 @@ function Layout({ children }) {
     }
   };
   return (
-    <div className="relative lg:flex">
+    <div className="relative lg:flex overflow-hidden">
       <div
         className={`flex md:h-full md:w-64 flex-col fixed inset-y-0 z-50 ${
           openNavigation
@@ -30,6 +31,7 @@ function Layout({ children }) {
           toggleNavigation={toggleNavigation}
         />
       </div>
+
       <div className="flex flex-col flex-grow md:ml-64">
         {/* <!-- Main content area --> */}
         <Header
