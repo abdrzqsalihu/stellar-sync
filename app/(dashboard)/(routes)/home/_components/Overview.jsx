@@ -1,7 +1,7 @@
 import { Files, Share2, Star } from "lucide-react";
 import React from "react";
 
-function Overview() {
+function Overview({ allFilesCount, staredFilesCount }) {
   return (
     <div>
       <h1 className="text-2xl font-medium text-primary mb-6">Overview</h1>
@@ -12,7 +12,9 @@ function Overview() {
               <div>
                 <p className="text-sm text-gray-500">All files</p>
 
-                <p className="text-2xl mt-1 font-medium text-gray-900">0</p>
+                <p className="text-2xl mt-1 font-medium text-gray-900">
+                  {allFilesCount}
+                </p>
               </div>
 
               <span className="rounded-full bg-primary p-3 text-white">
@@ -42,7 +44,9 @@ function Overview() {
               <div>
                 <p className="text-sm text-gray-500">Stared files</p>
 
-                <p className="text-2xl mt-1 font-medium text-gray-900">0</p>
+                <p className="text-2xl mt-1 font-medium text-gray-900">
+                  {staredFilesCount}
+                </p>
               </div>
 
               <span className="rounded-full bg-primary p-3 text-white">

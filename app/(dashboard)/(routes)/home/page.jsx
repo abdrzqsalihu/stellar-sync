@@ -5,7 +5,15 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { app } from "../../../../firebaseConfig";
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
@@ -19,9 +27,36 @@ function HomePage() {
   const { user } = useUser();
   const [fileDocId, setFileDocId] = useState();
   const [progress, setProgress] = useState();
+  const [allFilesCount, setAllFilesCount] = useState(0);
+  const [staredFilesCount, setStaredFilesCount] = useState(0);
   const storage = getStorage(app);
   // Initialize Cloud Firestore and get a reference to the service
   const db = getFirestore(app);
+
+  useEffect(() => {
+    user && getAllFilesCount();
+  }, [user]);
+
+  const getAllFilesCount = async () => {
+    const q = query(
+      collection(db, "uploadedFiles"),
+      where("userEmail", "==", user.primaryEmailAddress.emailAddress)
+    );
+
+    const querySnapshot = await getDocs(q);
+    setAllFilesCount(querySnapshot.size);
+
+    // Calculate the number of stared files
+    let staredCount = 0;
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.stared) {
+        staredCount++;
+      }
+    });
+    setStaredFilesCount(staredCount);
+  };
+
   const uploadFile = (file) => {
     // const metadata = {
     //   contentType: file.type,
@@ -66,7 +101,10 @@ function HomePage() {
 
   return (
     <div className="mx-auto px-10 mt-10">
-      <Overview />
+      <Overview
+        allFilesCount={allFilesCount}
+        staredFilesCount={staredFilesCount}
+      />
       <h1 className="text-[1.3rem] font-medium text-primary opacity-90 mt-12 text-center">
         Upload your file here
       </h1>
