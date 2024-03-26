@@ -29,6 +29,7 @@ function HomePage() {
   const [progress, setProgress] = useState();
   const [allFilesCount, setAllFilesCount] = useState(0);
   const [staredFilesCount, setStaredFilesCount] = useState(0);
+  const [sharedFilesCount, setSharedFilesCount] = useState(0);
   const storage = getStorage(app);
   // Initialize Cloud Firestore and get a reference to the service
   const db = getFirestore(app);
@@ -55,6 +56,16 @@ function HomePage() {
       }
     });
     setStaredFilesCount(staredCount);
+
+    // Calculate the number of stared files
+    let sharedCount = 0;
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.shared) {
+        sharedCount++;
+      }
+    });
+    setSharedFilesCount(sharedCount);
   };
 
   const uploadFile = (file) => {
@@ -104,6 +115,7 @@ function HomePage() {
       <Overview
         allFilesCount={allFilesCount}
         staredFilesCount={staredFilesCount}
+        sharedFilesCount={sharedFilesCount}
       />
       <h1 className="text-[1.3rem] font-medium text-primary opacity-90 mt-12 text-center">
         Upload your file here
