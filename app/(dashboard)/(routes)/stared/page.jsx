@@ -16,7 +16,7 @@ import Image from "next/image";
 import StaredTotalCard from "./_components/StaredTotalCard";
 import StaredList from "./_components/StaredList";
 
-function Favorites() {
+function Stared() {
   const db = getFirestore(app);
   const { user } = useUser();
   const [staredList, setstaredList] = useState([]);
@@ -81,4 +81,4 @@ function Favorites() {
   );
 }
 
-export default Favorites;
+export default Stared;

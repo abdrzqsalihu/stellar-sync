@@ -38,8 +38,8 @@ export const sidebarLinks = [
   },
   {
     id: 4,
-    name: "Favorites",
+    name: "Stared files",
     icon: Star,
-    path: "/favorites",
+    path: "/stared",
   },
 ];
