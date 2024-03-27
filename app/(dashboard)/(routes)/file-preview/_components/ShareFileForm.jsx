@@ -2,6 +2,7 @@ import { Copy } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import Alert from "@/app/(dashboard)/_components/Alert";
+import GlobalApi from "./../../../../utils/GlobalApi";
 
 function ShareFileForm({ file, onPasswordSave }) {
   const [isPasswordEnable, setIsEnablePassword] = useState(
@@ -12,15 +13,25 @@ function ShareFileForm({ file, onPasswordSave }) {
   const [email, setEmail] = useState("");
   const { user } = useUser();
 
-  //   const data = {
-  //     // emailToSend: email,
-  //     userName: user?.fullName,
-  //     fileName: file.fileName,
-  //     fileSize: file.fileSize,
-  //     fileType: file.fileType,
-  //     shortUrl: file?.shortUrl,
-  //   };
+  const sendEmail = () => {
+    const data = {
+      emailToSend: email,
+      userName: user?.fullName,
+      fileName: file.fileName,
+      fileSize: file.fileSize,
+      fileType: file.fileType,
+      shortUrl: file?.shortUrl,
+    };
 
+    GlobalApi.sendEmail(data).then((resp) => {
+      console.log(resp);
+      setAlert({
+        status: "success",
+        msg: "Email sent successfully!",
+      });
+      setEmail("");
+    });
+  };
   useEffect(() => {
     // Update isPasswordEnable state based on file password
     setIsEnablePassword(file?.password !== "");
@@ -107,6 +118,7 @@ function ShareFileForm({ file, onPasswordSave }) {
               className=" bg-transparent
               outline-none w-full"
               onChange={(e) => setEmail(e.target.value)}
+              value={email}
             />
           </div>
           <button
@@ -114,7 +126,7 @@ function ShareFileForm({ file, onPasswordSave }) {
            bg-primary text-white hover:opacity-90
           w-full mt-2 rounded-md"
             disabled={email?.length < 3}
-            //   onClick={() => sendEmail()}
+            onClick={() => sendEmail()}
           >
             Send Email
           </button>
