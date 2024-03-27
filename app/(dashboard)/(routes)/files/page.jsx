@@ -69,7 +69,12 @@ function Files() {
         <>
           <div className="mt-20">
             <div className="flex flex-col items-center justify-center">
-              <Image src="/no-data.svg" width={120} height={120} />
+              <Image
+                src="/no-data.svg"
+                width={120}
+                height={120}
+                alt="No data"
+              />
               <h2 className="mt-6 mb-4 text-[1rem] text-center">
                 There are no files available.
               </h2>

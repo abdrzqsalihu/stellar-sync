@@ -5,7 +5,7 @@ function FileInfo({ file }) {
   const [fileType, setFileType] = useState();
   useEffect(() => {
     file && setFileType(file?.fileType.split("/")[0]);
-    console.log(fileType);
+    // console.log(fileType);
   }, [file]);
   return (
     file && (
