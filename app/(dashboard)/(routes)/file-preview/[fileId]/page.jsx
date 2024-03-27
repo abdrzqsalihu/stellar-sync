@@ -35,6 +35,14 @@ function page({ params }) {
     });
   };
 
+  const updateShared = async () => {
+    const docRef = doc(db, "uploadedFiles", params?.fileId);
+    // Assuming `shared` is the correct property name
+    await updateDoc(docRef, {
+      shared: true, // Toggle the value of `shared`
+    });
+  };
+
   return (
     <div className="mx-auto px-10 mt-10">
       <div className="max-w-[90%] lg:max-w-[38%] mx-auto">
@@ -43,6 +51,7 @@ function page({ params }) {
         <ShareFileForm
           file={file}
           onPasswordSave={(password) => onPasswordSave(password)}
+          updateShared={updateShared}
         />
       </div>
     </div>

@@ -4,7 +4,7 @@ import { useUser } from "@clerk/nextjs";
 import Alert from "@/app/(dashboard)/_components/Alert";
 import GlobalApi from "./../../../../utils/GlobalApi";
 
-function ShareFileForm({ file, onPasswordSave }) {
+function ShareFileForm({ file, onPasswordSave, updateShared }) {
   const [isPasswordEnable, setIsEnablePassword] = useState(
     file?.password !== ""
   );
@@ -26,10 +26,12 @@ function ShareFileForm({ file, onPasswordSave }) {
     GlobalApi.sendEmail(data).then((resp) => {
       console.log(resp);
       setAlert({
-        status: "success",
+        status: "Success",
         msg: "Email sent successfully!",
       });
       setEmail("");
+      // Call the updateShared function passed from the parent component
+      updateShared(); // Call the updateShared function here
     });
   };
   useEffect(() => {
