@@ -46,7 +46,7 @@ function HomePage() {
         const auth = getAuth(app);
         const token = await getToken({ template: "integration_firebase" });
         const userCredentials = await signInWithCustomToken(auth, token);
-        console.log(userCredentials.user);
+        // console.log(userCredentials.user);
       } catch (error) {
         console.error("Error signing in with Clerk and Firebase:", error);
       }
@@ -94,13 +94,13 @@ function HomePage() {
     uploadTask.on("state_changed", (snapshot) => {
       // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
       const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-      console.log("Upload is " + progress + "% done");
+      // console.log("Upload is " + progress + "% done");
 
       // Upload completed successfully, now we can get the download URL
       setProgress(progress);
       progress == 100 &&
         getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          console.log("File available at", downloadURL);
+          // console.log("File available at", downloadURL);
           saveInfo(file, downloadURL);
         });
     });

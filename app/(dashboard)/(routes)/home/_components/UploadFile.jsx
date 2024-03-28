@@ -12,7 +12,7 @@ function UploadFile({ uploadBtnClick, progress }) {
   const onFileSelect = (event) => {
     const selectedFile = event.target.files[0];
     if (selectedFile && selectedFile.size > 3000000) {
-      console.log("Size is greater than 3MB");
+      // console.log("Size is greater than 3MB");
       setErrorMsg("Maximum file size is 3MB");
     } else {
       setFile(selectedFile);
