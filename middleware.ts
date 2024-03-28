@@ -5,13 +5,13 @@ export default authMiddleware({
   publicRoutes: ["/", "/preview/(.*)", "/api/(.*)"],
   // Routes that can always be accessed, and have
   // no authentication information
-  // ignoredRoutes: [
-  //   "/home",
-  //   "/files",
-  //   "/shared",
-  //   "/favorites",
-  //   "/file-preview/(.*)",
-  // ],
+  ignoredRoutes: [
+    // "/home",
+    "/files",
+    "/shared",
+    "/favorites",
+    "/file-preview/(.*)",
+  ],
 });
 
 export const config = {

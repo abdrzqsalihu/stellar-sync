@@ -37,7 +37,7 @@ function Layout({ children }) {
           toggleNavigation={toggleNavigation}
           openNavigation={openNavigation}
         />
-        <div>{children}</div>
+        <div className="mb-14">{children}</div>
       </div>
     </div>
   );
