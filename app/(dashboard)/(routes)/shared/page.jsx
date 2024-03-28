@@ -10,7 +10,7 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
-import app from "./../../../../firebaseConfig";
+import { app } from "./../../../../firebaseConfig";
 import Link from "next/link";
 import Image from "next/image";
 import Alert from "../../_components/Alert";

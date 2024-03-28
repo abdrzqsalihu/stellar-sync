@@ -10,7 +10,7 @@ import {
   doc,
   updateDoc,
 } from "firebase/firestore";
-import app from "./../../../../firebaseConfig";
+import { app } from "./../../../../firebaseConfig";
 import FileTotalCard from "./_components/FileTotalCard";
 import FileList from "./_components/FileList";
 import Link from "next/link";
