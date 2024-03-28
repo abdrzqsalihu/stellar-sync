@@ -16,7 +16,8 @@ import {
 } from "firebase/firestore";
 import { app } from "../../../../firebaseConfig";
 import { useEffect, useState } from "react";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
+import { getAuth, signInWithCustomToken } from "firebase/auth";
 import Overview from "./_components/Overview";
 import UploadFile from "./_components/UploadFile";
 import { useRouter } from "next/navigation";
@@ -25,6 +26,7 @@ import { GenerateRandomString } from "../../../constants/GenerateRandomString";
 function HomePage() {
   const router = useRouter();
   const { user } = useUser();
+  const { getToken } = useAuth();
   const [fileDocId, setFileDocId] = useState();
   const [progress, setProgress] = useState();
   const [allFilesCount, setAllFilesCount] = useState(0);
@@ -37,6 +39,21 @@ function HomePage() {
   useEffect(() => {
     user && getAllFilesCount();
   }, [user]);
+
+  useEffect(() => {
+    const signInWithClerk = async () => {
+      try {
+        const auth = getAuth(app);
+        const token = await getToken({ template: "integration_firebase" });
+        const userCredentials = await signInWithCustomToken(auth, token);
+        console.log(userCredentials.user);
+      } catch (error) {
+        console.error("Error signing in with Clerk and Firebase:", error);
+      }
+    };
+
+    user && signInWithClerk();
+  }, [user, getToken]);
 
   const getAllFilesCount = async () => {
     const q = query(
