@@ -2,7 +2,6 @@
 import React, { useState } from "react";
 import Sidebar from "./_components/Sidebar";
 import Header from "./_components/Header";
-import Alert from "./_components/Alert";
 
 function Layout({ children }) {
   const [openNavigation, setOpenNavigation] = useState(false);

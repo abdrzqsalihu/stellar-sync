@@ -1,6 +1,6 @@
 "use client";
 import Logo from "../../../public/white-logo.png";
-import { sidebarLinks } from "@/app/constants/ContentConstants";
+import { sidebarLinks } from "../../constants/ContentConstants";
 import { UserButton } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";

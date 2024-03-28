@@ -1,7 +1,7 @@
 import { Copy } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
-import Alert from "@/app/(dashboard)/_components/Alert";
+import Alert from "./../../../../_components/Alert";
 import GlobalApi from "./../../../../utils/GlobalApi";
 
 function ShareFileForm({ file, onPasswordSave, updateShared }) {
