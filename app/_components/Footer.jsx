@@ -59,20 +59,23 @@ function Footer() {
           </li>
         </ul>
       </div>
-      <div className="py-4">
+      <div className="py-4 flex flex-col md:flex-row justify-center items-center">
         <p className="text-center text-[1rem]">
-          &copy; {new Date().getFullYear()} ShareSync. Built by{" "}
+          &copy; {new Date().getFullYear()} ShareSync.
+        </p>
+        <div className="mt-1 md:ml-1 md:mt-0">
+          <span className="md:inline-block">Built by </span>
           <a
             href="https://abdrzqsalihu.vercel.app/"
             rel="noreferrer"
             target="_blank"
-            className=""
+            className="md:ml-1"
           >
             <span className="text-primary underline font-medium">
               Abdulrazaq Salihu
             </span>
           </a>
-        </p>
+        </div>
       </div>
     </div>
   );

@@ -3,7 +3,7 @@ import React from "react";
 function SharedTotalCard({ totalSharedFile }) {
   return (
     <div
-      className="p-3 border rounded-md grid grid-cols-2
+      className="p-3 border rounded-md grid grid-cols-1
 md:grid-cols-3 lg:grid-cols-4 mt-3"
     >
       <h2 className="text-gray-500">

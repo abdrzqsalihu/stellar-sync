@@ -37,7 +37,7 @@ function Sidebar({ openNavigation, toggleNavigation }) {
       <div
         className={`side-nav ${
           openNavigation ? "flex" : "hidden md:flex"
-        }  h-screen w-full flex-col justify-between border-e bg-secondary z-40`}
+        }  h-screen w-full flex-col justify-between border-e bg-secondary z-50`}
       >
         <div className="px-4 py-6">
           <Link href="/" className="grid h-10 w-32 place-content-center">

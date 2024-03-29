@@ -2,6 +2,7 @@
 import { UserButton } from "@clerk/nextjs";
 import { AlignJustify, BadgeHelp } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
 function Header({ toggleNavigation, openNavigation }) {
@@ -10,15 +11,17 @@ function Header({ toggleNavigation, openNavigation }) {
       <button id="menuButton" className="md:hidden" onClick={toggleNavigation}>
         <AlignJustify className={`${openNavigation ? "hidden" : "flex"}`} />
       </button>
-      <Image
-        src="/logo.png"
-        width={90}
-        height={90}
-        style={{ width: "auto", height: "auto" }}
-        // className="md:hidden"
-        className={`${openNavigation ? "hidden" : "flex"} md:hidden`}
-        alt="logo"
-      />
+      <Link href="/">
+        <Image
+          src="/logo.png"
+          width={90}
+          height={90}
+          style={{ width: "auto", height: "auto" }}
+          // className="md:hidden"
+          className={`${openNavigation ? "hidden" : "flex"} md:hidden`}
+          alt="logo"
+        />
+      </Link>
       <a
         href="https://wa.me/+2348085458632"
         target="_blank"
