@@ -21,6 +21,7 @@ export default function Page() {
                 width={150}
                 style={{ width: "auto", height: "auto" }}
                 height={100}
+                alt="logo-icon"
               />
             </Link>
 
