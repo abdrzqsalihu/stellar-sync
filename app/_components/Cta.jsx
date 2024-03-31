@@ -3,8 +3,8 @@ import React from "react";
 
 function Cta() {
   return (
-    <div>
-      <footer className="bg-primary">
+    <div className="h-full">
+      <div className="bg-primary">
         <div className="mx-auto  max-w-[92%] md:max-w-screen-xl px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
             <h2 className="text-[1.7rem] font-extrabold text-white sm:text-5xl">
@@ -23,7 +23,7 @@ function Cta() {
             </Link>
           </div>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }

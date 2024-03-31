@@ -5,7 +5,7 @@ import { Github, Instagram, Twitter } from "lucide-react";
 
 function Footer() {
   return (
-    <div>
+    <footer className="h-full">
       <div className="py-10 border-b border-gray-100 sm:flex sm:items-center sm:justify-between mx-auto max-w-[92%] md:max-w-screen-xl px-4 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
         {/* Quick Links  */}
         <ul className="flex flex-wrap justify-center gap-4 text-xs lg:justify-end">
@@ -77,7 +77,7 @@ function Footer() {
           </a>
         </div>
       </div>
-    </div>
+    </footer>
   );
 }
 

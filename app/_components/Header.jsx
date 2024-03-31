@@ -59,12 +59,12 @@ function Header() {
 
             <div className="flex items-center gap-4">
               <div className="hidden sm:flex sm:gap-4">
-                <a
+                <Link
                   className="rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-white shadow"
-                  href="#"
+                  href="/sign-in"
                 >
                   Login
-                </a>
+                </Link>
 
                 <div className="hidden sm:flex">
                   <Link
@@ -82,6 +82,7 @@ function Header() {
               <div className="block md:hidden">
                 <button
                   className="cursor-pointer rounded bg-gray-100 p-2 text-gray-600 transition hover:text-gray-600/75"
+                  aria-label="Menu Icon"
                   onClick={toggleMenu}
                 >
                   {isMenuOpen ? <X /> : <Menu />}
