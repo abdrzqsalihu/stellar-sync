@@ -1,15 +1,17 @@
 "use client";
 import Logo from "../../../public/white-logo.png";
 import { sidebarLinks } from "../../constants/ContentConstants";
-import { UserButton } from "@clerk/nextjs";
+import { UserButton, useClerk } from "@clerk/nextjs";
 import { useUser } from "@clerk/nextjs";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
 import { CircleHelp, LogOut, Settings } from "lucide-react";
 
 function Sidebar({ openNavigation, toggleNavigation }) {
+  const { signOut } = useClerk();
+  const router = useRouter();
   const { user } = useUser();
   const pathname = usePathname();
 
@@ -123,11 +125,8 @@ function Sidebar({ openNavigation, toggleNavigation }) {
             </li>
 
             <li>
-              <Link
-                onClick={() => {
-                  handleClick();
-                }}
-                href="/"
+              <button
+                onClick={() => signOut(() => router.push("/"))}
                 className={`rounded-lg px-3 py-3 text-sm font-medium flex items-center text-gray-200`}
               >
                 <LogOut
@@ -137,7 +136,7 @@ function Sidebar({ openNavigation, toggleNavigation }) {
                   className="mr-2"
                 />{" "}
                 <span>Logout</span>
-              </Link>
+              </button>
             </li>
           </ul>
           <div className="flex items-center gap-2 p-4 border-t border-gray-300">
