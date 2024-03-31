@@ -4,12 +4,12 @@ import React from "react";
 
 function Pricing() {
   return (
-    <div className="mx-auto" id="pricing">
+    <div className="h-full" id="pricing">
       <div className="mx-auto max-w-[92%] md:max-w-3xl px-4 py-8 sm:px-6 sm:py-20 lg:px-8">
         <h2 className="text-3xl font-bold sm:text-4xl text-center mb-10">
           Pricing
         </h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-center md:gap-8">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-center sm:gap-8">
           <div className="rounded-2xl border border-gray-200 p-6 shadow-sm sm:px-8 lg:p-12">
             <div className="text-center">
               <h2 className="text-lg font-medium text-gray-900">
@@ -51,12 +51,12 @@ function Pricing() {
               </li>
             </ul>
 
-            <a
+            <Link
               href="/home"
               className="mt-8 block rounded-full border border-primary bg-white px-12 py-3 text-center text-sm font-medium text-primary hover:ring-1 hover:ring-primary focus:outline-none focus:ring active:text-primary"
             >
               Get Started
-            </a>
+            </Link>
           </div>
           <div className="rounded-2xl border border-primary p-6 shadow-sm ring-1 ring-primary sm:px-8 lg:p-12">
             <div className="text-center">
