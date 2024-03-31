@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect } from "react";
+import { CircleHelp, LogOut, Settings } from "lucide-react";
 
 function Sidebar({ openNavigation, toggleNavigation }) {
   const { user } = useUser();
@@ -79,8 +80,67 @@ function Sidebar({ openNavigation, toggleNavigation }) {
           </ul>
         </div>
 
-        <div className="sticky inset-x-0 bottom-0 border-t border-gray-300">
-          <div className="flex items-center gap-2 p-4">
+        <div className="sticky inset-x-0 bottom-0">
+          <ul className="space-y-[0.4rem] p-4">
+            <p className="uppercase text-[12px] text-gray-400 px-3 mb-4">
+              ACCOUNT
+            </p>
+            <li>
+              <a
+                onClick={() => {
+                  handleClick();
+                }}
+                href="https://wa.me/+2348085458632"
+                target="_blank"
+                className={`rounded-lg px-3 py-3 text-sm font-medium flex items-center text-gray-200`}
+              >
+                <CircleHelp
+                  strokeWidth={1.4}
+                  size={18}
+                  color={`#D1D5DB`}
+                  className="mr-2"
+                />{" "}
+                <span>Support</span>
+              </a>
+            </li>
+
+            <li>
+              <Link
+                onClick={() => {
+                  handleClick();
+                }}
+                href="/"
+                className={`rounded-lg px-3 py-3 text-sm font-medium flex items-center text-gray-200`}
+              >
+                <Settings
+                  strokeWidth={1.4}
+                  size={18}
+                  color={`#D1D5DB`}
+                  className="mr-2"
+                />{" "}
+                <span>Settings</span>
+              </Link>
+            </li>
+
+            <li>
+              <Link
+                onClick={() => {
+                  handleClick();
+                }}
+                href="/"
+                className={`rounded-lg px-3 py-3 text-sm font-medium flex items-center text-gray-200`}
+              >
+                <LogOut
+                  strokeWidth={1.4}
+                  size={18}
+                  color={`#D1D5DB`}
+                  className="mr-2"
+                />{" "}
+                <span>Logout</span>
+              </Link>
+            </li>
+          </ul>
+          <div className="flex items-center gap-2 p-4 border-t border-gray-300">
             <UserButton />
             <div>
               <p className="text-xs text-white">
