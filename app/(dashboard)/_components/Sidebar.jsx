@@ -1,8 +1,7 @@
 "use client";
 import Logo from "../../../public/white-logo.png";
 import { sidebarLinks } from "../../constants/ContentConstants";
-import { UserButton, useClerk } from "@clerk/nextjs";
-import { useUser } from "@clerk/nextjs";
+import { useUser, UserButton, useClerk } from "@clerk/nextjs";
 import { usePathname, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
@@ -111,13 +110,19 @@ function Sidebar({ openNavigation, toggleNavigation }) {
                 onClick={() => {
                   handleClick();
                 }}
-                href="/"
-                className={`rounded-lg px-3 py-3 text-sm font-medium flex items-center text-gray-200`}
+                href="/user-profile"
+                className={`rounded-lg px-3 py-3 text-sm font-medium flex items-center text-gray-200 ${
+                  pathname === "/user-profile"
+                    ? "bg-gray-300 text-secondary"
+                    : "text-gray-200"
+                }`}
               >
                 <Settings
                   strokeWidth={1.4}
                   size={18}
-                  color={`#D1D5DB`}
+                  color={`${
+                    pathname == "/user-profile" ? "#5056FD" : "#D1D5DB"
+                  }`}
                   className="mr-2"
                 />{" "}
                 <span>Settings</span>
