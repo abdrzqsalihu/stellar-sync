@@ -63,8 +63,8 @@ function Footer() {
         <p className="text-center text-[1rem]">
           &copy; {new Date().getFullYear()} ShareSync.
         </p>
-        <div className="mt-1 md:ml-1 md:mt-0">
-          <span className="md:inline-block">Built by </span>
+        <div className="mt-1 md:ml-1 md:mt-0 text-[0.9rem]">
+          <span className="md:inline-block">Built with ❤️ by </span>
           <a
             href="https://abdrzqsalihu.vercel.app/"
             rel="noreferrer"
