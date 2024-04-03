@@ -13,7 +13,7 @@ function Cta() {
 
             <p className="mx-auto mt-4 max-w-sm text-gray-200">
               Secure file sharing made easy. Keep your files safe and
-              collaborate effortlessly with ShareSync.
+              collaborate effortlessly with StellarSync.
             </p>
             <Link
               href="/home"
