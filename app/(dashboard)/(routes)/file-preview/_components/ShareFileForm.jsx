@@ -33,6 +33,10 @@ function ShareFileForm({ file, onPasswordSave, updateShared }) {
       // Call the updateShared function passed from the parent component
       updateShared(); // Call the updateShared function here
     });
+    setAlert({
+      status: "Sending...",
+      msg: "processing please wait...",
+    });
   };
   useEffect(() => {
     // Update isPasswordEnable state based on file password
