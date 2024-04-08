@@ -9,6 +9,7 @@ import {
   where,
   doc,
   updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { app } from "./../../../../firebaseConfig";
 import FileTotalCard from "./_components/FileTotalCard";
@@ -61,6 +62,26 @@ function Files() {
     });
   };
 
+  //function to delete data from Firestore
+  const deleteFile = async (fileId) => {
+    try {
+      const docRef = doc(db, "uploadedFiles", fileId);
+      await deleteDoc(docRef);
+      getAllUserFiles();
+
+      setAlert({
+        status: "File deleted",
+        msg: "File deleted successfully!",
+      });
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      setAlert({
+        status: "Error",
+        msg: "An error occurred while deleting the file.",
+      });
+    }
+  };
+
   return (
     <div className="mx-auto px-10 mt-10">
       <Alert alert={alert} />
@@ -90,7 +111,11 @@ function Files() {
       ) : (
         <>
           <FileTotalCard totalFile={fileList?.length} />
-          <FileList fileList={fileList} updateStared={updateStared} />
+          <FileList
+            fileList={fileList}
+            updateStared={updateStared}
+            deleteFile={deleteFile}
+          />
         </>
       )}
     </div>
