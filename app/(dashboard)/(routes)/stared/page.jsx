@@ -9,6 +9,7 @@ import {
   where,
   doc,
   updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { app } from "./../../../../firebaseConfig";
 import Link from "next/link";
@@ -55,6 +56,26 @@ function Stared() {
     });
   };
 
+  //function to delete data from Firestore
+  const deleteFile = async (fileId) => {
+    try {
+      const docRef = doc(db, "uploadedFiles", fileId);
+      await deleteDoc(docRef);
+      getAllStaredFiles();
+
+      setAlert({
+        status: "File deleted",
+        msg: "File deleted successfully!",
+      });
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      setAlert({
+        status: "Error",
+        msg: "An error occurred while deleting the file.",
+      });
+    }
+  };
+
   return (
     <div className="mx-auto px-10 mt-10">
       <Alert alert={alert} />
@@ -86,7 +107,11 @@ function Stared() {
       ) : (
         <>
           <StaredTotalCard totalStaredFile={staredList?.length} />
-          <StaredList staredList={staredList} updateStared={updateStared} />
+          <StaredList
+            staredList={staredList}
+            updateStared={updateStared}
+            deleteFile={deleteFile}
+          />
         </>
       )}
     </div>

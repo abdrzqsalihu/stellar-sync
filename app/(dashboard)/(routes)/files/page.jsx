@@ -41,7 +41,7 @@ function Files() {
     });
   };
 
-  // Define a function to update the stared property in Firebase
+  // function to update the stared property in Firebase
   const updateStared = async (fileId, stared) => {
     const docRef = doc(db, "uploadedFiles", fileId);
     // Assuming `stared` is the correct property name

@@ -9,6 +9,7 @@ import {
   where,
   doc,
   updateDoc,
+  deleteDoc,
 } from "firebase/firestore";
 import { app } from "./../../../../firebaseConfig";
 import Link from "next/link";
@@ -61,6 +62,26 @@ function Sharedfilespage() {
     });
   };
 
+  //function to delete data from Firestore
+  const deleteFile = async (fileId) => {
+    try {
+      const docRef = doc(db, "uploadedFiles", fileId);
+      await deleteDoc(docRef);
+      getAllStaredFiles();
+
+      setAlert({
+        status: "File deleted",
+        msg: "File deleted successfully!",
+      });
+    } catch (error) {
+      console.error("Error deleting file:", error);
+      setAlert({
+        status: "Error",
+        msg: "An error occurred while deleting the file.",
+      });
+    }
+  };
+
   return (
     <div className="mx-auto px-10 mt-10">
       <Alert alert={alert} />
@@ -92,7 +113,11 @@ function Sharedfilespage() {
       ) : (
         <>
           <SharedTotalCard totalSharedFile={sharedList?.length} />
-          <SharedList sharedList={sharedList} updateStared={updateStared} />
+          <SharedList
+            sharedList={sharedList}
+            updateStared={updateStared}
+            deleteFile={deleteFile}
+          />
         </>
       )}
     </div>

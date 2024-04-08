@@ -2,7 +2,7 @@ import { Star } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
-function SharedList({ sharedList, updateStared }) {
+function SharedList({ sharedList, updateStared, deleteFile }) {
   return (
     <div className="overflow-x-auto sm:rounded-lg mt-6">
       <table className="min-w-full text-sm text-left text-gray-500">
@@ -17,9 +17,10 @@ function SharedList({ sharedList, updateStared }) {
             <th scope="col" className="px-6 py-3">
               Size
             </th>
-            <th scope="col" className="px-6 py-3">
+            <th scope="col" className="px-12 lg:px-6 py-3">
               Action
             </th>
+            <th scope="col" className="px-0 py-3"></th>
           </tr>
         </thead>
         <tbody>
@@ -35,16 +36,24 @@ function SharedList({ sharedList, updateStared }) {
               <td className="px-6 py-4">
                 {(file.fileSize / 1024 / 1024).toFixed(2)}MB
               </td>
-              <td className="px-6 py-4 flex flex-row items-center justify-between max-w-[80%]">
+              <td className="px-6 py-4 flex flex-row items-center justify-between max-w-[72%]">
                 <Link
                   href={"/file-preview/" + file.id}
-                  className="font-medium text-primary hover:opacity-90"
+                  className="font-medium text-primary hover:opacity-90 ml-[0.1rem] lg:-ml-7"
                 >
                   View
                 </Link>
 
                 <button
-                  className="cursor-pointer ml-10 lg:ml-0"
+                  className="font-medium text-red-500 hover:opacity-90 ml-10 lg:ml-0"
+                  onClick={() => deleteFile(file.id)}
+                >
+                  Delete
+                </button>
+              </td>
+              <td>
+                <button
+                  className="cursor-pointer mr-8 ml-5 lg:mr-0 lg:ml-0"
                   onClick={() => updateStared(file.id, file.stared)}
                 >
                   {file.stared === false ? (
