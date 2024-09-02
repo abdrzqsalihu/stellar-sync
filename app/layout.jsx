@@ -1,3 +1,4 @@
+import LenisScroll from "./LenisScroll";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -19,6 +20,7 @@ export default function RootLayout({ children }) {
     <ClerkProvider>
       <html lang="en">
         <body className={rubik.className}>
+          <LenisScroll />
           {children}
           <Analytics />
           <SpeedInsights />
