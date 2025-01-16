@@ -85,25 +85,37 @@ function HomePage() {
     setSharedFilesCount(sharedCount);
   };
 
-  const uploadFile = (file) => {
-    // const metadata = {
-    //   contentType: file.type,
-    // };
-    const storageRef = ref(storage, "uploadedFiles/" + file?.name);
-    const uploadTask = uploadBytesResumable(storageRef, file, file.type);
-    uploadTask.on("state_changed", (snapshot) => {
-      // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-      const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-      // console.log("Upload is " + progress + "% done");
+  const uploadFile = async (file) => {
+    try {
+      const storageRef = ref(storage, `uploadedFiles/${file.name}`);
+      const metadata = {
+        contentType: file.type,
+        customMetadata: {
+          uploadedBy: user.primaryEmailAddress.emailAddress,
+        },
+      };
 
-      // Upload completed successfully, now we can get the download URL
-      setProgress(progress);
-      progress == 100 &&
-        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
-          // console.log("File available at", downloadURL);
-          saveInfo(file, downloadURL);
-        });
-    });
+      const uploadTask = uploadBytesResumable(storageRef, file, metadata);
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setProgress(progress);
+        },
+        (error) => {
+          console.error("Error during upload:", error.message);
+        },
+        () => {
+          getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+            saveInfo(file, downloadURL);
+          });
+        }
+      );
+    } catch (error) {
+      console.error("Upload failed:", error.message);
+    }
   };
 
   const saveInfo = async (file, fileUrl) => {
