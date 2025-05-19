@@ -26,7 +26,14 @@ import {
 import ShareOptions from "../../../../components/share-options";
 import { useToast } from "../../../../components/ui/use-toast";
 
-export default function FilePage({ params }: { params: { id: string } }) {
+interface FilePageProps {
+  params: {
+    id: string;
+  };
+  searchParams?: { [key: string]: string | string[] | undefined };
+}
+
+export default function FilePage({ params }: FilePageProps) {
   const { toast } = useToast();
   const [isFavorite, setIsFavorite] = useState(false);
 
