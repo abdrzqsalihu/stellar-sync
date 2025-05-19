@@ -1,3 +1,4 @@
+"use client";
 import { Download } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
@@ -38,7 +39,7 @@ function FileItem({ file }) {
           ) : null}
 
           <button
-            href=""
+            // href=""
             className="flex gap-2 p-2
        bg-primary text-white rounded-full w-full
        items-center hover:opacity-90
