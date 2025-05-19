@@ -20,7 +20,7 @@ function Hero() {
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Link
                 className="block w-[90%] rounded border border-primary bg-primary px-12 py-3 text-sm font-medium text-white transition duration-500 ease-in-out hover:text-primary hover:bg-transparent focus:outline-none focus:ring active:text-opacity-75 md:w-auto"
-                href="/home"
+                href="/dashboard"
               >
                 Get Started
               </Link>

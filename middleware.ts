@@ -8,7 +8,7 @@ export default authMiddleware({
   // no authentication information
   ignoredRoutes: [
     "/",
-    // "/home",
+    // "/dashboard",
     "/files",
     "/shared",
     "/favorites",
