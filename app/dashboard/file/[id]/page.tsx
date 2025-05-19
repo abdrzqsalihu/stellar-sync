@@ -25,21 +25,18 @@ import {
 } from "../../../../components/ui/tabs";
 import ShareOptions from "../../../../components/share-options";
 import { useToast } from "../../../../components/ui/use-toast";
+import { useParams } from "next/navigation";
 
-interface FilePageProps {
-  params: {
-    id: string;
-  };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}
+export default function FilePage() {
+  const params = useParams();
+  const id = params.id as string;
 
-export default function FilePage({ params }: FilePageProps) {
   const { toast } = useToast();
   const [isFavorite, setIsFavorite] = useState(false);
 
   // Mock file data
   const file = {
-    id: params.id,
+    id: id,
     name: "Project Presentation.pdf",
     type: "pdf",
     size: "4.2 MB",

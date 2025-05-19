@@ -33,8 +33,7 @@ export default function StorageStats() {
             </div>
             <Progress
               value={storagePercentage}
-              className="h-2"
-              indicatorClassName="bg-[#5056FD]"
+              className="h-2 [&>div]:bg-[#5056FD]"
             />
           </div>
         </div>

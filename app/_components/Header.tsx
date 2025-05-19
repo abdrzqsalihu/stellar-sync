@@ -2,7 +2,7 @@
 // import { usePathname } from "next/navigation";
 import { CircleArrowOutUpRight } from "lucide-react";
 import Image from "next/image";
-import { React, useState } from "react";
+import { useState } from "react";
 import { navLinks } from "../constants/ContentConstants";
 import { Menu, X } from "lucide-react";
 import Link from "next/link";

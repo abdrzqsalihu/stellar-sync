@@ -88,8 +88,7 @@ export default function UploadButton() {
             </div>
             <Progress
               value={progress}
-              className="h-3 rounded-lg"
-              indicatorClassName="bg-[#5056FD] rounded-lg"
+              className="h-3 [&>div]:bg-[#5056FD] rounded-lg"
             />
             <p className="text-xs text-muted-foreground">
               Please don't close this window while uploading...
