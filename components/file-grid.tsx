@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
-import { useToast } from "../components/ui/use-toast";
+import { toast, useToast } from "../components/ui/use-toast";
 import {
   Download,
   FileText,
@@ -21,126 +21,91 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 
+export interface File {
+  id: string;
+  fileName: string;
+  fileType: string;
+  fileSize: string;
+  uploadedAt: string;
+  stared: boolean;
+  shared: boolean;
+  // Add other properties if needed, e.g., url for download
+  url?: string;
+}
+
 interface FileGridProps {
+  fileList: File[];
+  updateStared: (id: string, isFavorite: boolean) => void;
+  deleteFile: (id: string) => void;
   favorites?: boolean;
   shared?: boolean;
 }
 
 export default function FileGrid({
+  fileList,
+  updateStared,
+  deleteFile,
   favorites = false,
   shared = false,
 }: FileGridProps) {
   const { toast } = useToast();
 
-  // Mock files data
-  const [files, setFiles] = useState([
-    {
-      id: "1",
-      name: "Project Presentation.pdf",
-      type: "pdf",
-      size: "4.2 MB",
-      uploadedAt: "2 days ago",
-      favorite: true,
-      shared: true,
-    },
-    {
-      id: "2",
-      name: "Company Logo.png",
-      type: "image",
-      size: "1.8 MB",
-      uploadedAt: "1 week ago",
-      favorite: true,
-      shared: false,
-    },
-    {
-      id: "3",
-      name: "Meeting Notes.docx",
-      type: "doc",
-      size: "320 KB",
-      uploadedAt: "3 days ago",
-      favorite: false,
-      shared: true,
-    },
-    {
-      id: "4",
-      name: "Product Demo.mp4",
-      type: "video",
-      size: "28.6 MB",
-      uploadedAt: "5 days ago",
-      favorite: false,
-      shared: true,
-    },
-    {
-      id: "5",
-      name: "Financial Report.xlsx",
-      type: "excel",
-      size: "2.3 MB",
-      uploadedAt: "1 day ago",
-      favorite: false,
-      shared: false,
-    },
-    {
-      id: "6",
-      name: "User Research.pdf",
-      type: "pdf",
-      size: "5.7 MB",
-      uploadedAt: "2 weeks ago",
-      favorite: true,
-      shared: false,
-    },
-    {
-      id: "7",
-      name: "Website Mockup.fig",
-      type: "design",
-      size: "8.1 MB",
-      uploadedAt: "4 days ago",
-      favorite: false,
-      shared: true,
-    },
-    {
-      id: "8",
-      name: "Client Feedback.docx",
-      type: "doc",
-      size: "450 KB",
-      uploadedAt: "6 days ago",
-      favorite: false,
-      shared: false,
-    },
-  ]);
-
   // Filter files based on props
-  const filteredFiles = files.filter((file) => {
-    if (favorites) return file.favorite;
+  const filteredFiles = fileList.filter((file) => {
+    if (favorites) return file.stared;
     if (shared) return file.shared;
     return true;
   });
 
-  const getFileIcon = (type: string) => {
-    switch (type) {
-      case "image":
-      case "png":
-      case "jpg":
+  const getFileIcon = (fileName: string) => {
+    const extension = fileName.split(".").pop()?.toLowerCase();
+
+    // console.log(extension);
+    switch (extension) {
+      case "image/png":
+      case "image/jpg":
+      case "image/jpeg":
+      case "image/gif":
+      case "image/svg":
+      case "image/webp":
+      case "image/bmp":
         return <ImageIcon className="h-10 w-10 text-[#4ECDC4]" />;
-      case "video":
-      case "mp4":
+      case "video/mp4":
+      case "video/quicktime":
+      case "video/x-msvideo":
+      case "video/x-flv":
+      case "video/mp2t":
+      case "video/3gpp":
+      case "video/3gpp2":
+      case "video/x-m4v":
+      case "video/webm":
+      case "video/x-mng":
+      case "video/ogg":
+      case "video/ogv":
+      case "video/dash":
+      case "video/x-ms-wmv":
+      case "video/x-ms-asf":
         return <Video className="h-10 w-10 text-purple-500" />;
+      case "application/pdf":
+        return <FileText className="h-10 w-10 text-red-500" />;
+      case "application/msword":
+      case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        return <FileText className="h-10 w-10 text-blue-500" />;
+      case "application/vnd.ms-excel":
+      case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+        return <FileText className="h-10 w-10 text-green-500" />;
       default:
         return <FileText className="h-10 w-10 text-[#5056FD]" />;
     }
   };
 
   const toggleFavorite = (id: string) => {
-    setFiles(
-      files.map((file) =>
-        file.id === id ? { ...file, favorite: !file.favorite } : file
-      )
-    );
-
-    const file = files.find((f) => f.id === id);
+    const file = fileList.find((f) => f.id === id);
     if (file) {
+      updateStared(id, file.stared);
       toast({
-        title: file.favorite ? "Removed from favorites" : "Added to favorites",
-        description: file.favorite
+        title: file.stared ? "Removed from favorites" : "Added to favorites",
+        description: file.stared
           ? "File removed from bookmarks"
           : "File added to bookmarks for quick access",
       });
@@ -149,7 +114,7 @@ export default function FileGrid({
 
   const copyLink = (id: string) => {
     navigator.clipboard.writeText(
-      `https://stellar-sync.vercel.app/share/${id}`
+      `https://stellar-sync.vercel.app/preview/${id}`
     );
     toast({
       title: "Link copied",
@@ -182,15 +147,20 @@ export default function FileGrid({
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
-                  {getFileIcon(file.type)}
+                  {getFileIcon(file.fileType)}
                   <div>
-                    <h3 className="font-medium line-clamp-1">{file.name}</h3>
-                    <p className="text-xs text-muted-foreground">{file.size}</p>
+                    <h3 className="font-medium line-clamp-1">
+                      {file.fileName}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {" "}
+                      {(parseInt(file.fileSize) / 1024 / 1024).toFixed(2)}MB
+                    </p>
                   </div>
                 </div>
                 <Star
                   className={`h-5 w-5 cursor-pointer ${
-                    file.favorite
+                    file.stared
                       ? "fill-yellow-400 text-yellow-400"
                       : "text-gray-300 group-hover:text-gray-400"
                   }`}
@@ -217,14 +187,14 @@ export default function FileGrid({
             <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex h-8 w-8 items-center justify-center rounded-full bg-white/90 shadow-sm">
-                  <MoreHorizontal className="h-4 w-4" />
+                  <MoreHorizontal className="h-4 w-4 text-gray-700" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={() => toggleFavorite(file.id)}>
+                  <DropdownMenuItem
+                    onClick={() => updateStared(file.id, file.stared)}
+                  >
                     <Star className="mr-2 h-4 w-4" />
-                    {file.favorite
-                      ? "Remove from favorites"
-                      : "Add to favorites"}
+                    {file.stared ? "Remove from favorites" : "Add to favorites"}
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => copyLink(file.id)}>
                     <LinkIcon className="mr-2 h-4 w-4" />
