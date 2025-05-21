@@ -13,7 +13,7 @@ import {
   Video,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DashboardLayout from "../../../../components/dashboard-layout";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
@@ -26,6 +26,20 @@ import {
 import ShareOptions from "../../../../components/share-options";
 import { useToast } from "../../../../components/ui/use-toast";
 import { useParams } from "next/navigation";
+import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
+import { app } from "../../../../firebaseConfig";
+
+interface FileType {
+  id: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  fileUrl: string;
+  stared: boolean;
+  uploadedAt: string;
+  shared?: boolean;
+  password?: string;
+}
 
 export default function FilePage() {
   const params = useParams();
@@ -33,27 +47,75 @@ export default function FilePage() {
 
   const { toast } = useToast();
   const [isFavorite, setIsFavorite] = useState(false);
+  const db = getFirestore(app);
+  const [file, setFile] = useState<FileType | undefined>(undefined);
 
-  // Mock file data
-  const file = {
-    id: id,
-    name: "Project Presentation.pdf",
-    type: "pdf",
-    size: "4.2 MB",
-    uploadedAt: "2 days ago",
-    url: "#",
-    color: "#5056FD",
+  useEffect(() => {
+    // console.log(params?.fileId);
+    params?.id && getFileInfo();
+  }, []);
+
+  const getFileInfo = async () => {
+    const docRef = doc(db, "uploadedFiles", id);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      console.log("Document data:", docSnap.data());
+      setFile(docSnap.data() as any);
+    } else {
+      // docSnap.data() will be undefined in this case
+      console.log("No such document!");
+    }
+  };
+
+  const onPasswordSave = async (password) => {
+    const docRef = doc(db, "uploadedFiles", id);
+    await updateDoc(docRef, {
+      password: password,
+    });
+  };
+
+  const updateShared = async () => {
+    const docRef = doc(db, "uploadedFiles", id);
+    // Assuming `shared` is the correct property name
+    await updateDoc(docRef, {
+      shared: true, // Toggle the value of `shared`
+    });
   };
 
   const getFileIcon = (type: string) => {
     switch (type) {
-      case "image":
-      case "jpg":
-      case "png":
+      case "image/png":
+      case "image/jpg":
+      case "image/jpeg":
+      case "image/gif":
+      case "image/svg":
+      case "image/webp":
+      case "image/bmp":
         return <ImageIcon className="h-12 w-12 text-white" />;
-      case "video":
-      case "mp4":
+      case "video/mp4":
+      case "video/quicktime":
+      case "video/x-msvideo":
+      case "video/x-flv":
+      case "video/mp2t":
+      case "video/3gpp":
+      case "video/3gpp2":
+      case "video/x-m4v":
+      case "video/webm":
+      case "video/x-mng":
+      case "video/ogg":
+      case "video/ogv":
+      case "video/dash":
+      case "video/x-ms-wmv":
+      case "video/x-ms-asf":
         return <Video className="h-12 w-12 text-white" />;
+      case "application/pdf":
+        return <FileText className="h-12 w-12 text-white" />;
+      case "application/msword":
+      case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        return <FileText className="h-12 w-12 text-white" />;
+      case "application/vnd.ms-excel":
+      case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+        return <FileText className="h-12 w-12 text-white" />;
       default:
         return <FileText className="h-12 w-12 text-white" />;
     }
@@ -71,7 +133,7 @@ export default function FilePage() {
 
   const copyLink = () => {
     navigator.clipboard.writeText(
-      `https://stellar-sync.vercel.app/share/${file.id}`
+      `https://stellar-sync.vercel.app/preview/${file?.id}`
     );
     toast({
       title: "Link copied",
@@ -94,40 +156,54 @@ export default function FilePage() {
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <h1 className="text-2xl font-bold tracking-tight">{file.name}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {file?.fileName}
+          </h1>
         </div>
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
           <Card className="md:col-span-2 overflow-hidden rounded-2xl border shadow-md">
             <CardContent className="p-0">
               <div className="flex flex-col">
-                <div
-                  className="flex h-48 items-center justify-center"
-                  style={{ backgroundColor: file.color }}
-                >
-                  {getFileIcon(file.type)}
+                <div className="flex h-48 items-center justify-center bg-[#5056FD]">
+                  {getFileIcon(file?.fileType)}
                 </div>
                 <div className="p-6">
                   <div className="flex flex-col items-center gap-4 text-center">
                     <div className="inline-flex items-center rounded-full bg-gray-100 text-gray-800 px-3 py-1 text-xs font-medium">
-                      {file.type.toUpperCase()}
+                      {file?.fileType.toUpperCase()}
                     </div>
-                    <div className="text-xl font-medium">{file.name}</div>
+                    <div className="text-xl font-medium">{file?.fileName}</div>
                     <div className="text-sm text-muted-foreground">
-                      {file.size} • Uploaded {file.uploadedAt}
+                      {(file?.fileSize / 1024 / 1024).toFixed(2)}MB • Uploaded{" "}
+                      {file?.uploadedAt}
                     </div>
                     <div className="mt-4 flex gap-3">
-                      <Button className="rounded-xl bg-[#5056FD] hover:bg-[#4045e0]">
-                        <Eye className="mr-2 h-4 w-4" />
-                        Preview
-                      </Button>
-                      <Button
-                        variant="outline"
-                        className="rounded-xl border-[#5056FD]/20 hover:bg-[#5056FD]/5 hover:text-[#5056FD]"
+                      <a
+                        href={file?.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
                       >
-                        <Download className="mr-2 h-4 w-4" />
-                        Download
-                      </Button>
+                        <Button className="rounded-xl bg-[#5056FD] hover:bg-[#4045e0]">
+                          <Eye className="mr-2 h-4 w-4" />
+                          Preview
+                        </Button>
+                      </a>
+                      <a
+                        href={`/api/download?url=${encodeURIComponent(
+                          file?.fileUrl
+                        )}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Button
+                          variant="outline"
+                          className="rounded-xl border-[#5056FD]/20 hover:bg-[#5056FD]/5 hover:text-[#5056FD]"
+                        >
+                          <Download className="mr-2 h-4 w-4" />
+                          Download
+                        </Button>
+                      </a>
                     </div>
                   </div>
                 </div>
@@ -188,7 +264,7 @@ export default function FilePage() {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="share" className="mt-6">
-                <ShareOptions fileId={file.id} />
+                <ShareOptions fileId={file?.id} />
               </TabsContent>
               <TabsContent value="expiry" className="mt-6">
                 <Card className="overflow-hidden rounded-xl border shadow-sm">

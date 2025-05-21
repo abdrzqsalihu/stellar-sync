@@ -20,7 +20,7 @@ export default function ShareOptions({ fileId }: ShareOptionsProps) {
 
   const copyLink = () => {
     navigator.clipboard.writeText(
-      `https://stellar-sync.vercel.app/share/${fileId}`
+      `https://stellar-sync.vercel.app/preview/${fileId}`
     );
     toast({
       title: "Link copied",
@@ -51,7 +51,7 @@ export default function ShareOptions({ fileId }: ShareOptionsProps) {
               <div className="relative flex-1">
                 <Input
                   id="link"
-                  value={`https://stellar-sync.vercel.app/share/${fileId}`}
+                  value={`https://stellar-sync.vercel.app/preview/${fileId}`}
                   readOnly
                   className="pr-10 rounded-lg border-[#5056FD]/20 focus-visible:ring-[#5056FD]/20"
                 />
