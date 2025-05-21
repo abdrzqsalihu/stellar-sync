@@ -4,10 +4,8 @@ import {
   Clock,
   FileText,
   FolderOpen,
-  HardDrive,
   Home,
   LogOut,
-  Search,
   Settings,
   Share2,
   Star,
@@ -17,10 +15,8 @@ import {
   BadgeHelp,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { ReactNode } from "react";
-import { useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -46,18 +42,19 @@ import {
 } from "./ui/sidebar";
 import { ThemeToggle } from "./theme-toggle";
 import Image from "next/image";
-import { UserButton, useUser } from "@clerk/nextjs";
+import { useClerk, UserButton, useUser } from "@clerk/nextjs";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  // const { signOut } = useClerk();
+  const { signOut } = useClerk();
   const { user } = useUser();
+  const router = useRouter();
 
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-background w-full">
-        <Sidebar className="bg-[#111827] text-white border-r-0">
-          <SidebarHeader className="p-4">
+        <Sidebar className="bg-[#111827] text-white border-0">
+          <SidebarHeader className="p-4 text-white bg-[#111827]">
             <div className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white p-0.5">
                 <Image
@@ -74,7 +71,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </div>
           </SidebarHeader>
 
-          <SidebarContent>
+          <SidebarContent className="bg-[#111827] text-white border-0">
             <SidebarGroup>
               <SidebarGroupLabel className="text-gray-400 text-xs font-medium">
                 MAIN
@@ -363,7 +360,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </SidebarGroup>
           </SidebarContent>
 
-          <SidebarFooter>
+          <SidebarFooter className="bg-[#111827] text-white border-0">
             {/* Upgrade section in sidebar */}
             <SidebarGroup>
               <SidebarGroupContent>
@@ -412,7 +409,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   <span>Settings</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => signOut(() => router.push("/"))}
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
