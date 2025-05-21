@@ -1,3 +1,5 @@
+"use client";
+
 import DashboardLayout from "../../components/dashboard-layout";
 import FileStats from "../../components/file-stats";
 import RecentFiles from "../../components/recent-files";
@@ -5,8 +7,76 @@ import StorageStats from "../../components/storage-stats";
 import UploadButton from "../../components/upload-button";
 import { Button } from "../../components/ui/button";
 import { FolderPlus } from "lucide-react";
+import { useAuth, useUser } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
+import {
+  collection,
+  getDocs,
+  getFirestore,
+  query,
+  where,
+} from "firebase/firestore";
+import { app } from "../../firebaseConfig";
+import { getAuth, signInWithCustomToken } from "firebase/auth";
 
 export default function DashboardPage() {
+  const { user } = useUser();
+  const { getToken } = useAuth();
+  const [allFilesCount, setAllFilesCount] = useState(0);
+  const [staredFilesCount, setStaredFilesCount] = useState(0);
+  const [sharedFilesCount, setSharedFilesCount] = useState(0);
+  // Initialize Cloud Firestore and get a reference to the service
+  const db = getFirestore(app);
+
+  useEffect(() => {
+    user && getAllFilesCount();
+  }, [user]);
+
+  useEffect(() => {
+    const signInWithClerk = async () => {
+      try {
+        const auth = getAuth(app);
+        const token = await getToken({ template: "integration_firebase" });
+        const userCredentials = await signInWithCustomToken(auth, token);
+        // console.log(userCredentials.user);
+      } catch (error) {
+        console.error("Error signing in with Clerk and Firebase:", error);
+      }
+    };
+
+    user && signInWithClerk();
+  }, [user, getToken]);
+
+  const getAllFilesCount = async () => {
+    const q = query(
+      collection(db, "uploadedFiles"),
+      where("userEmail", "==", user.primaryEmailAddress.emailAddress)
+    );
+
+    const querySnapshot = await getDocs(q);
+    setAllFilesCount(querySnapshot.size);
+
+    // Calculate the number of stared files
+    let staredCount = 0;
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.stared) {
+        staredCount++;
+      }
+    });
+    setStaredFilesCount(staredCount);
+
+    // Calculate the number of stared files
+    let sharedCount = 0;
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      if (data.shared) {
+        sharedCount++;
+      }
+    });
+    setSharedFilesCount(sharedCount);
+  };
+
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
@@ -18,7 +88,11 @@ export default function DashboardPage() {
         </div>
 
         {/* File Stats Section */}
-        <FileStats />
+        <FileStats
+          allFilesCount={allFilesCount}
+          staredFilesCount={staredFilesCount}
+          sharedFilesCount={sharedFilesCount}
+        />
 
         <div className="flex flex-col gap-6 md:flex-row md:items-start">
           <div className="flex-1 space-y-6">
