@@ -18,20 +18,132 @@ import {
 import { app } from "../../../firebaseConfig";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function AllFilesPage() {
   const db = getFirestore(app);
   const { user } = useUser();
+  const searchParams = useSearchParams();
+  const category = searchParams.get("category");
   const [fileList, setFileList] = useState([]);
   const [alert, setAlert] = useState("");
+
+  useEffect(() => {
+    user && getAllUserFiles();
+  }, [user, category]);
+
+  // Helper function to get file types based on category
+  const getFileTypesByCategory = (category: string | null) => {
+    switch (category) {
+      case "document":
+        return [
+          "application/pdf",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          "application/vnd.ms-excel",
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+          "text/plain",
+        ];
+      case "image":
+        return [
+          "image/png",
+          "image/jpg",
+          "image/jpeg",
+          "image/gif",
+          "image/svg",
+          "image/webp",
+          "image/bmp",
+        ];
+      case "video":
+        return [
+          "video/mp4",
+          "video/quicktime",
+          "video/x-msvideo",
+          "video/x-flv",
+          "video/mp2t",
+          "video/3gpp",
+          "video/3gpp2",
+          "video/x-m4v",
+          "video/webm",
+          "video/x-mng",
+          "video/ogg",
+          "video/ogv",
+          "video/dash",
+          "video/x-ms-wmv",
+          "video/x-ms-asf",
+        ];
+      case "audio":
+        return [
+          "audio/mpeg",
+          "audio/ogg",
+          "audio/wav",
+          "audio/webm",
+          "audio/aac",
+          "audio/flac",
+          "audio/mp4",
+        ];
+      case "design":
+        return [
+          // Figma file types
+          "application/figma",
+          "application/vnd.figma",
+          // Adobe file types
+          "application/x-photoshop",
+          "application/photoshop",
+          "application/psd",
+          "application/vnd.adobe.photoshop",
+          "application/illustrator",
+          "application/vnd.adobe.illustrator",
+          "application/pdf+ai",
+          "application/x-indesign",
+          "application/vnd.adobe.indesign-idml-package",
+          "application/x-adobe-xd",
+          "application/vnd.adobe.xd",
+          "application/x-adobe-premiere",
+          "application/vnd.adobe.premiere-proj",
+          "application/x-adobe-aftereffects",
+          "application/vnd.adobe.aftereffects.proj",
+        ];
+
+      default:
+        return null;
+    }
+  };
+
   useEffect(() => {
     user && getAllUserFiles();
   }, [user]);
   const getAllUserFiles = async () => {
-    const q = query(
+    let q = query(
       collection(db, "uploadedFiles"),
       where("userEmail", "==", user.primaryEmailAddress.emailAddress)
     );
+
+    if (category) {
+      const fileTypes = getFileTypesByCategory(category);
+
+      if (fileTypes) {
+        // Fetch documents for each file type and merge the results
+        const querySnapshots = await Promise.all(
+          fileTypes.map(async (fileType) => {
+            const typeQuery = query(
+              collection(db, "uploadedFiles"),
+              where("userEmail", "==", user.primaryEmailAddress.emailAddress),
+              where("fileType", "==", fileType)
+            );
+            return getDocs(typeQuery);
+          })
+        );
+
+        setFileList([]);
+        querySnapshots.forEach((snapshot) => {
+          snapshot.forEach((doc) => {
+            setFileList((fileList) => [...fileList, doc.data()]);
+          });
+        });
+        return;
+      }
+    }
 
     const querySnapshot = await getDocs(q);
     setFileList([]);
@@ -83,13 +195,26 @@ export default function AllFilesPage() {
     }
   };
 
+  const getPageTitle = () => {
+    if (category === "document") return "Documents";
+    if (category === "image") return "Images";
+    if (category === "audio") return "Audios";
+    if (category === "video") return "Videos";
+    if (category === "design") return "Designs";
+    return "All Files";
+  };
+
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold tracking-tight">All Files</h1>
+          <h1 className="text-2xl font-bold tracking-tight">
+            {getPageTitle()}
+          </h1>
           <p className="text-muted-foreground">
-            View and manage all your files in one place.
+            {category
+              ? `View and manage your ${getPageTitle().toLowerCase()}.`
+              : "View and manage all your files in one place."}
           </p>
         </div>
 
