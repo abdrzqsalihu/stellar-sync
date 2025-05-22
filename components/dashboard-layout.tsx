@@ -15,7 +15,7 @@ import {
   BadgeHelp,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
 import { Button } from "./ui/button";
 import {
@@ -49,6 +49,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const { signOut } = useClerk();
   const { user } = useUser();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   return (
     <SidebarProvider>
@@ -145,7 +146,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     <SidebarMenuButton
                       asChild
                       isActive={pathname === "/dashboard/shared"}
-                      className="hover:bg-[#1c2536] hover:text-white data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#5056FD]/20 data-[active=true]:to-transparent data-[active=true]:text-white"
+                      className="hover:bg-[#1c2536] hover:text-white data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#5056FD]/20 
+                      data-[active=true]:to-transparent data-[active=true]:text-white"
                     >
                       <Link href="/dashboard/shared">
                         <div
@@ -172,26 +174,50 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuButton
-                      asChild
-                      className="hover:bg-[#1c2536] hover:text-white"
-                    >
-                      <Link href="#">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1c2536]">
-                          <FileText className="h-4 w-4" />
-                        </div>
-                        <span>Documents</span>
-                      </Link>
-                    </SidebarMenuButton>
+                    <SidebarMenuItem>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={
+                          pathname === "/dashboard/all-files" &&
+                          searchParams.get("category") === "document"
+                        }
+                        className="hover:bg-[#1c2536] hover:text-white data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#5056FD]/20 data-[active=true]:to-transparent data-[active=true]:text-white"
+                      >
+                        <Link href="/dashboard/all-files?category=document">
+                          <div
+                            className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                              pathname === "/dashboard/all-files" &&
+                              searchParams.get("category") === "document"
+                                ? "bg-[#5056FD]"
+                                : "bg-[#1c2536]"
+                            }`}
+                          >
+                            <FileText className="h-4 w-4" />
+                          </div>
+                          <span>Documents</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
                   </SidebarMenuItem>
 
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild
-                      className="hover:bg-[#1c2536] hover:text-white"
+                      isActive={
+                        pathname === "/dashboard/all-files" &&
+                        searchParams.get("category") === "image"
+                      }
+                      className="hover:bg-[#1c2536] hover:text-white data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#5056FD]/20 data-[active=true]:to-transparent data-[active=true]:text-white"
                     >
-                      <Link href="#">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1c2536]">
+                      <Link href="/dashboard/all-files?category=image">
+                        <div
+                          className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                            pathname === "/dashboard/all-files" &&
+                            searchParams.get("category") === "image"
+                              ? "bg-[#5056FD]"
+                              : "bg-[#1c2536]"
+                          }`}
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="24"
@@ -217,10 +243,21 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild
-                      className="hover:bg-[#1c2536] hover:text-white"
+                      isActive={
+                        pathname === "/dashboard/all-files" &&
+                        searchParams.get("category") === "design"
+                      }
+                      className="hover:bg-[#1c2536] hover:text-white data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#5056FD]/20 data-[active=true]:to-transparent data-[active=true]:text-white"
                     >
-                      <Link href="#">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1c2536]">
+                      <Link href="/dashboard/all-files?category=design">
+                        <div
+                          className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                            pathname === "/dashboard/all-files" &&
+                            searchParams.get("category") === "design"
+                              ? "bg-[#5056FD]"
+                              : "bg-[#1c2536]"
+                          }`}
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="24"
@@ -248,10 +285,21 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild
-                      className="hover:bg-[#1c2536] hover:text-white"
+                      isActive={
+                        pathname === "/dashboard/all-files" &&
+                        searchParams.get("category") === "audio"
+                      }
+                      className="hover:bg-[#1c2536] hover:text-white data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#5056FD]/20 data-[active=true]:to-transparent data-[active=true]:text-white"
                     >
-                      <Link href="#">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1c2536]">
+                      <Link href="/dashboard/all-files?category=audio">
+                        <div
+                          className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                            pathname === "/dashboard/all-files" &&
+                            searchParams.get("category") === "audio"
+                              ? "bg-[#5056FD]"
+                              : "bg-[#1c2536]"
+                          }`}
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="24"
@@ -278,10 +326,21 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild
-                      className="hover:bg-[#1c2536] hover:text-white"
+                      isActive={
+                        pathname === "/dashboard/all-files" &&
+                        searchParams.get("category") === "video"
+                      }
+                      className="hover:bg-[#1c2536] hover:text-white data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#5056FD]/20 data-[active=true]:to-transparent data-[active=true]:text-white"
                     >
-                      <Link href="#">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1c2536]">
+                      <Link href="/dashboard/all-files?category=video">
+                        <div
+                          className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                            pathname === "/dashboard/all-files" &&
+                            searchParams.get("category") === "video"
+                              ? "bg-[#5056FD]"
+                              : "bg-[#1c2536]"
+                          }`}
+                        >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="24"
