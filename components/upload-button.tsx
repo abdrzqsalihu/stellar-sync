@@ -13,18 +13,42 @@ import {
   DialogTrigger,
 } from "../components/ui/dialog";
 import { Progress } from "../components/ui/progress";
-import { useToast } from "../components/ui/use-toast";
 import { Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { app } from "../firebaseConfig";
+import {
+  getStorage,
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
+import { getAuth, signInWithCustomToken } from "firebase/auth";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+import { useAuth, useUser } from "@clerk/nextjs";
+import toast from "react-hot-toast";
+
+// helper function to generating random strings
+function GenerateRandomString(length: number = 10): string {
+  const chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
 
 export default function UploadButton() {
+  const { user } = useUser();
+  const { getToken } = useAuth();
   const router = useRouter();
-  const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const storage = getStorage(app);
+  const db = getFirestore(app);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -32,36 +56,111 @@ export default function UploadButton() {
     }
   };
 
-  const simulateUpload = () => {
-    if (!selectedFile) return;
+  useEffect(() => {
+    const signInWithClerk = async () => {
+      try {
+        const auth = getAuth(app);
+        const token = await getToken({ template: "integration_firebase" });
+        const userCredentials = await signInWithCustomToken(auth, token || "");
+        // console.log(userCredentials.user);
+      } catch (error) {
+        console.error("Error signing in with Clerk and Firebase:", error);
+      }
+    };
+
+    user && signInWithClerk();
+  }, [user, getToken]);
+
+  const uploadFile = async () => {
+    if (!selectedFile || !user?.primaryEmailAddress?.emailAddress) {
+      toast.error("Please select a file and ensure you're logged in.");
+      return;
+    }
 
     setUploading(true);
     setProgress(0);
 
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
+    try {
+      const storageRef = ref(storage, `uploadedFiles/${selectedFile.name}`);
+      const metadata = {
+        contentType: selectedFile.type,
+        customMetadata: {
+          uploadedBy: user.primaryEmailAddress.emailAddress,
+        },
+      };
+
+      const uploadTask = uploadBytesResumable(
+        storageRef,
+        selectedFile,
+        metadata
+      );
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progressPercent =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          setProgress(progressPercent);
+        },
+        (error) => {
+          console.error("Error during upload:", error.message);
           setUploading(false);
-          setOpen(false);
+          toast.error("Upload failed");
+        },
+        async () => {
+          try {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            await saveInfo(selectedFile, downloadURL);
 
-          toast({
-            title: "File uploaded successfully",
-            description: `${selectedFile.name} has been uploaded to your storage.`,
-          });
+            setUploading(false);
+            setOpen(false);
+            setProgress(0);
+            setSelectedFile(null);
 
-          // Simulate redirect to file view page
-          setTimeout(() => {
-            router.push(`/dashboard/file/1`);
-          }, 500);
-
-          return 0;
+            toast.success("File uploaded successfully");
+          } catch (error) {
+            console.error("Error getting download URL or saving info:", error);
+            setUploading(false);
+            toast.error("Upload failed");
+          }
         }
-        return prev + 5;
-      });
-    }, 200);
+      );
+    } catch (error) {
+      console.error("Upload failed:", error);
+      setUploading(false);
+      toast.error("An error occurred during upload");
+    }
   };
 
+  const saveInfo = async (file: File, fileUrl: string) => {
+    if (!user?.primaryEmailAddress?.emailAddress) {
+      throw new Error("User email not available");
+    }
+
+    const docId = GenerateRandomString(10);
+
+    await setDoc(doc(db, "uploadedFiles", docId), {
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type,
+      fileUrl: fileUrl,
+      userEmail: user.primaryEmailAddress.emailAddress,
+      userName: user.fullName || "",
+      password: "",
+      starred: false,
+      shared: false,
+      id: docId,
+      shortUrl: `${process.env.NEXT_PUBLIC_BASE_URL}${docId}`,
+      uploadedAt: new Date().toISOString(),
+    });
+
+    // Navigate to file preview after successful save
+    router.push(`/dashboard/file/${docId}`);
+  };
+
+  const handleUpload = () => {
+    uploadFile();
+  };
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -71,7 +170,7 @@ export default function UploadButton() {
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
+        <DialogHeader className="z-40">
           <DialogTitle>Upload file</DialogTitle>
           <DialogDescription>
             Upload a file to your cloud storage.
@@ -96,25 +195,27 @@ export default function UploadButton() {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center gap-4 py-4">
-            <div className="group flex h-40 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#5056FD]/20 bg-[#5056FD]/5 p-4 text-center transition-all hover:border-[#5056FD]/40 hover:bg-[#5056FD]/10">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#5056FD]/10 transition-transform group-hover:scale-110">
-                <Upload className="h-8 w-8 text-[#5056FD]" />
+            {!selectedFile && (
+              <div className="group flex h-40 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#5056FD]/20 bg-[#5056FD]/5 p-4 text-center transition-all hover:border-[#5056FD]/40 hover:bg-[#5056FD]/10">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#5056FD]/10 transition-transform group-hover:scale-110">
+                  <Upload className="h-8 w-8 text-[#5056FD]" />
+                </div>
+                <p className="mt-4 text-sm font-medium">
+                  Drag and drop your file here
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  or click to browse files
+                </p>
+                <input
+                  type="file"
+                  className="absolute inset-0 cursor-pointer opacity-0"
+                  onChange={handleFileChange}
+                />
               </div>
-              <p className="mt-4 text-sm font-medium">
-                Drag and drop your file here
-              </p>
-              <p className="text-xs text-muted-foreground">
-                or click to browse files
-              </p>
-              <input
-                type="file"
-                className="absolute inset-0 cursor-pointer opacity-0"
-                onChange={handleFileChange}
-              />
-            </div>
+            )}
 
             {selectedFile && (
-              <div className="w-full rounded-xl border bg-white p-4 shadow-sm">
+              <div className="w-full rounded-xl border p-4 shadow-sm z-40">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#5056FD]/10">
@@ -170,7 +271,7 @@ export default function UploadButton() {
           </div>
         )}
 
-        <DialogFooter className="sm:justify-end">
+        <DialogFooter className="sm:justify-end z-40">
           <Button
             variant="outline"
             onClick={() => setOpen(false)}
@@ -181,7 +282,7 @@ export default function UploadButton() {
           </Button>
           <Button
             className="rounded-lg bg-[#5056FD] hover:bg-[#4045e0]"
-            onClick={simulateUpload}
+            onClick={handleUpload}
             disabled={!selectedFile || uploading}
           >
             {uploading ? "Uploading..." : "Upload"}
