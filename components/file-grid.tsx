@@ -91,6 +91,7 @@ export default function FileGrid({
         return <FileText className="h-10 w-10 text-blue-500" />;
       case "application/vnd.ms-excel":
       case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+      case "text/csv":
         return <FileText className="h-10 w-10 text-green-500" />;
       default:
         return <FileText className="h-10 w-10 text-[#5056FD]" />;
