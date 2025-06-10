@@ -136,7 +136,7 @@ export default function FilePage() {
             asChild
             className="h-10 w-10 rounded-full hover:bg-[#5056FD]/10"
           >
-            <Link href="/dashboard">
+            <Link href="/dashboard/all-files">
               <ArrowLeft className="h-5 w-5" />
               <span className="sr-only">Back</span>
             </Link>

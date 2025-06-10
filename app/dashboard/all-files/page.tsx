@@ -9,6 +9,7 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   getFirestore,
   query,
@@ -20,8 +21,10 @@ import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
+import { deleteObject, getStorage, ref } from "firebase/storage";
 
 export default function AllFilesPage() {
+  const storage = getStorage(app);
   const db = getFirestore(app);
   const { user } = useUser();
   const searchParams = useSearchParams();
@@ -164,37 +167,73 @@ export default function AllFilesPage() {
     });
     getAllUserFiles();
 
-    // Determine the status and message based on the action taken
-    const status = stared ? "File unstarred" : "File starred";
+    // Determine the status based on the action taken
     const msg = stared
       ? "file unstarred successfully!"
       : "file starred successfully!";
 
     toast.success(msg);
-
-    // setAlert({
-    //   status: status,
-    //   msg: msg,
-    // });
   };
 
   //function to delete data from Firestore
-  const deleteFile = async (fileId) => {
+  const deleteFile = async (fileId: string) => {
     try {
+      // Get file document
       const docRef = doc(db, "uploadedFiles", fileId);
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) {
+        toast.error("File not found!");
+        return;
+      }
+
+      const fileData = docSnap.data();
+      let storageDeleted = false;
+
+      // Try to delete from storage
+      if (fileData.fileUrl) {
+        try {
+          // Extract path from URL
+          const url = new URL(fileData.fileUrl);
+          const pathMatch = url.pathname.match(/\/o\/(.+?)(?:\?|$)/);
+
+          if (pathMatch) {
+            const decodedPath = decodeURIComponent(pathMatch[1]);
+            const storageRef = ref(storage, decodedPath);
+            await deleteObject(storageRef);
+            storageDeleted = true;
+          }
+        } catch (error) {
+          // If URL method fails, try fileName method
+          if (fileData.fileName) {
+            try {
+              const storageRef = ref(
+                storage,
+                `uploadedFiles/${fileData.fileName}`
+              );
+              await deleteObject(storageRef);
+              storageDeleted = true;
+            } catch (err) {
+              console.log("Storage deletion failed:", err.code);
+              storageDeleted = err.code === "storage/object-not-found";
+            }
+          }
+        }
+      }
+
+      // Delete from Firestore
       await deleteDoc(docRef);
       getAllUserFiles();
 
-      // setAlert({
-      //   status: "File deleted",
-      //   msg: "File deleted successfully!",
-      // });
+      // Show success message
+      toast.success(
+        storageDeleted
+          ? "File deleted successfully!"
+          : "File record deleted successfully"
+      );
     } catch (error) {
-      console.error("Error deleting file:", error);
-      // setAlert({
-      //   status: "Error",
-      //   msg: "An error occurred while deleting the file.",
-      // });
+      console.error("Delete failed:", error);
+      toast.error(`Failed to delete file: ${error.message || "Unknown error"}`);
     }
   };
 

@@ -184,20 +184,27 @@ export default function FileGrid({
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     onClick={() => updateStared(file.id, file.stared)}
+                    className="cursor-pointer"
                   >
                     <Star className="mr-2 h-4 w-4" />
                     {file.stared ? "Remove from favorites" : "Add to favorites"}
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => copyLink(file.id)}>
+                  <DropdownMenuItem
+                    onClick={() => copyLink(file.id)}
+                    className="cursor-pointer"
+                  >
                     <LinkIcon className="mr-2 h-4 w-4" />
                     Copy link
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
                     <Download className="mr-2 h-4 w-4" />
                     Download
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-500 focus:text-red-500">
+                  <DropdownMenuItem
+                    onClick={() => deleteFile(file.id)}
+                    className="text-red-500 focus:text-red-500 cursor-pointer"
+                  >
                     <Trash className="mr-2 h-4 w-4" />
                     Delete
                   </DropdownMenuItem>
