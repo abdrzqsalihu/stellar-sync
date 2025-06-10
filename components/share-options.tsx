@@ -1,11 +1,11 @@
 "use client";
 
+import toast from "react-hot-toast";
 import { Button } from "../components/ui/button";
 import { Card, CardContent } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { Switch } from "../components/ui/switch";
-import { useToast } from "../components/ui/use-toast";
 import { Copy, Lock, Send } from "lucide-react";
 import { useState } from "react";
 
@@ -14,7 +14,6 @@ interface ShareOptionsProps {
 }
 
 export default function ShareOptions({ fileId }: ShareOptionsProps) {
-  const { toast } = useToast();
   const [passwordProtected, setPasswordProtected] = useState(false);
   const [email, setEmail] = useState("");
 
@@ -22,19 +21,13 @@ export default function ShareOptions({ fileId }: ShareOptionsProps) {
     navigator.clipboard.writeText(
       `https://stellar-sync.vercel.app/preview/${fileId}`
     );
-    toast({
-      title: "Link copied",
-      description: "File link copied to clipboard",
-    });
+    toast.success("File link copied to clipboard");
   };
 
   const sendEmail = () => {
     if (!email) return;
 
-    toast({
-      title: "Email sent",
-      description: `File has been shared with ${email}`,
-    });
+    toast.success(`File has been shared with ${email}`);
 
     setEmail("");
   };

@@ -14,6 +14,7 @@ import FileGrid from "../../../components/file-grid";
 import { app } from "../../../firebaseConfig";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 export default function SharedPage() {
   const db = getFirestore(app);
@@ -52,6 +53,8 @@ export default function SharedPage() {
     const msg = stared
       ? "file unstarred successfully!"
       : "file starred successfully!";
+
+    toast.success(msg);
 
     // setAlert({
     //   status: status,

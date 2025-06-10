@@ -19,6 +19,7 @@ import { app } from "../../../firebaseConfig";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
 
 export default function AllFilesPage() {
   const db = getFirestore(app);
@@ -168,6 +169,8 @@ export default function AllFilesPage() {
     const msg = stared
       ? "file unstarred successfully!"
       : "file starred successfully!";
+
+    toast.success(msg);
 
     // setAlert({
     //   status: status,

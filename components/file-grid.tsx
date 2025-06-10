@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
-import { toast, useToast } from "../components/ui/use-toast";
+import toast from "react-hot-toast";
 import {
   Download,
   FileText,
@@ -48,8 +48,6 @@ export default function FileGrid({
   favorites = false,
   shared = false,
 }: FileGridProps) {
-  const { toast } = useToast();
-
   // Filter files based on props
   const filteredFiles = fileList.filter((file) => {
     if (favorites) return file.stared;
@@ -103,12 +101,9 @@ export default function FileGrid({
     const file = fileList.find((f) => f.id === id);
     if (file) {
       updateStared(id, file.stared);
-      toast({
-        title: file.stared ? "Removed from favorites" : "Added to favorites",
-        description: file.stared
-          ? "File removed from bookmarks"
-          : "File added to bookmarks for quick access",
-      });
+      toast.success(
+        file.stared ? "File removed from favorites" : "File added to favorites"
+      );
     }
   };
 
@@ -116,10 +111,7 @@ export default function FileGrid({
     navigator.clipboard.writeText(
       `https://stellar-sync.vercel.app/preview/${id}`
     );
-    toast({
-      title: "Link copied",
-      description: "File link copied to clipboard",
-    });
+    toast.success("File link copied to clipboard");
   };
 
   return (

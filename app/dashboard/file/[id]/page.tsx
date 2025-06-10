@@ -24,10 +24,10 @@ import {
   TabsTrigger,
 } from "../../../../components/ui/tabs";
 import ShareOptions from "../../../../components/share-options";
-import { useToast } from "../../../../components/ui/use-toast";
 import { useParams } from "next/navigation";
 import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
 import { app } from "../../../../firebaseConfig";
+import toast from "react-hot-toast";
 
 interface FileType {
   id: string;
@@ -45,7 +45,6 @@ export default function FilePage() {
   const params = useParams();
   const id = params.id as string;
 
-  const { toast } = useToast();
   const [isFavorite, setIsFavorite] = useState(false);
   const db = getFirestore(app);
   const [file, setFile] = useState<FileType | undefined>(undefined);
@@ -123,24 +122,10 @@ export default function FilePage() {
 
   const toggleFavorite = () => {
     setIsFavorite(!isFavorite);
-    toast({
-      title: isFavorite ? "Removed from favorites" : "Added to favorites",
-      description: isFavorite
-        ? "File removed from bookmarks"
-        : "File added to bookmarks for quick access",
-    });
-  };
-
-  const copyLink = () => {
-    navigator.clipboard.writeText(
-      `https://stellar-sync.vercel.app/preview/${file?.id}`
+    toast.success(
+      isFavorite ? "File removed from favorites" : "File added to favorites"
     );
-    toast({
-      title: "Link copied",
-      description: "File link copied to clipboard",
-    });
   };
-
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-8">

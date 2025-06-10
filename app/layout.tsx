@@ -5,6 +5,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { Rubik } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "../components/theme-provider";
+import { Toaster } from "react-hot-toast";
 
 const rubik = Rubik({ subsets: ["latin"] });
 
@@ -21,6 +22,7 @@ export default function RootLayout({ children }) {
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body className={rubik.className} suppressHydrationWarning>
+          <Toaster position="top-right" />
           <ThemeProvider
             attribute="class"
             defaultTheme="light"
