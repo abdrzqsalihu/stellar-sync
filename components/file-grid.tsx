@@ -19,7 +19,6 @@ import {
   Video,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
 
 export interface File {
   id: string;

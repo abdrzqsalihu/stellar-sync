@@ -1,7 +1,5 @@
 "use client";
 
-import { useState } from "react";
-import { useToast } from "../components/ui/use-toast";
 import { Button } from "../components/ui/button";
 import {
   Download,
@@ -21,124 +19,113 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
+import toast from "react-hot-toast";
+
+export interface File {
+  id: string;
+  fileName: string;
+  fileType: string;
+  fileSize: string;
+  uploadedAt: string;
+  stared: boolean;
+  shared: boolean;
+  url?: string;
+}
 
 interface RecentFilesProps {
   limit?: number;
   showViewAll?: boolean;
+  fileList: File[];
+  updateStared: (id: string, isFavorite: boolean) => void;
+  deleteFile: (id: string) => void;
+  favorites?: boolean;
+  shared?: boolean;
 }
 
 export default function RecentFiles({
-  limit = 6,
+  limit = 10,
   showViewAll = true,
+  fileList,
+  updateStared,
+  deleteFile,
 }: RecentFilesProps) {
-  const { toast } = useToast();
+  const limitedFiles = limit ? fileList.slice(0, limit) : fileList;
 
-  // Mock files data with dates for grouping
-  const [files, setFiles] = useState([
-    {
-      id: "1",
-      name: "Project Presentation.pdf",
-      type: "pdf",
-      size: "4.2 MB",
-      uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 2), // 2 hours ago
-      favorite: true,
-      shared: true,
-      color: "#5056FD",
-    },
-    {
-      id: "2",
-      name: "Company Logo.png",
-      type: "image",
-      size: "1.8 MB",
-      uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 5), // 5 hours ago
-      favorite: true,
-      shared: false,
-      color: "#4ECDC4",
-    },
-    {
-      id: "3",
-      name: "Meeting Notes.docx",
-      type: "doc",
-      size: "320 KB",
-      uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-      favorite: false,
-      shared: true,
-      color: "#5056FD",
-    },
-    {
-      id: "4",
-      name: "Product Demo.mp4",
-      type: "video",
-      size: "28.6 MB",
-      uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-      favorite: false,
-      shared: true,
-      color: "#FFD166",
-    },
-    {
-      id: "5",
-      name: "Financial Report.xlsx",
-      type: "excel",
-      size: "2.3 MB",
-      uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3), // 3 days ago
-      favorite: false,
-      shared: false,
-      color: "#06D6A0",
-    },
-    {
-      id: "6",
-      name: "User Research.pdf",
-      type: "pdf",
-      size: "5.7 MB",
-      uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5), // 5 days ago
-      favorite: true,
-      shared: false,
-      color: "#118AB2",
-    },
-    {
-      id: "7",
-      name: "Website Mockup.fig",
-      type: "design",
-      size: "8.1 MB",
-      uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6), // 6 days ago
-      favorite: false,
-      shared: true,
-      color: "#EF476F",
-    },
-    {
-      id: "8",
-      name: "Client Feedback.docx",
-      type: "doc",
-      size: "450 KB",
-      uploadedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 7 days ago
-      favorite: false,
-      shared: false,
-      color: "#073B4C",
-    },
-  ]);
+  const getFileColor = (fileType: string) => {
+    switch (fileType) {
+      case "image/png":
+      case "image/jpg":
+      case "image/jpeg":
+      case "image/gif":
+      case "image/svg":
+      case "image/webp":
+      case "image/bmp":
+        return "#4ECDC4";
+      case "video/mp4":
+      case "video/quicktime":
+      case "video/x-msvideo":
+      case "video/x-flv":
+      case "video/mp2t":
+      case "video/3gpp":
+      case "video/3gpp2":
+      case "video/x-m4v":
+      case "video/webm":
+      case "video/x-mng":
+      case "video/ogg":
+      case "video/ogv":
+      case "video/dash":
+      case "video/x-ms-wmv":
+      case "video/x-ms-asf":
+        return "#a855f7";
+      case "application/pdf":
+        return "#ef4444";
+      case "application/msword":
+      case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        return "#3b82f6";
+      case "application/vnd.ms-excel":
+      case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+      case "text/csv":
+        return "#22c55e";
+      default:
+        return "#5056FD";
+    }
+  };
 
-  // Limit files if needed
-  const limitedFiles = limit ? files.slice(0, limit) : files;
-
-  // Group files by date
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  const lastWeekStart = new Date(today);
-  lastWeekStart.setDate(lastWeekStart.getDate() - 7);
-
-  const getFileIcon = (type: string, color: string) => {
-    switch (type) {
-      case "image":
-      case "png":
-      case "jpg":
+  const getFileIcon = (fileType: string) => {
+    switch (fileType) {
+      case "image/png":
+      case "image/jpg":
+      case "image/jpeg":
+      case "image/gif":
+      case "image/svg":
+      case "image/webp":
+      case "image/bmp":
         return <ImageIcon className="h-10 w-10 text-white" />;
-      case "video":
-      case "mp4":
+      case "video/mp4":
+      case "video/quicktime":
+      case "video/x-msvideo":
+      case "video/x-flv":
+      case "video/mp2t":
+      case "video/3gpp":
+      case "video/3gpp2":
+      case "video/x-m4v":
+      case "video/webm":
+      case "video/x-mng":
+      case "video/ogg":
+      case "video/ogv":
+      case "video/dash":
+      case "video/x-ms-wmv":
+      case "video/x-ms-asf":
         return <Video className="h-10 w-10 text-white" />;
+      case "application/pdf":
+        return <FileText className="h-10 w-10 text-white" />;
+      case "application/msword":
+      case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        return <FileText className="h-10 w-10 text-white" />;
+      case "application/vnd.ms-excel":
+      case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+      case "text/csv":
+        return <FileText className="h-10 w-10 text-white" />;
       default:
         return <FileText className="h-10 w-10 text-white" />;
     }
@@ -148,48 +135,62 @@ export default function RecentFiles({
     return name.split(".").pop()?.toUpperCase() || "";
   };
 
-  const getDateGroup = (date: Date) => {
-    if (date >= today) {
+  const copyLink = (id: string) => {
+    navigator.clipboard.writeText(
+      `https://stellar-sync.vercel.app/preview/${id}`
+    );
+    toast.success("Link copied to clipboard");
+  };
+
+  const getDateGroup = (timestamp: any) => {
+    // Parse the timestamp - it's in UTC format
+    const fileDate = new Date(timestamp);
+    const now = new Date();
+
+    // Get the date parts in UTC to avoid timezone conversion issues
+    const todayUTC = {
+      year: now.getUTCFullYear(),
+      month: now.getUTCMonth(),
+      date: now.getUTCDate(),
+    };
+
+    const fileDateUTC = {
+      year: fileDate.getUTCFullYear(),
+      month: fileDate.getUTCMonth(),
+      date: fileDate.getUTCDate(),
+    };
+
+    // Create UTC date objects for comparison (normalized to midnight UTC)
+    const todayUTCDate = new Date(
+      Date.UTC(todayUTC.year, todayUTC.month, todayUTC.date)
+    );
+    const fileUTCDate = new Date(
+      Date.UTC(fileDateUTC.year, fileDateUTC.month, fileDateUTC.date)
+    );
+
+    // Calculate days difference
+    const daysDiff = Math.floor(
+      (todayUTCDate.getTime() - fileUTCDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    // Debug logs
+    // console.log("Current UTC date:", todayUTCDate.toISOString().split("T")[0]);
+    // console.log("File UTC date:", fileUTCDate.toISOString().split("T")[0]);
+    // console.log("Days difference:", daysDiff);
+
+    if (daysDiff === 0) {
       return "Today";
-    } else if (date >= yesterday) {
+    } else if (daysDiff === 1) {
       return "Yesterday";
-    } else if (date >= lastWeekStart) {
+    } else if (daysDiff <= 7) {
       return "This Week";
     } else {
       return "Older";
     }
   };
 
-  const toggleFavorite = (id: string) => {
-    setFiles(
-      files.map((file) =>
-        file.id === id ? { ...file, favorite: !file.favorite } : file
-      )
-    );
-
-    const file = files.find((f) => f.id === id);
-    if (file) {
-      toast({
-        title: file.favorite ? "Removed from favorites" : "Added to favorites",
-        description: file.favorite
-          ? "File removed from bookmarks"
-          : "File added to bookmarks for quick access",
-      });
-    }
-  };
-
-  const copyLink = (id: string) => {
-    navigator.clipboard.writeText(
-      `https://stellar-sync.vercel.app/share/${id}`
-    );
-    toast({
-      title: "Link copied",
-      description: "File link copied to clipboard",
-    });
-  };
-
   // Group files by date
-  const groupedFiles: Record<string, typeof files> = {};
+  const groupedFiles: Record<string, File[]> = {};
 
   limitedFiles.forEach((file) => {
     const group = getDateGroup(file.uploadedAt);
@@ -199,14 +200,21 @@ export default function RecentFiles({
     groupedFiles[group].push(file);
   });
 
-  // Order of groups
-  const groupOrder = ["Today", "Yesterday", "This Week", "Older"];
+  // Sort groups by recency
+  const sortedGroups = Object.keys(groupedFiles).sort((a, b) => {
+    const order: Record<string, number> = {
+      Today: 0,
+      Yesterday: 1,
+      "This Week": 2,
+      Older: 3,
+    };
+    return order[a] - order[b];
+  });
 
   return (
     <div className="space-y-6">
-      {groupOrder.map((group) => {
-        if (!groupedFiles[group] || groupedFiles[group].length === 0)
-          return null;
+      {sortedGroups.map((group) => {
+        if (groupedFiles[group].length === 0) return null;
 
         return (
           <div key={group} className="space-y-4">
@@ -231,22 +239,27 @@ export default function RecentFiles({
                   >
                     <div
                       className="mr-4 flex h-14 w-14 items-center justify-center rounded-lg"
-                      style={{ backgroundColor: file.color }}
+                      style={{ backgroundColor: getFileColor(file.fileType) }}
                     >
-                      {getFileIcon(file.type, file.color)}
+                      {getFileIcon(file.fileType)}
                     </div>
 
                     <div className="flex flex-1 flex-col">
                       <div className="flex items-start justify-between">
                         <div>
                           <div className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                            {getFileExtension(file.name)}
+                            {getFileExtension(file.fileName)}
                           </div>
                           <h3 className="mt-1 font-medium line-clamp-1">
-                            {file.name}
+                            {file.fileName}
                           </h3>
                           <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                            <span>{file.size}</span>
+                            <span>
+                              {(parseInt(file.fileSize) / 1024 / 1024).toFixed(
+                                2
+                              )}
+                              MB
+                            </span>
                             {file.shared && (
                               <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-primary">
                                 <LinkIcon className="h-3 w-3" /> Shared
@@ -256,15 +269,11 @@ export default function RecentFiles({
                         </div>
                         <Star
                           className={`h-5 w-5 cursor-pointer ${
-                            file.favorite
+                            file.stared
                               ? "fill-yellow-400 text-yellow-400"
                               : "text-muted-foreground opacity-40 group-hover:opacity-100"
                           }`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            toggleFavorite(file.id);
-                          }}
+                          onClick={() => updateStared(file.id, file.stared)}
                         />
                       </div>
                     </div>
@@ -277,10 +286,10 @@ export default function RecentFiles({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
-                          onClick={() => toggleFavorite(file.id)}
+                          onClick={() => updateStared(file.id, file.stared)}
                         >
                           <Star className="mr-2 h-4 w-4" />
-                          {file.favorite
+                          {file.stared
                             ? "Remove from favorites"
                             : "Add to favorites"}
                         </DropdownMenuItem>
@@ -293,7 +302,10 @@ export default function RecentFiles({
                           Download
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive focus:text-destructive">
+                        <DropdownMenuItem
+                          onClick={() => deleteFile(file.id)}
+                          className="text-destructive focus:text-destructive"
+                        >
                           <Trash className="mr-2 h-4 w-4" />
                           Delete
                         </DropdownMenuItem>

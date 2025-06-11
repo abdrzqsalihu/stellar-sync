@@ -11,13 +11,19 @@ import { useAuth, useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
 import {
   collection,
+  deleteDoc,
+  doc,
+  getDoc,
   getDocs,
   getFirestore,
   query,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import { app } from "../../firebaseConfig";
 import { getAuth, signInWithCustomToken } from "firebase/auth";
+import toast from "react-hot-toast";
+import { deleteObject, getStorage, ref } from "firebase/storage";
 
 export default function DashboardPage() {
   const { user } = useUser();
@@ -25,8 +31,10 @@ export default function DashboardPage() {
   const [allFilesCount, setAllFilesCount] = useState(0);
   const [staredFilesCount, setStaredFilesCount] = useState(0);
   const [sharedFilesCount, setSharedFilesCount] = useState(0);
+  const [fileList, setFileList] = useState([]);
   // Initialize Cloud Firestore and get a reference to the service
   const db = getFirestore(app);
+  const storage = getStorage(app);
 
   useEffect(() => {
     user && getAllFilesCount();
@@ -46,6 +54,10 @@ export default function DashboardPage() {
 
     user && signInWithClerk();
   }, [user, getToken]);
+
+  useEffect(() => {
+    user && getAllUserFiles();
+  }, [user]);
 
   const getAllFilesCount = async () => {
     const q = query(
@@ -77,6 +89,102 @@ export default function DashboardPage() {
     setSharedFilesCount(sharedCount);
   };
 
+  useEffect(() => {
+    user && getAllUserFiles();
+  }, [user]);
+  const getAllUserFiles = async () => {
+    let q = query(
+      collection(db, "uploadedFiles"),
+      where("userEmail", "==", user.primaryEmailAddress.emailAddress)
+    );
+
+    const querySnapshot = await getDocs(q);
+    setFileList([]);
+    querySnapshot.forEach((doc) => {
+      // doc.data() is never undefined for query doc snapshots
+      // console.log(doc.id, " => ", doc.data());
+      setFileList((fileList) => [...fileList, doc.data()]);
+    });
+  };
+
+  // function to update the stared property in Firebase
+  const updateStared = async (fileId, stared) => {
+    const docRef = doc(db, "uploadedFiles", fileId);
+    // Assuming `stared` is the correct property name
+    await updateDoc(docRef, {
+      stared: !stared, // Toggle the value of `stared`
+    });
+    getAllUserFiles();
+
+    // Determine the status based on the action taken
+    const msg = stared
+      ? "file unstarred successfully!"
+      : "file starred successfully!";
+
+    toast.success(msg);
+  };
+
+  //function to delete data from Firestore
+  const deleteFile = async (fileId: string) => {
+    try {
+      // Get file document
+      const docRef = doc(db, "uploadedFiles", fileId);
+      const docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) {
+        toast.error("File not found!");
+        return;
+      }
+
+      const fileData = docSnap.data();
+      let storageDeleted = false;
+
+      // Try to delete from storage
+      if (fileData.fileUrl) {
+        try {
+          // Extract path from URL
+          const url = new URL(fileData.fileUrl);
+          const pathMatch = url.pathname.match(/\/o\/(.+?)(?:\?|$)/);
+
+          if (pathMatch) {
+            const decodedPath = decodeURIComponent(pathMatch[1]);
+            const storageRef = ref(storage, decodedPath);
+            await deleteObject(storageRef);
+            storageDeleted = true;
+          }
+        } catch (error) {
+          // If URL method fails, try fileName method
+          if (fileData.fileName) {
+            try {
+              const storageRef = ref(
+                storage,
+                `uploadedFiles/${fileData.fileName}`
+              );
+              await deleteObject(storageRef);
+              storageDeleted = true;
+            } catch (err) {
+              console.log("Storage deletion failed:", err.code);
+              storageDeleted = err.code === "storage/object-not-found";
+            }
+          }
+        }
+      }
+
+      // Delete from Firestore
+      await deleteDoc(docRef);
+      getAllUserFiles();
+
+      // Show success message
+      toast.success(
+        storageDeleted
+          ? "File deleted successfully!"
+          : "File record deleted successfully"
+      );
+    } catch (error) {
+      console.error("Delete failed:", error);
+      toast.error(`Failed to delete file: ${error.message || "Unknown error"}`);
+    }
+  };
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
@@ -111,7 +219,11 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <RecentFiles />
+            <RecentFiles
+              fileList={fileList}
+              updateStared={updateStared}
+              deleteFile={deleteFile}
+            />
           </div>
 
           <div className="w-full md:w-80 space-y-6">

@@ -30,7 +30,6 @@ export default function AllFilesPage() {
   const searchParams = useSearchParams();
   const category = searchParams.get("category");
   const [fileList, setFileList] = useState([]);
-  const [alert, setAlert] = useState("");
 
   useEffect(() => {
     user && getAllUserFiles();
