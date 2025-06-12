@@ -1,260 +1,79 @@
-"use client";
-
+import { Metadata } from "next";
 import DashboardLayout from "../../../components/dashboard-layout";
 import FileGrid from "../../../components/file-grid";
 import UploadButton from "../../../components/upload-button";
 import { Button } from "../../../components/ui/button";
 import { FolderPlus } from "lucide-react";
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  getFirestore,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
-import { app } from "../../../firebaseConfig";
-import { useUser } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import toast from "react-hot-toast";
-import { deleteObject, getStorage, ref } from "firebase/storage";
+import { getEmailFromUserId } from "../../../lib/getEmailFromUserId";
+import { getFileTypesByCategory } from "../../../lib/fileTypes";
+import { dbAdmin } from "../../../lib/firebase-admin";
+import { headers } from "next/headers";
 
-export default function AllFilesPage() {
-  const storage = getStorage(app);
-  const db = getFirestore(app);
-  const { user } = useUser();
-  const searchParams = useSearchParams();
-  const category = searchParams.get("category");
-  const [fileList, setFileList] = useState([]);
+export const metadata: Metadata = {
+  title: "All Files",
+};
 
-  useEffect(() => {
-    user && getAllUserFiles();
-  }, [user, category]);
+export const dynamic = "force-dynamic";
 
-  // Helper function to get file types based on category
-  const getFileTypesByCategory = (category: string | null) => {
-    switch (category) {
-      case "document":
-        return [
-          "application/pdf",
-          "application/msword",
-          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-          "application/vnd.ms-excel",
-          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-          "text/plain",
-        ];
-      case "image":
-        return [
-          "image/png",
-          "image/jpg",
-          "image/jpeg",
-          "image/gif",
-          "image/svg",
-          "image/webp",
-          "image/bmp",
-        ];
-      case "video":
-        return [
-          "video/mp4",
-          "video/quicktime",
-          "video/x-msvideo",
-          "video/x-flv",
-          "video/mp2t",
-          "video/3gpp",
-          "video/3gpp2",
-          "video/x-m4v",
-          "video/webm",
-          "video/x-mng",
-          "video/ogg",
-          "video/ogv",
-          "video/dash",
-          "video/x-ms-wmv",
-          "video/x-ms-asf",
-        ];
-      case "audio":
-        return [
-          "audio/mpeg",
-          "audio/ogg",
-          "audio/wav",
-          "audio/webm",
-          "audio/aac",
-          "audio/flac",
-          "audio/mp4",
-        ];
-      case "design":
-        return [
-          // Figma file types
-          "application/figma",
-          "application/vnd.figma",
-          // Adobe file types
-          "application/x-photoshop",
-          "application/photoshop",
-          "application/psd",
-          "application/vnd.adobe.photoshop",
-          "application/illustrator",
-          "application/vnd.adobe.illustrator",
-          "application/pdf+ai",
-          "application/x-indesign",
-          "application/vnd.adobe.indesign-idml-package",
-          "application/x-adobe-xd",
-          "application/vnd.adobe.xd",
-          "application/x-adobe-premiere",
-          "application/vnd.adobe.premiere-proj",
-          "application/x-adobe-aftereffects",
-          "application/vnd.adobe.aftereffects.proj",
-        ];
+export default async function FilesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  await headers();
+  const headersList = await headers();
+  const userId = headersList.get("x-user-id");
 
-      default:
-        return null;
-    }
-  };
+  const resolvedSearchParams = await searchParams;
 
-  useEffect(() => {
-    user && getAllUserFiles();
-  }, [user]);
-  const getAllUserFiles = async () => {
-    let q = query(
-      collection(db, "uploadedFiles"),
-      where("userEmail", "==", user.primaryEmailAddress.emailAddress)
+  if (!userId) {
+    return (
+      <DashboardLayout>
+        <p className="p-6"></p>
+        <div className="col-span-full flex h-40 flex-col items-center justify-center rounded-lg border border-dashed p-4 text-center">
+          <p className="text-lg font-medium">Not signed in.</p>
+        </div>
+      </DashboardLayout>
     );
+  }
 
-    if (category) {
-      const fileTypes = getFileTypesByCategory(category);
+  const email = await getEmailFromUserId(userId);
+  const category = resolvedSearchParams.category || null;
+  const fileTypes = getFileTypesByCategory(category);
 
-      if (fileTypes) {
-        // Fetch documents for each file type and merge the results
-        const querySnapshots = await Promise.all(
-          fileTypes.map(async (fileType) => {
-            const typeQuery = query(
-              collection(db, "uploadedFiles"),
-              where("userEmail", "==", user.primaryEmailAddress.emailAddress),
-              where("fileType", "==", fileType)
-            );
-            return getDocs(typeQuery);
-          })
-        );
+  // Server-side fetch
+  let files: Array<any> = [];
+  const base = dbAdmin
+    .collection("uploadedFiles")
+    .where("userEmail", "==", email);
 
-        setFileList([]);
-        querySnapshots.forEach((snapshot) => {
-          snapshot.forEach((doc) => {
-            setFileList((fileList) => [...fileList, doc.data()]);
-          });
-        });
-        return;
-      }
+  if (fileTypes) {
+    for (const type of fileTypes) {
+      const snap = await base.where("fileType", "==", type).get();
+      snap.docs.forEach((d) => files.push({ id: d.id, ...d.data() }));
     }
+  } else {
+    const snap = await base.get();
+    snap.docs.forEach((d) => files.push({ id: d.id, ...d.data() }));
+  }
 
-    const querySnapshot = await getDocs(q);
-    setFileList([]);
-    querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      // console.log(doc.id, " => ", doc.data());
-      setFileList((fileList) => [...fileList, doc.data()]);
-    });
+  const titleMap: Record<string, string> = {
+    document: "Documents",
+    image: "Images",
+    audio: "Audios",
+    video: "Videos",
+    design: "Designs",
   };
-
-  // function to update the stared property in Firebase
-  const updateStared = async (fileId, stared) => {
-    const docRef = doc(db, "uploadedFiles", fileId);
-    // Assuming `stared` is the correct property name
-    await updateDoc(docRef, {
-      stared: !stared, // Toggle the value of `stared`
-    });
-    getAllUserFiles();
-
-    // Determine the status based on the action taken
-    const msg = stared
-      ? "file unstarred successfully!"
-      : "file starred successfully!";
-
-    toast.success(msg);
-  };
-
-  //function to delete data from Firestore
-  const deleteFile = async (fileId: string) => {
-    try {
-      // Get file document
-      const docRef = doc(db, "uploadedFiles", fileId);
-      const docSnap = await getDoc(docRef);
-
-      if (!docSnap.exists()) {
-        toast.error("File not found!");
-        return;
-      }
-
-      const fileData = docSnap.data();
-      let storageDeleted = false;
-
-      // Try to delete from storage
-      if (fileData.fileUrl) {
-        try {
-          // Extract path from URL
-          const url = new URL(fileData.fileUrl);
-          const pathMatch = url.pathname.match(/\/o\/(.+?)(?:\?|$)/);
-
-          if (pathMatch) {
-            const decodedPath = decodeURIComponent(pathMatch[1]);
-            const storageRef = ref(storage, decodedPath);
-            await deleteObject(storageRef);
-            storageDeleted = true;
-          }
-        } catch (error) {
-          // If URL method fails, try fileName method
-          if (fileData.fileName) {
-            try {
-              const storageRef = ref(
-                storage,
-                `uploadedFiles/${fileData.fileName}`
-              );
-              await deleteObject(storageRef);
-              storageDeleted = true;
-            } catch (err) {
-              console.log("Storage deletion failed:", err.code);
-              storageDeleted = err.code === "storage/object-not-found";
-            }
-          }
-        }
-      }
-
-      // Delete from Firestore
-      await deleteDoc(docRef);
-      getAllUserFiles();
-
-      // Show success message
-      toast.success(
-        storageDeleted
-          ? "File deleted successfully!"
-          : "File record deleted successfully"
-      );
-    } catch (error) {
-      console.error("Delete failed:", error);
-      toast.error(`Failed to delete file: ${error.message || "Unknown error"}`);
-    }
-  };
-
-  const getPageTitle = () => {
-    if (category === "document") return "Documents";
-    if (category === "image") return "Images";
-    if (category === "audio") return "Audios";
-    if (category === "video") return "Videos";
-    if (category === "design") return "Designs";
-    return "All Files";
-  };
+  const pageTitle = category ? titleMap[category] || "All Files" : "All Files";
 
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
         <div className="flex flex-col gap-2">
-          <h1 className="text-2xl font-bold tracking-tight">
-            {getPageTitle()}
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight">{pageTitle}</h1>
           <p className="text-muted-foreground">
             {category
-              ? `View and manage your ${getPageTitle().toLowerCase()}.`
+              ? `View and manage your ${pageTitle.toLowerCase()}.`
               : "View and manage all your files in one place."}
           </p>
         </div>
@@ -272,12 +91,7 @@ export default function AllFilesPage() {
             </Button>
           </div>
         </div>
-
-        <FileGrid
-          fileList={fileList}
-          updateStared={updateStared}
-          deleteFile={deleteFile}
-        />
+        <FileGrid fileList={files} />
       </div>
     </DashboardLayout>
   );

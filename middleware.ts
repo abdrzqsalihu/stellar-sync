@@ -14,6 +14,20 @@ export default authMiddleware({
     "/favorites",
     "/file-preview/(.*)",
   ],
+
+  afterAuth(auth, req) {
+    //  user ID to headers for SSR pages
+    if (auth.userId) {
+      const requestHeaders = new Headers(req.headers);
+      requestHeaders.set('x-user-id', auth.userId);
+      
+      return NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      });
+    }
+  },
 });
 
 export const config = {
