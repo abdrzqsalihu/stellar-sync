@@ -91,7 +91,7 @@ export default async function FilesPage({
             </Button>
           </div>
         </div>
-        <FileGrid fileList={files} />
+        <FileGrid fileList={files} view="all" />
       </div>
     </DashboardLayout>
   );

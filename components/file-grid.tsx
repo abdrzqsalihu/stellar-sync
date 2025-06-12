@@ -34,9 +34,10 @@ export interface File {
 
 interface FileGridProps {
   fileList: File[];
+  view?: "all" | "shared" | "favorites";
 }
 
-export default function FileGrid({ fileList }: FileGridProps) {
+export default function FileGrid({ fileList, view }: FileGridProps) {
   const router = useRouter();
 
   // Choose an icon based on the fileType (MIME)
@@ -91,13 +92,32 @@ export default function FileGrid({ fileList }: FileGridProps) {
     toast.success("File link copied to clipboard");
   };
 
+  const getEmptyMessage = (view: FileGridProps["view"]) => {
+    switch (view) {
+      case "shared":
+        return {
+          title: "No shared files",
+          message: "You haven't shared any files yet.",
+        };
+      case "favorites":
+        return {
+          title: "No favorites yet",
+          message: "You haven't added any files to favorites yet.",
+        };
+      default:
+        return {
+          title: "No files found",
+          message: "Upload your first file to get started.",
+        };
+    }
+  };
+
   if (fileList.length === 0) {
+    const { title, message } = getEmptyMessage(view);
     return (
       <div className="col-span-full flex h-40 flex-col items-center justify-center rounded-lg border border-dashed p-4 text-center">
-        <p className="text-lg font-medium">No files found</p>
-        <p className="text-sm text-muted-foreground">
-          Upload your first file to get started.
-        </p>
+        <p className="text-lg font-medium">{title}</p>
+        <p className="text-sm text-muted-foreground">{message}</p>
       </div>
     );
   }

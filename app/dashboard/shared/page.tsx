@@ -47,7 +47,10 @@ export default async function SharedPage() {
           </p>
         </div>
 
-        <FileGrid fileList={files.filter((file) => file.shared)} />
+        <FileGrid
+          fileList={files.filter((file) => file.shared)}
+          view="shared"
+        />
       </div>
     </DashboardLayout>
   );

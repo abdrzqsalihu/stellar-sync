@@ -47,7 +47,10 @@ export default async function FavoritesPage() {
           </p>
         </div>
 
-        <FileGrid fileList={files.filter((file) => file.stared)} />
+        <FileGrid
+          fileList={files.filter((file) => file.stared)}
+          view="favorites"
+        />
       </div>
     </DashboardLayout>
   );
