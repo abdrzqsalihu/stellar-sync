@@ -1,86 +1,42 @@
-"use client";
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDocs,
-  getFirestore,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
+import { Metadata } from "next";
 import DashboardLayout from "../../../components/dashboard-layout";
 import FileGrid from "../../../components/file-grid";
-import { app } from "../../../firebaseConfig";
-import { useUser } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
-import toast from "react-hot-toast";
+import { getEmailFromUserId } from "../../../lib/getEmailFromUserId";
+import { dbAdmin } from "../../../lib/firebase-admin";
+import { headers } from "next/headers";
 
-export default function SharedPage() {
-  const db = getFirestore(app);
-  const { user } = useUser();
-  const [fileList, setFileList] = useState([]);
-  const [alert, setAlert] = useState("");
-  useEffect(() => {
-    user && getAllUserFiles();
-  }, [user]);
-  const getAllUserFiles = async () => {
-    const q = query(
-      collection(db, "uploadedFiles"),
-      where("userEmail", "==", user.primaryEmailAddress.emailAddress)
+export const metadata: Metadata = {
+  title: "StellarSync | Shared",
+};
+
+export const dynamic = "force-dynamic";
+
+export default async function SharedPage() {
+  await headers();
+  const headersList = await headers();
+  const userId = headersList.get("x-user-id");
+
+  if (!userId) {
+    return (
+      <DashboardLayout>
+        <p className="p-6"></p>
+        <div className="col-span-full flex h-40 flex-col items-center justify-center rounded-lg border border-dashed p-4 text-center">
+          <p className="text-lg font-medium">Not signed in.</p>
+        </div>
+      </DashboardLayout>
     );
+  }
 
-    const querySnapshot = await getDocs(q);
-    setFileList([]);
-    querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      // console.log(doc.id, " => ", doc.data());
-      setFileList((fileList) => [...fileList, doc.data()]);
-    });
-  };
+  const email = await getEmailFromUserId(userId);
 
-  // function to update the stared property in Firebase
-  const updateStared = async (fileId, stared) => {
-    const docRef = doc(db, "uploadedFiles", fileId);
-    // Assuming `stared` is the correct property name
-    await updateDoc(docRef, {
-      stared: !stared, // Toggle the value of `stared`
-    });
-    getAllUserFiles();
+  let files: Array<any> = [];
+  const base = dbAdmin
+    .collection("uploadedFiles")
+    .where("userEmail", "==", email);
 
-    // Determine the status and message based on the action taken
-    const status = stared ? "File unstarred" : "File starred";
-    const msg = stared
-      ? "file unstarred successfully!"
-      : "file starred successfully!";
+  const snap = await base.get();
+  snap.docs.forEach((d) => files.push({ id: d.id, ...d.data() }));
 
-    toast.success(msg);
-
-    // setAlert({
-    //   status: status,
-    //   msg: msg,
-    // });
-  };
-
-  //function to delete data from Firestore
-  const deleteFile = async (fileId) => {
-    try {
-      const docRef = doc(db, "uploadedFiles", fileId);
-      await deleteDoc(docRef);
-      getAllUserFiles();
-
-      // setAlert({
-      //   status: "File deleted",
-      //   msg: "File deleted successfully!",
-      // });
-    } catch (error) {
-      console.error("Error deleting file:", error);
-      // setAlert({
-      //   status: "Error",
-      //   msg: "An error occurred while deleting the file.",
-      // });
-    }
-  };
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
@@ -91,12 +47,7 @@ export default function SharedPage() {
           </p>
         </div>
 
-        <FileGrid
-          shared={true}
-          fileList={fileList}
-          updateStared={updateStared}
-          deleteFile={deleteFile}
-        />
+        <FileGrid fileList={files.filter((file) => file.shared)} />
       </div>
     </DashboardLayout>
   );

@@ -10,7 +10,7 @@ import { dbAdmin } from "../../../lib/firebase-admin";
 import { headers } from "next/headers";
 
 export const metadata: Metadata = {
-  title: "All Files",
+  title: "StellarSync | All Files",
 };
 
 export const dynamic = "force-dynamic";
