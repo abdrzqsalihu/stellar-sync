@@ -1,20 +1,20 @@
 // app/api/files/[id]/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { dbAdmin, storageAdmin } from "../../../../lib/firebase-admin";
 
 interface Context {
   params: { id: string };
 }
 
-export async function POST(request: Request, context: Context) {
-  const { id } = context.params;
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const { stared } = await request.json();
   await dbAdmin.collection("uploadedFiles").doc(id).update({ stared });
   return NextResponse.json({ ok: true });
 }
 
-export async function DELETE(request: Request, context: Context) {
-  const { id } = context.params;
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;  
   const docRef = dbAdmin.collection("uploadedFiles").doc(id);
   const docSnap = await docRef.get();
   
