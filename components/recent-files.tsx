@@ -20,6 +20,7 @@ import {
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 export interface File {
   id: string;
@@ -36,20 +37,15 @@ interface RecentFilesProps {
   limit?: number;
   showViewAll?: boolean;
   fileList: File[];
-  updateStared: (id: string, isFavorite: boolean) => void;
-  deleteFile: (id: string) => void;
-  favorites?: boolean;
-  shared?: boolean;
 }
 
 export default function RecentFiles({
   limit = 10,
   showViewAll = true,
   fileList,
-  updateStared,
-  deleteFile,
 }: RecentFilesProps) {
   const limitedFiles = limit ? fileList.slice(0, limit) : fileList;
+  const router = useRouter();
 
   const getFileColor = (fileType: string) => {
     switch (fileType) {
@@ -211,6 +207,23 @@ export default function RecentFiles({
     return order[a] - order[b];
   });
 
+  const toggleStar = async (id: string, stared: boolean) => {
+    await fetch(`/api/files/${id}`, {
+      method: "POST",
+      body: JSON.stringify({ stared: !stared }),
+    });
+    toast.success(
+      stared ? "File removed from favorites" : "File added to favorites"
+    );
+    router.refresh();
+  };
+
+  const deleteFile = async (id: string) => {
+    await fetch(`/api/files/${id}`, { method: "DELETE" });
+    toast.success("File deleted successfully!");
+    router.refresh();
+  };
+
   return (
     <div className="space-y-6">
       {sortedGroups.map((group) => {
@@ -273,7 +286,11 @@ export default function RecentFiles({
                               ? "fill-yellow-400 text-yellow-400"
                               : "text-muted-foreground opacity-40 group-hover:opacity-100"
                           }`}
-                          onClick={() => updateStared(file.id, file.stared)}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleStar(file.id, file.stared);
+                          }}
                         />
                       </div>
                     </div>
@@ -286,7 +303,7 @@ export default function RecentFiles({
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem
-                          onClick={() => updateStared(file.id, file.stared)}
+                          onClick={() => toggleStar(file.id, file.stared)}
                         >
                           <Star className="mr-2 h-4 w-4" />
                           {file.stared

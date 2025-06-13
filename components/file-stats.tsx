@@ -7,7 +7,7 @@ export default function FileStats({
   staredFilesCount,
   sharedFilesCount,
 }) {
-  // Mock stats data
+  // stats data
   const stats = [
     {
       title: "All Files",
@@ -43,7 +43,7 @@ export default function FileStats({
       {stats.map((stat) => (
         <div
           key={stat.title}
-          className="rounded-xl border bg-card p-6 shadow-sm transition-all hover:shadow-md"
+          className="rounded-xl border bg-card p-7 shadow-sm transition-all hover:shadow-md"
         >
           <div className="flex items-center justify-between">
             <div>
@@ -51,13 +51,13 @@ export default function FileStats({
                 {stat.title}
               </p>
               <h3 className="mt-2 text-3xl font-bold">{stat.count}</h3>
-              <p
+              {/* <p
                 className={`mt-1 text-xs ${
                   stat.positive ? "text-green-500" : "text-red-500"
                 }`}
               >
                 {stat.change}
-              </p>
+              </p> */}
             </div>
             <div
               className={`flex h-12 w-12 items-center justify-center rounded-full ${stat.bgColor}`}

@@ -1,5 +1,4 @@
-"use client";
-
+import { Metadata } from "next";
 import DashboardLayout from "../../components/dashboard-layout";
 import FileStats from "../../components/file-stats";
 import RecentFiles from "../../components/recent-files";
@@ -7,184 +6,51 @@ import StorageStats from "../../components/storage-stats";
 import UploadButton from "../../components/upload-button";
 import { Button } from "../../components/ui/button";
 import { FolderPlus } from "lucide-react";
-import { useAuth, useUser } from "@clerk/nextjs";
-import { useEffect, useState } from "react";
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  getFirestore,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
-import { app } from "../../firebaseConfig";
-import { getAuth, signInWithCustomToken } from "firebase/auth";
-import toast from "react-hot-toast";
-import { deleteObject, getStorage, ref } from "firebase/storage";
+import { headers } from "next/headers";
+import { getEmailFromUserId } from "../../lib/getEmailFromUserId";
+import { dbAdmin } from "../../lib/firebase-admin";
 
-export default function DashboardPage() {
-  const { user } = useUser();
-  const { getToken } = useAuth();
-  const [allFilesCount, setAllFilesCount] = useState(0);
-  const [staredFilesCount, setStaredFilesCount] = useState(0);
-  const [sharedFilesCount, setSharedFilesCount] = useState(0);
-  const [fileList, setFileList] = useState([]);
-  // Initialize Cloud Firestore and get a reference to the service
-  const db = getFirestore(app);
-  const storage = getStorage(app);
+export const metadata: Metadata = {
+  title: "StellarSync | Dashboard",
+};
 
-  useEffect(() => {
-    user && getAllFilesCount();
-  }, [user]);
+export const dynamic = "force-dynamic";
 
-  useEffect(() => {
-    const signInWithClerk = async () => {
-      try {
-        const auth = getAuth(app);
-        const token = await getToken({ template: "integration_firebase" });
-        const userCredentials = await signInWithCustomToken(auth, token);
-        // console.log(userCredentials.user);
-      } catch (error) {
-        console.error("Error signing in with Clerk and Firebase:", error);
-      }
-    };
+export default async function DashboardPage() {
+  await headers();
+  const headersList = await headers();
+  const userId = headersList.get("x-user-id");
 
-    user && signInWithClerk();
-  }, [user, getToken]);
-
-  useEffect(() => {
-    user && getAllUserFiles();
-  }, [user]);
-
-  const getAllFilesCount = async () => {
-    const q = query(
-      collection(db, "uploadedFiles"),
-      where("userEmail", "==", user.primaryEmailAddress.emailAddress)
+  if (!userId) {
+    return (
+      <DashboardLayout>
+        <p className="p-6"></p>
+        <div className="col-span-full flex h-40 flex-col items-center justify-center rounded-lg border border-dashed p-4 text-center">
+          <p className="text-lg font-medium">Not signed in.</p>
+        </div>
+      </DashboardLayout>
     );
+  }
 
-    const querySnapshot = await getDocs(q);
-    setAllFilesCount(querySnapshot.size);
+  const email = await getEmailFromUserId(userId);
 
-    // Calculate the number of stared files
-    let staredCount = 0;
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      if (data.stared) {
-        staredCount++;
-      }
-    });
-    setStaredFilesCount(staredCount);
+  let files: Array<any> = [];
+  const base = dbAdmin
+    .collection("uploadedFiles")
+    .where("userEmail", "==", email);
 
-    // Calculate the number of stared files
-    let sharedCount = 0;
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      if (data.shared) {
-        sharedCount++;
-      }
-    });
-    setSharedFilesCount(sharedCount);
-  };
+  const snap = await base.get();
+  snap.docs.forEach((d) => files.push({ id: d.id, ...d.data() }));
 
-  useEffect(() => {
-    user && getAllUserFiles();
-  }, [user]);
-  const getAllUserFiles = async () => {
-    let q = query(
-      collection(db, "uploadedFiles"),
-      where("userEmail", "==", user.primaryEmailAddress.emailAddress)
-    );
+  // Calculate file counts
+  const allFilesCount = files.length;
 
-    const querySnapshot = await getDocs(q);
-    setFileList([]);
-    querySnapshot.forEach((doc) => {
-      // doc.data() is never undefined for query doc snapshots
-      // console.log(doc.id, " => ", doc.data());
-      setFileList((fileList) => [...fileList, doc.data()]);
-    });
-  };
+  // Count starred files (
+  const staredFilesCount = files.filter((file) => file.stared).length;
 
-  // function to update the stared property in Firebase
-  const updateStared = async (fileId, stared) => {
-    const docRef = doc(db, "uploadedFiles", fileId);
-    // Assuming `stared` is the correct property name
-    await updateDoc(docRef, {
-      stared: !stared, // Toggle the value of `stared`
-    });
-    getAllUserFiles();
+  // Count shared files
+  const sharedFilesCount = files.filter((file) => file.shared).length;
 
-    // Determine the status based on the action taken
-    const msg = stared
-      ? "file unstarred successfully!"
-      : "file starred successfully!";
-
-    toast.success(msg);
-  };
-
-  //function to delete data from Firestore
-  const deleteFile = async (fileId: string) => {
-    try {
-      // Get file document
-      const docRef = doc(db, "uploadedFiles", fileId);
-      const docSnap = await getDoc(docRef);
-
-      if (!docSnap.exists()) {
-        toast.error("File not found!");
-        return;
-      }
-
-      const fileData = docSnap.data();
-      let storageDeleted = false;
-
-      // Try to delete from storage
-      if (fileData.fileUrl) {
-        try {
-          // Extract path from URL
-          const url = new URL(fileData.fileUrl);
-          const pathMatch = url.pathname.match(/\/o\/(.+?)(?:\?|$)/);
-
-          if (pathMatch) {
-            const decodedPath = decodeURIComponent(pathMatch[1]);
-            const storageRef = ref(storage, decodedPath);
-            await deleteObject(storageRef);
-            storageDeleted = true;
-          }
-        } catch (error) {
-          // If URL method fails, try fileName method
-          if (fileData.fileName) {
-            try {
-              const storageRef = ref(
-                storage,
-                `uploadedFiles/${fileData.fileName}`
-              );
-              await deleteObject(storageRef);
-              storageDeleted = true;
-            } catch (err) {
-              console.log("Storage deletion failed:", err.code);
-              storageDeleted = err.code === "storage/object-not-found";
-            }
-          }
-        }
-      }
-
-      // Delete from Firestore
-      await deleteDoc(docRef);
-      getAllUserFiles();
-
-      // Show success message
-      toast.success(
-        storageDeleted
-          ? "File deleted successfully!"
-          : "File record deleted successfully"
-      );
-    } catch (error) {
-      console.error("Delete failed:", error);
-      toast.error(`Failed to delete file: ${error.message || "Unknown error"}`);
-    }
-  };
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-6">
@@ -219,11 +85,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <RecentFiles
-              fileList={fileList}
-              updateStared={updateStared}
-              deleteFile={deleteFile}
-            />
+            <RecentFiles fileList={files} />
           </div>
 
           <div className="w-full md:w-80 space-y-6">
