@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 
 import DashboardSkeleton from "../../components/DashboardSkeleton";
 import DashboardContent from "../../components/pages/dashboard";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "StellarSync | Dashboard",
@@ -17,14 +18,18 @@ export default async function DashboardPage() {
   const headersList = await headers();
   const userId = headersList.get("x-user-id");
 
+  // if (!userId) {
+  //   return (
+  //     <DashboardLayout>
+  //       <div className="col-span-full flex h-40 flex-col items-center justify-center rounded-lg border border-dashed p-4 text-center">
+  //         <p className="text-lg font-medium">Not signed in.</p>
+  //       </div>
+  //     </DashboardLayout>
+  //   );
+  // }
+
   if (!userId) {
-    return (
-      <DashboardLayout>
-        <div className="col-span-full flex h-40 flex-col items-center justify-center rounded-lg border border-dashed p-4 text-center">
-          <p className="text-lg font-medium">Not signed in.</p>
-        </div>
-      </DashboardLayout>
-    );
+    redirect("/sign-in");
   }
 
   return (

@@ -6,8 +6,6 @@ import {
   Eye,
   FileText,
   ImageIcon,
-  Star,
-  Trash,
   Video,
 } from "lucide-react";
 import Link from "next/link";

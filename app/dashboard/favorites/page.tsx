@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import DashboardLayout from "../../../components/dashboard-layout";
 import FileSkeleton from "../../../components/FileSkeleton";
 import FavoriteContent from "../../../components/pages/favorites";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "StellarSync | Favorites",
@@ -16,14 +17,18 @@ export default async function FavoritePage() {
   const headersList = await headers();
   const userId = headersList.get("x-user-id");
 
+  // if (!userId) {
+  //   return (
+  //     <DashboardLayout>
+  //       <div className="col-span-full flex h-40 flex-col items-center justify-center rounded-lg border border-dashed p-4 text-center">
+  //         <p className="text-lg font-medium">Not signed in.</p>
+  //       </div>
+  //     </DashboardLayout>
+  //   );
+  // }
+
   if (!userId) {
-    return (
-      <DashboardLayout>
-        <div className="col-span-full flex h-40 flex-col items-center justify-center rounded-lg border border-dashed p-4 text-center">
-          <p className="text-lg font-medium">Not signed in.</p>
-        </div>
-      </DashboardLayout>
-    );
+    redirect("/sign-in");
   }
 
   return (
