@@ -19,8 +19,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogCancel,
+  AlertDialogAction,
+  AlertDialogHeader,
+  AlertDialogFooter,
+} from "./ui/alert-dialog";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export interface File {
   id: string;
@@ -46,6 +57,8 @@ export default function RecentFiles({
 }: RecentFilesProps) {
   const limitedFiles = limit ? fileList.slice(0, limit) : fileList;
   const router = useRouter();
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState(null);
 
   const getFileColor = (fileType: string) => {
     switch (fileType) {
@@ -218,6 +231,19 @@ export default function RecentFiles({
     router.refresh();
   };
 
+  const handleDeleteClick = (fileId) => {
+    setFileToDelete(fileId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (fileToDelete) {
+      deleteFile(fileToDelete);
+      setDeleteDialogOpen(false);
+      setFileToDelete(null);
+    }
+  };
+
   const deleteFile = async (id: string) => {
     await fetch(`/api/files/${id}`, { method: "DELETE" });
     toast.success("File deleted successfully!");
@@ -225,116 +251,142 @@ export default function RecentFiles({
   };
 
   return (
-    <div className="space-y-6">
-      {sortedGroups.map((group) => {
-        if (groupedFiles[group].length === 0) return null;
+    <>
+      <div className="space-y-6">
+        {sortedGroups.map((group) => {
+          if (groupedFiles[group].length === 0) return null;
 
-        return (
-          <div key={group} className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium">{group}</h3>
-              {group === "Today" && showViewAll && (
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href="/dashboard/all-files">View all files</Link>
-                </Button>
-              )}
-            </div>
+          return (
+            <div key={group} className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium">{group}</h3>
+                {group === "Today" && showViewAll && (
+                  <Button variant="ghost" size="sm" asChild>
+                    <Link href="/dashboard/all-files">View all files</Link>
+                  </Button>
+                )}
+              </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {groupedFiles[group].map((file) => (
-                <div
-                  key={file.id}
-                  className="group relative flex overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md dark:border-border"
-                >
-                  <Link
-                    href={`/dashboard/file/${file.id}`}
-                    className="flex flex-1 p-4"
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {groupedFiles[group].map((file) => (
+                  <div
+                    key={file.id}
+                    className="group relative flex overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md dark:border-border"
                   >
-                    <div
-                      className="mr-4 flex h-14 w-14 items-center justify-center rounded-lg"
-                      style={{ backgroundColor: getFileColor(file.fileType) }}
+                    <Link
+                      href={`/dashboard/file/${file.id}`}
+                      className="flex flex-1 p-4"
                     >
-                      {getFileIcon(file.fileType)}
-                    </div>
-
-                    <div className="flex flex-1 flex-col">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <div className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
-                            {getFileExtension(file.fileName)}
-                          </div>
-                          <h3 className="mt-1 font-medium line-clamp-1">
-                            {file.fileName}
-                          </h3>
-                          <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
-                            <span>
-                              {(parseInt(file.fileSize) / 1024 / 1024).toFixed(
-                                2
-                              )}
-                              MB
-                            </span>
-                            {file.shared && (
-                              <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-primary">
-                                <LinkIcon className="h-3 w-3" /> Shared
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <Star
-                          className={`h-5 w-5 cursor-pointer ${
-                            file.stared
-                              ? "fill-yellow-400 text-yellow-400"
-                              : "text-muted-foreground opacity-40 group-hover:opacity-100"
-                          }`}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            toggleStar(file.id, file.stared);
-                          }}
-                        />
+                      <div
+                        className="mr-4 flex h-14 w-14 items-center justify-center rounded-lg"
+                        style={{ backgroundColor: getFileColor(file.fileType) }}
+                      >
+                        {getFileIcon(file.fileType)}
                       </div>
-                    </div>
-                  </Link>
 
-                  <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger className="flex h-8 w-8 items-center justify-center rounded-full bg-background/90 shadow-sm backdrop-blur-sm">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => toggleStar(file.id, file.stared)}
-                        >
-                          <Star className="mr-2 h-4 w-4" />
-                          {file.stared
-                            ? "Remove from favorites"
-                            : "Add to favorites"}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => copyLink(file.id)}>
-                          <LinkIcon className="mr-2 h-4 w-4" />
-                          Copy link
-                        </DropdownMenuItem>
-                        <DropdownMenuItem>
-                          <Download className="mr-2 h-4 w-4" />
-                          Download
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => deleteFile(file.id)}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <Trash className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                      <div className="flex flex-1 flex-col">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="inline-flex items-center rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
+                              {getFileExtension(file.fileName)}
+                            </div>
+                            <h3 className="mt-1 font-medium line-clamp-1">
+                              {file.fileName}
+                            </h3>
+                            <div className="mt-1 flex items-center gap-3 text-xs text-muted-foreground">
+                              <span>
+                                {(
+                                  parseInt(file.fileSize) /
+                                  1024 /
+                                  1024
+                                ).toFixed(2)}
+                                MB
+                              </span>
+                              {file.shared && (
+                                <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-primary">
+                                  <LinkIcon className="h-3 w-3" /> Shared
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <Star
+                            className={`h-5 w-5 cursor-pointer ${
+                              file.stared
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-muted-foreground opacity-40 group-hover:opacity-100"
+                            }`}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleStar(file.id, file.stared);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </Link>
+
+                    <div className="absolute right-2 top-2 opacity-0 transition-opacity group-hover:opacity-100">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger className="flex h-8 w-8 items-center justify-center rounded-full bg-background/90 shadow-sm backdrop-blur-sm">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={() => toggleStar(file.id, file.stared)}
+                          >
+                            <Star className="mr-2 h-4 w-4" />
+                            {file.stared
+                              ? "Remove from favorites"
+                              : "Add to favorites"}
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => copyLink(file.id)}>
+                            <LinkIcon className="mr-2 h-4 w-4" />
+                            Copy link
+                          </DropdownMenuItem>
+                          <DropdownMenuItem>
+                            <Download className="mr-2 h-4 w-4" />
+                            Download
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() => handleDeleteClick(file.id)}
+                            className="text-red-500"
+                          >
+                            <Trash className="mr-2 h-4 w-4" />
+                            Delete
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
-        );
-      })}
-    </div>
+          );
+        })}
+      </div>
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Are you sure you want to delete this file?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              file from your storage.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              className="bg-red-500 hover:bg-red-600"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

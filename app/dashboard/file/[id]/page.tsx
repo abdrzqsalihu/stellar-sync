@@ -1,5 +1,4 @@
-"use client";
-
+import { Metadata } from "next";
 import {
   ArrowLeft,
   Calendar,
@@ -7,13 +6,11 @@ import {
   Eye,
   FileText,
   ImageIcon,
-  Lock,
   Star,
   Trash,
   Video,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import DashboardLayout from "../../../../components/dashboard-layout";
 import { Button } from "../../../../components/ui/button";
 import { Card, CardContent } from "../../../../components/ui/card";
@@ -24,10 +21,16 @@ import {
   TabsTrigger,
 } from "../../../../components/ui/tabs";
 import ShareOptions from "../../../../components/share-options";
-import { useParams } from "next/navigation";
-import { getFirestore, doc, getDoc, updateDoc } from "firebase/firestore";
-import { app } from "../../../../firebaseConfig";
-import toast from "react-hot-toast";
+import { getEmailFromUserId } from "../../../../lib/getEmailFromUserId";
+import { dbAdmin } from "../../../../lib/firebase-admin";
+import { headers } from "next/headers";
+import FileActionsClient from "../../../../components/file-actions";
+
+export const metadata: Metadata = {
+  title: "StellarSync | File Details",
+};
+
+export const dynamic = "force-dynamic";
 
 interface FileType {
   id: string;
@@ -39,93 +42,163 @@ interface FileType {
   uploadedAt: string;
   shared?: boolean;
   password?: string;
+  userEmail?: string;
 }
 
-export default function FilePage() {
-  const params = useParams();
-  const id = params.id as string;
+const getFileIcon = (type: string) => {
+  switch (type) {
+    case "image/png":
+    case "image/jpg":
+    case "image/jpeg":
+    case "image/gif":
+    case "image/svg":
+    case "image/webp":
+    case "image/bmp":
+      return <ImageIcon className="h-12 w-12 text-white" />;
+    case "video/mp4":
+    case "video/quicktime":
+    case "video/x-msvideo":
+    case "video/x-flv":
+    case "video/mp2t":
+    case "video/3gpp":
+    case "video/3gpp2":
+    case "video/x-m4v":
+    case "video/webm":
+    case "video/x-mng":
+    case "video/ogg":
+    case "video/ogv":
+    case "video/dash":
+    case "video/x-ms-wmv":
+    case "video/x-ms-asf":
+      return <Video className="h-12 w-12 text-white" />;
+    case "application/pdf":
+      return <FileText className="h-12 w-12 text-white" />;
+    case "application/msword":
+    case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+      return <FileText className="h-12 w-12 text-white" />;
+    case "application/vnd.ms-excel":
+    case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
+      return <FileText className="h-12 w-12 text-white" />;
+    default:
+      return <FileText className="h-12 w-12 text-white" />;
+  }
+};
 
-  const [isFavorite, setIsFavorite] = useState(false);
-  const db = getFirestore(app);
-  const [file, setFile] = useState<FileType | undefined>(undefined);
+export default async function FilePage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  await headers();
+  const headersList = await headers();
+  const userId = headersList.get("x-user-id");
 
-  useEffect(() => {
-    // console.log(params?.fileId);
-    params?.id && getFileInfo();
-  }, []);
+  const resolvedParams = await params;
+  const fileId = resolvedParams.id;
 
-  const getFileInfo = async () => {
-    const docRef = doc(db, "uploadedFiles", id);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      console.log("Document data:", docSnap.data());
-      setFile(docSnap.data() as any);
-    } else {
-      // docSnap.data() will be undefined in this case
-      console.log("No such document!");
-    }
-  };
-
-  const onPasswordSave = async (password) => {
-    const docRef = doc(db, "uploadedFiles", id);
-    await updateDoc(docRef, {
-      password: password,
-    });
-  };
-
-  const updateShared = async () => {
-    const docRef = doc(db, "uploadedFiles", id);
-    // Assuming `shared` is the correct property name
-    await updateDoc(docRef, {
-      shared: true, // Toggle the value of `shared`
-    });
-  };
-
-  const getFileIcon = (type: string) => {
-    switch (type) {
-      case "image/png":
-      case "image/jpg":
-      case "image/jpeg":
-      case "image/gif":
-      case "image/svg":
-      case "image/webp":
-      case "image/bmp":
-        return <ImageIcon className="h-12 w-12 text-white" />;
-      case "video/mp4":
-      case "video/quicktime":
-      case "video/x-msvideo":
-      case "video/x-flv":
-      case "video/mp2t":
-      case "video/3gpp":
-      case "video/3gpp2":
-      case "video/x-m4v":
-      case "video/webm":
-      case "video/x-mng":
-      case "video/ogg":
-      case "video/ogv":
-      case "video/dash":
-      case "video/x-ms-wmv":
-      case "video/x-ms-asf":
-        return <Video className="h-12 w-12 text-white" />;
-      case "application/pdf":
-        return <FileText className="h-12 w-12 text-white" />;
-      case "application/msword":
-      case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-        return <FileText className="h-12 w-12 text-white" />;
-      case "application/vnd.ms-excel":
-      case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-        return <FileText className="h-12 w-12 text-white" />;
-      default:
-        return <FileText className="h-12 w-12 text-white" />;
-    }
-  };
-
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
-    toast.success(
-      isFavorite ? "File removed from favorites" : "File added to favorites"
+  if (!userId) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col gap-8">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              asChild
+              className="h-10 w-10 rounded-full hover:bg-[#5056FD]/10"
+            >
+              <Link href="/dashboard/all-files">
+                <ArrowLeft className="h-5 w-5" />
+                <span className="sr-only">Back</span>
+              </Link>
+            </Button>
+            <h1 className="text-2xl font-bold tracking-tight">Access Denied</h1>
+          </div>
+          <Card className="overflow-hidden rounded-2xl border shadow-md">
+            <CardContent className="p-6">
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">
+                  You need to be signed in to view this file.
+                </p>
+                <Button asChild className="mt-4">
+                  <Link href="/dashboard/all-files">Back to All Files</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
     );
-  };
+  }
+
+  const email = await getEmailFromUserId(userId);
+
+  // Server-side fetch
+  let file: FileType | null = null;
+  let error: string | null = null;
+
+  try {
+    const docRef = dbAdmin.collection("uploadedFiles").doc(fileId);
+    const docSnap = await docRef.get();
+
+    if (!docSnap.exists) {
+      error = "File not found";
+    } else {
+      const fileData = docSnap.data() as FileType;
+
+      // Check if the user owns this file
+      if (fileData.userEmail !== email) {
+        error = "You don't have permission to access this file";
+      } else {
+        file = {
+          id: docSnap.id,
+          ...fileData,
+        };
+      }
+    }
+  } catch (err) {
+    console.error("Error fetching file:", err);
+    error = "Failed to load file data";
+  }
+
+  // Handle error state
+  if (error || !file) {
+    return (
+      <DashboardLayout>
+        <div className="flex flex-col gap-8">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              asChild
+              className="h-10 w-10 rounded-full hover:bg-[#5056FD]/10"
+            >
+              <Link href="/dashboard/all-files">
+                <ArrowLeft className="h-5 w-5" />
+                <span className="sr-only">Back</span>
+              </Link>
+            </Button>
+            <h1 className="text-2xl font-bold tracking-tight">
+              File Not Found
+            </h1>
+          </div>
+          <Card className="overflow-hidden rounded-2xl border shadow-md">
+            <CardContent className="p-6">
+              <div className="text-center py-8">
+                <p className="text-muted-foreground">
+                  {error || "The requested file could not be found."}
+                </p>
+                <Button asChild className="mt-4">
+                  <Link href="/dashboard/all-files">Back to All Files</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <div className="flex flex-col gap-8">
@@ -141,9 +214,7 @@ export default function FilePage() {
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <h1 className="text-2xl font-bold tracking-tight">
-            {file?.fileName}
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight">{file.fileName}</h1>
         </div>
 
         <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -151,21 +222,21 @@ export default function FilePage() {
             <CardContent className="p-0">
               <div className="flex flex-col">
                 <div className="flex h-48 items-center justify-center bg-[#5056FD]">
-                  {getFileIcon(file?.fileType)}
+                  {getFileIcon(file.fileType)}
                 </div>
                 <div className="p-6">
                   <div className="flex flex-col items-center gap-4 text-center">
                     <div className="inline-flex items-center rounded-full bg-gray-100 text-gray-800 px-3 py-1 text-xs font-medium">
-                      {file?.fileType.toUpperCase()}
+                      {file.fileType.toUpperCase()}
                     </div>
-                    <div className="text-xl font-medium">{file?.fileName}</div>
+                    <div className="text-xl font-medium">{file.fileName}</div>
                     <div className="text-sm text-muted-foreground">
-                      {(file?.fileSize / 1024 / 1024).toFixed(2)}MB • Uploaded{" "}
-                      {file?.uploadedAt}
+                      {(file.fileSize / 1024 / 1024).toFixed(2)}MB • Uploaded{" "}
+                      {file.uploadedAt}
                     </div>
                     <div className="mt-4 flex gap-3">
                       <a
-                        href={file?.fileUrl}
+                        href={file.fileUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
@@ -176,7 +247,7 @@ export default function FilePage() {
                       </a>
                       <a
                         href={`/api/download?url=${encodeURIComponent(
-                          file?.fileUrl
+                          file.fileUrl
                         )}`}
                         target="_blank"
                         rel="noopener noreferrer"
@@ -197,41 +268,7 @@ export default function FilePage() {
           </Card>
 
           <div className="space-y-8">
-            <Card className="overflow-hidden rounded-2xl border shadow-md">
-              <CardContent className="p-6">
-                <div className="flex flex-col gap-4">
-                  <div className="flex justify-between">
-                    <h3 className="text-lg font-medium">File Actions</h3>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <Button
-                      variant="outline"
-                      onClick={toggleFavorite}
-                      className={`rounded-xl ${
-                        isFavorite
-                          ? "border-yellow-400 bg-yellow-50 text-yellow-600 hover:bg-yellow-100"
-                          : "border-[#5056FD]/20 hover:bg-[#5056FD]/5 hover:text-[#5056FD]"
-                      }`}
-                    >
-                      <Star
-                        className={`mr-2 h-4 w-4 ${
-                          isFavorite ? "fill-yellow-400 text-yellow-400" : ""
-                        }`}
-                      />
-                      {isFavorite ? "Favorited" : "Favorite"}
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      className="rounded-xl border-red-200 text-red-500 hover:bg-red-50 hover:text-red-600"
-                    >
-                      <Trash className="mr-2 h-4 w-4" />
-                      Delete
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <FileActionsClient fileId={file.id} initialStarred={file.stared} />
 
             <Tabs defaultValue="share" className="w-full">
               <TabsList className="grid w-full grid-cols-2 rounded-xl bg-[#5056FD]/5 p-1">
@@ -249,7 +286,7 @@ export default function FilePage() {
                 </TabsTrigger>
               </TabsList>
               <TabsContent value="share" className="mt-6">
-                <ShareOptions fileId={file?.id} />
+                <ShareOptions fileId={file.id} />
               </TabsContent>
               <TabsContent value="expiry" className="mt-6">
                 <Card className="overflow-hidden rounded-xl border shadow-sm">
