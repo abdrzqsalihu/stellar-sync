@@ -1,7 +1,13 @@
+"use client";
+
 import React from "react";
 import { Skeleton } from "./ui/skeleton";
+import { usePathname } from "next/navigation";
 
 function FileSkeleton() {
+  const pathname = usePathname();
+  const shouldShowButtons = pathname === "/dashboard/all-files";
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
@@ -9,10 +15,12 @@ function FileSkeleton() {
         <Skeleton className="h-4 w-80" />
       </div>
 
-      <div className="flex gap-2">
-        <Skeleton className="h-10 w-28" />
-        <Skeleton className="h-10 w-24" />
-      </div>
+      {shouldShowButtons && (
+        <div className="flex gap-2">
+          <Skeleton className="h-10 w-28" />
+          <Skeleton className="h-10 w-24" />
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array(4)
