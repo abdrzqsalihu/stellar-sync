@@ -2,8 +2,9 @@ import { Metadata } from "next";
 import { Suspense } from "react";
 import DashboardLayout from "../../components/dashboard-layout";
 import { headers } from "next/headers";
-import DashboardContent from "../../components/Dashboard";
+
 import DashboardSkeleton from "../../components/DashboardSkeleton";
+import DashboardContent from "../../components/pages/dashboard";
 
 export const metadata: Metadata = {
   title: "StellarSync | Dashboard",

@@ -1,11 +1,11 @@
 import { FolderPlus } from "lucide-react";
-import { dbAdmin } from "../lib/firebase-admin";
-import { getEmailFromUserId } from "../lib/getEmailFromUserId";
-import FileStats from "./file-stats";
-import { Button } from "./ui/button";
-import UploadButton from "./upload-button";
-import RecentFiles from "./recent-files";
-import StorageStats from "./storage-stats";
+import FileStats from "../file-stats";
+import { Button } from "../ui/button";
+import UploadButton from "../upload-button";
+import RecentFiles from "../recent-files";
+import StorageStats from "../storage-stats";
+import { getEmailFromUserId } from "../../lib/getEmailFromUserId";
+import { dbAdmin } from "../../lib/firebase-admin";
 
 interface DashboardContentProps {
   userId: string;
