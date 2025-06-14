@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { Suspense } from "react";
-
 import { headers } from "next/headers";
 import DashboardLayout from "../../../components/dashboard-layout";
 import FileSkeleton from "../../../components/FileSkeleton";
@@ -12,7 +11,7 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
+export default async function FavoritePage() {
   await headers();
   const headersList = await headers();
   const userId = headersList.get("x-user-id");
