@@ -26,7 +26,7 @@ function GetStarted() {
                   File Accessibility
                 </h3>
 
-                <p className="mt-4 text-sm sm:text-base">
+                <p className="mt-4 text-sm sm:text-base dark:text-gray-900">
                   Never be without your important files again. Experience true
                   flexibility and convenience with seamless access to your
                   files, anytime, anywhere.
@@ -51,7 +51,7 @@ function GetStarted() {
                   Secured
                 </h3>
 
-                <p className="mt-4 text-sm sm:text-base">
+                <p className="mt-4 text-sm sm:text-base dark:text-gray-900">
                   Advanced security, including encryption, authentication, and
                   access control to safeguards your data from unauthorized
                   access.
@@ -76,7 +76,7 @@ function GetStarted() {
                   Seamless Sharing
                 </h3>
 
-                <p className="mt-4 text-sm sm:text-base">
+                <p className="mt-4 text-sm sm:text-base dark:text-gray-900">
                   Share your content seamlessly with colleagues, clients, or
                   friends directly. Generate shareable links for effortless
                   distribution.

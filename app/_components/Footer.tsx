@@ -60,11 +60,13 @@ function Footer() {
         </ul>
       </div>
       <div className="py-4 flex flex-col md:flex-row justify-center items-center">
-        <p className="text-center text-[1rem]">
+        <p className="text-center text-[1rem] dark:text-gray-900">
           &copy; {new Date().getFullYear()} StellarSync.
         </p>
         <div className="mt-1 md:ml-1 md:mt-0 text-[0.9rem] md:text-[1rem]">
-          <span className="md:inline-block">Built with ❤️ by </span>
+          <span className="md:inline-block dark:text-gray-900">
+            Built with ❤️ by{" "}
+          </span>
           <a
             href="https://abdrzqsalihu.vercel.app/"
             rel="noreferrer"

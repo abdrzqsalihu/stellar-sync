@@ -21,7 +21,10 @@ export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body className={rubik.className} suppressHydrationWarning>
+        <body
+          className={`${rubik.className} bg-white`}
+          suppressHydrationWarning
+        >
           <Toaster position="top-right" />
           <ThemeProvider
             attribute="class"

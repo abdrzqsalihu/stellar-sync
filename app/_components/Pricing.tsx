@@ -6,7 +6,7 @@ function Pricing() {
   return (
     <div className="h-full" id="pricing">
       <div className="mx-auto max-w-[92%] md:max-w-3xl px-4 py-8 sm:px-6 sm:py-20 lg:px-8">
-        <h2 className="text-3xl font-bold sm:text-4xl text-center mb-10">
+        <h2 className="text-3xl font-bold sm:text-4xl text-center mb-10 dark:text-gray-900">
           Pricing
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-center sm:gap-8">
@@ -52,7 +52,7 @@ function Pricing() {
             </ul>
 
             <Link
-              href="/home"
+              href="/dashboard"
               className="mt-8 block rounded-full border border-primary bg-white px-12 py-3 text-center text-sm font-medium text-primary hover:ring-1 hover:ring-primary focus:outline-none focus:ring active:text-primary"
             >
               Get Started
@@ -111,7 +111,7 @@ function Pricing() {
             </ul>
 
             <Link
-              href="/home"
+              href="/dashboard"
               className="mt-8 block rounded-full border border-primary bg-primary px-12 py-3 text-center text-sm font-medium text-white hover:bg-primary hover:ring-1 hover:ring-primary focus:outline-none focus:ring active:text-primary hover:opacity-90"
             >
               Get Started
