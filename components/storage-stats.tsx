@@ -3,11 +3,95 @@
 import { Progress } from "../components/ui/progress";
 import { HardDrive } from "lucide-react";
 
-export default function StorageStats() {
-  // Mock storage data
-  const storageUsed = 4.2; // GB
-  const storageTotal = 10; // GB
-  const storagePercentage = (storageUsed / storageTotal) * 100;
+interface File {
+  id: string;
+  fileSize: number;
+  type: string;
+  [key: string]: any;
+}
+
+interface StorageStatsProps {
+  files: File[];
+  totalStorage: number;
+}
+
+export default function StorageStats({
+  files,
+  totalStorage,
+}: StorageStatsProps) {
+  console.log(files);
+
+  const bytesToMB = (bytes: number) => bytes / 1_048_576;
+  const bytesToGB = (bytes: number) => bytes / 1_073_741_824;
+
+  // Calculate total storage used
+  const storageUsed = files.reduce(
+    (total, file) => total + (file.fileSize || 0),
+    0
+  );
+  const storageUsedMB = bytesToMB(storageUsed).toFixed(2);
+  const storagePercentage = (
+    (storageUsed / (totalStorage * 1_073_741_824)) *
+    100
+  ).toFixed(2);
+
+  // Calculate storage by file type
+  const storageByType = files.reduce(
+    (acc, file) => {
+      const fileType = file.fileType?.toLowerCase() || "other";
+      let category: string;
+      if (
+        [
+          "application/pdf",
+          "text/plain",
+          "application/msword",
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        ].includes(fileType)
+      ) {
+        category = "Documents";
+      } else if (["image/jpeg", "image/png", "image/gif"].includes(fileType)) {
+        category = "Images";
+      } else if (
+        ["video/mp4", "video/avi", "video/quicktime"].includes(fileType)
+      ) {
+        category = "Videos";
+      } else {
+        category = "Other";
+      }
+      acc[category] = (acc[category] || 0) + (file.fileSize || 0);
+      return acc;
+    },
+    { Documents: 0, Images: 0, Videos: 0, Other: 0 } as Record<string, number>
+  );
+
+  // Format storage by type dynamically (GB if > 1 GB, else MB)
+  const storageByTypeFormatted = Object.entries(storageByType).reduce(
+    (acc, [type, size]) => {
+      if (size >= 1_073_741_824) {
+        // More than 1 GB
+        acc[type] = {
+          value: bytesToGB(size).toFixed(2),
+          unit: "GB",
+        };
+      } else {
+        // Less than 1 GB, use MB
+        acc[type] = {
+          value: bytesToMB(size).toFixed(2),
+          unit: "MB",
+        };
+      }
+      return acc;
+    },
+    {} as Record<string, { value: string; unit: string }>
+  );
+
+  // Define colors for each file type
+  const typeColors: Record<string, string> = {
+    Documents: "#5056FD",
+    Images: "#22c55e",
+    Videos: "#eab308",
+    Other: "#6b7280",
+  };
 
   return (
     <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
@@ -25,41 +109,37 @@ export default function StorageStats() {
           <div className="flex-1">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-sm font-medium">
-                {storageUsed.toFixed(1)} GB of {storageTotal} GB used
+                {storageUsedMB} MB of {totalStorage} GB used
               </span>
-              <span className="text-sm font-medium">
-                {storagePercentage.toFixed(0)}%
-              </span>
+              <span className="text-sm font-medium">{storagePercentage}%</span>
             </div>
             <Progress
-              value={storagePercentage}
+              value={Number(storagePercentage)}
               className="h-2 [&>div]:bg-[#5056FD]"
             />
           </div>
         </div>
 
         <div className="mt-6 space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-[#5056FD]" />
-              <span>Documents</span>
-            </div>
-            <span>2.1 GB</span>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-[#22c55e]" />
-              <span>Images</span>
-            </div>
-            <span>1.3 GB</span>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-[#eab308]" />
-              <span>Videos</span>
-            </div>
-            <span>0.8 GB</span>
-          </div>
+          {Object.entries(storageByTypeFormatted).map(
+            ([type, { value, unit }]) => (
+              <div
+                key={type}
+                className="flex items-center justify-between text-sm"
+              >
+                <div className="flex items-center gap-2">
+                  <div
+                    className="h-3 w-3 rounded-full"
+                    style={{ backgroundColor: typeColors[type] }}
+                  />
+                  <span>{type}</span>
+                </div>
+                <span>
+                  {value} {unit}
+                </span>
+              </div>
+            )
+          )}
         </div>
       </div>
     </div>

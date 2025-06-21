@@ -98,9 +98,11 @@ export default function UploadButton() {
       uploadTask.on(
         "state_changed",
         (snapshot) => {
-          const progressPercent =
-            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-          setProgress(progressPercent);
+          const progressPercent = (
+            (snapshot.bytesTransferred / snapshot.totalBytes) *
+            100
+          ).toFixed(2);
+          setProgress(Number(progressPercent));
         },
         (error) => {
           console.error("Error during upload:", error.message);

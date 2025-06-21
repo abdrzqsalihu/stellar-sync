@@ -72,7 +72,7 @@ export default async function DashboardContent({
         </div>
 
         <div className="w-full md:w-80 space-y-6">
-          <StorageStats />
+          <StorageStats files={files} totalStorage={1} />
 
           <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
             <div className="bg-primary/5 p-6">
