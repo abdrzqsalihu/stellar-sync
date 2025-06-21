@@ -57,14 +57,14 @@ export default async function DashboardContent({
             <h2 className="text-xl font-semibold">Recent Files</h2>
             <div className="flex gap-2">
               <UploadButton />
-              <Button
+              {/* <Button
                 variant="outline"
                 size="sm"
                 className="group h-10 gap-2 rounded-md border-dashed hover:border-primary hover:bg-primary/5"
               >
                 <FolderPlus className="h-4 w-4 transition-transform group-hover:scale-110 group-hover:text-primary" />
                 <span className="group-hover:text-primary">New Folder</span>
-              </Button>
+              </Button> */}
             </div>
           </div>
 
@@ -105,7 +105,7 @@ export default async function DashboardContent({
                         <path d="M10 4h4" />
                       </svg>
                     </div>
-                    <span>100GB Storage</span>
+                    <span>4GB Storage</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10">

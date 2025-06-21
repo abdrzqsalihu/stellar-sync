@@ -68,7 +68,7 @@ function Pricing() {
               <p className="mt-2 sm:mt-4">
                 <strong className="text-3xl font-bold text-secondary sm:text-4xl">
                   {" "}
-                  10${" "}
+                  5${" "}
                 </strong>
 
                 <span className="text-sm font-medium text-gray-700">

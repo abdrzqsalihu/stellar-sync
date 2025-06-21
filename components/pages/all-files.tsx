@@ -59,14 +59,14 @@ export default async function FilesContent({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex gap-2">
           <UploadButton />
-          <Button
+          {/* <Button
             variant="outline"
             size="sm"
             className="group h-10 gap-2 rounded-md border-dashed hover:border-primary hover:bg-primary/5"
           >
             <FolderPlus className="h-4 w-4 transition-transform group-hover:scale-110 group-hover:text-primary" />
             <span className="group-hover:text-primary">New Folder</span>
-          </Button>
+          </Button> */}
         </div>
       </div>
       <FileGrid fileList={files} view="all" />
