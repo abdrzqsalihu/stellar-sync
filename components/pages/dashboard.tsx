@@ -27,7 +27,7 @@ export default async function DashboardContent({
   // Calculate file counts
   const allFilesCount = files.length;
   const staredFilesCount = files.filter(
-    (file) => file.starred || file.isStarred
+    (file) => file.stared || file.isStarred
   ).length;
   const sharedFilesCount = files.filter(
     (file) =>
