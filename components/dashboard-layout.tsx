@@ -56,7 +56,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <div className="flex min-h-screen bg-background w-full">
         <Sidebar className="bg-[#111827] text-white border-0">
           <SidebarHeader className="p-4 text-white bg-[#111827]">
-            <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white p-0.5">
                 <Image
                   src="/favicon.png"
@@ -69,7 +69,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 />
               </div>
               <span className="font-bold text-lg">StellarSync</span>
-            </div>
+            </Link>
           </SidebarHeader>
 
           <SidebarContent className="bg-[#111827] text-white border-0">
@@ -367,7 +367,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               </SidebarGroupContent>
             </SidebarGroup>
 
-            <SidebarGroup>
+            {/* <SidebarGroup>
               <SidebarGroupLabel className="text-gray-400 text-xs font-medium">
                 TOOLS
               </SidebarGroupLabel>
@@ -416,7 +416,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
-            </SidebarGroup>
+            </SidebarGroup> */}
           </SidebarContent>
 
           <SidebarFooter className="bg-[#111827] text-white border-0">
