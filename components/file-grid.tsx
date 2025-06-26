@@ -40,7 +40,7 @@ export interface File {
   uploadedAt: string;
   stared: boolean;
   shared: boolean;
-  url?: string;
+  fileUrl?: string;
 }
 
 interface FileGridProps {
@@ -210,10 +210,16 @@ export default function FileGrid({ fileList, view }: FileGridProps) {
                     <LinkIcon className="mr-2 h-4 w-4" />
                     Copy Link
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Download className="mr-2 h-4 w-4" />
-                    Download
-                  </DropdownMenuItem>
+                  <a
+                    href={`/api/download?url=${encodeURIComponent(f.fileUrl)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <DropdownMenuItem className="hover:cursor-pointer">
+                      <Download className="mr-2 h-4 w-4" />
+                      Download
+                    </DropdownMenuItem>
+                  </a>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="text-red-500"

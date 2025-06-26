@@ -41,7 +41,7 @@ export interface File {
   uploadedAt: string;
   stared: boolean;
   shared: boolean;
-  url?: string;
+  fileUrl?: string;
 }
 
 interface RecentFilesProps {
@@ -343,10 +343,18 @@ export default function RecentFiles({
                             <LinkIcon className="mr-2 h-4 w-4" />
                             Copy link
                           </DropdownMenuItem>
-                          <DropdownMenuItem>
-                            <Download className="mr-2 h-4 w-4" />
-                            Download
-                          </DropdownMenuItem>
+                          <a
+                            href={`/api/download?url=${encodeURIComponent(
+                              file.fileUrl
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <DropdownMenuItem className="cursor-pointer">
+                              <Download className="mr-2 h-4 w-4" />
+                              Download
+                            </DropdownMenuItem>
+                          </a>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             onClick={() => handleDeleteClick(file.id)}
