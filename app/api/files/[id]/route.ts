@@ -1,4 +1,3 @@
-// app/api/files/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { dbAdmin, storageAdmin } from "../../../../lib/firebase-admin";
 

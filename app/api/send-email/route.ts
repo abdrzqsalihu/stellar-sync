@@ -1,5 +1,6 @@
 import * as nodemailer from 'nodemailer';
 import { NextRequest, NextResponse } from 'next/server';
+import { dbAdmin } from '../../../lib/firebase-admin';
 
 export async function POST(request: NextRequest) {
   try {
@@ -82,6 +83,8 @@ export async function POST(request: NextRequest) {
     };
 
     await transporter.sendMail(mailOptions);
+
+    await dbAdmin.collection("uploadedFiles").doc(fileId).update({ shared: true });
     
     return NextResponse.json({ 
       success: true, 
