@@ -269,7 +269,7 @@ export default async function FilePage({
             <FileActionsClient fileId={file.id} initialStarred={file.stared} />
 
             <Tabs defaultValue="share" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 rounded-xl bg-[#5056FD]/5 p-1">
+              <TabsList className="grid w-full grid-cols-1 rounded-xl bg-[#5056FD]/5 p-1">
                 <TabsTrigger
                   value="share"
                   className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#5056FD] data-[state=active]:shadow-sm"
@@ -278,7 +278,7 @@ export default async function FilePage({
                 </TabsTrigger>
                 <TabsTrigger
                   value="expiry"
-                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#5056FD] data-[state=active]:shadow-sm"
+                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#5056FD] data-[state=active]:shadow-sm hidden"
                 >
                   Expiry
                 </TabsTrigger>
