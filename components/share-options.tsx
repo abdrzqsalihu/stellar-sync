@@ -17,12 +17,14 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useUser } from "@clerk/nextjs";
 
 interface ShareOptionsProps {
   fileId: string;
 }
 
 export default function ShareOptions({ fileId }: ShareOptionsProps) {
+  const { user } = useUser();
   const [passwordProtected, setPasswordProtected] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -59,10 +61,57 @@ export default function ShareOptions({ fileId }: ShareOptionsProps) {
     toast.success("File link copied to clipboard");
   };
 
-  const sendEmail = () => {
-    if (!email) return;
-    toast.success(`File has been shared with ${email}`);
-    setEmail("");
+  // Replace your sendEmail function with this:
+  const sendEmail = async () => {
+    if (!email) {
+      toast.error("Please enter an email address");
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast.error("Please enter a valid email address");
+      return;
+    }
+
+    try {
+      // Show loading state
+      toast.loading("Sending email...", { id: "sending-email" });
+
+      const senderName =
+        user?.fullName || user?.firstName || user?.username || "Someone";
+
+      const response = await fetch("/api/send-email", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to: email,
+          fileId: fileId,
+          password: hasPassword ? savedPassword : null,
+          senderName: senderName,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to send email");
+      }
+
+      // Dismiss loading toast and show success
+      toast.dismiss("sending-email");
+      toast.success(`File link sent to ${email}!`);
+      setEmail("");
+    } catch (error) {
+      console.error("Error sending email:", error);
+      toast.dismiss("sending-email");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to send email"
+      );
+    }
   };
 
   const setFilePassword = async () => {
