@@ -10,6 +10,10 @@ import {
   Star,
   Trash,
   Video,
+  Upload,
+  FolderOpen,
+  Cloud,
+  Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -32,6 +36,7 @@ import {
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import UploadButton from "./upload-button";
 
 export interface File {
   id: string;
@@ -50,6 +55,72 @@ interface RecentFilesProps {
   fileList: File[];
 }
 
+const EmptyState = () => {
+  return (
+    <>
+      <div className="flex flex-col items-center justify-center py-20 px-6">
+        {/* Animated Background Elements */}
+        <div className="relative mb-8">
+          {/* Main Cloud Icon with Gradient */}
+          <div className="relative">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#5056FD]/10 to-[#5056FD]/5 rounded-full blur-xl animate-pulse"></div>
+            <div className="relative bg-gradient-to-br from-[#5056FD]/10 to-[#5056FD]/5 p-8 rounded-full border border-[#5056FD]/10 shadow-sm">
+              <Cloud className="h-16 w-16 text-[#5056FD]" />
+            </div>
+          </div>
+        </div>
+        {/* Text Content */}
+        <div className="text-center space-y-4 mb-8">
+          <h3 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-500 via-primary to-purple-700 bg-clip-text text-transparent">
+            No files yet
+          </h3>
+          <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+            Upload your first files to get started. Store, organize, and share
+            your documents, images, and videos securely.
+          </p>
+        </div>
+        {/* Action Button */}
+        <UploadButton hasFiles={false} />
+        <div className="mt-14 grid grid-cols-1 sm:grid-cols-3 gap-10 text-center">
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 bg-[#5056FD]/10 rounded-xl flex items-center justify-center mb-3">
+              <Upload className="w-5 h-5 text-[#5056FD]" />
+            </div>
+            <h4 className="font-medium text-sm text-foreground mb-1">
+              Drag & Drop
+            </h4>
+            <p className="text-xs text-muted-foreground">
+              Simply drag files here to upload
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 bg-[#5056FD]/10 rounded-xl flex items-center justify-center mb-3">
+              <Star className="w-5 h-5 text-[#5056FD]" />
+            </div>
+            <h4 className="font-medium text-sm text-foreground mb-1">
+              Organize
+            </h4>
+            <p className="text-xs text-muted-foreground">
+              Star important files for quick access
+            </p>
+          </div>
+
+          <div className="flex flex-col items-center">
+            <div className="w-12 h-12 bg-[#5056FD]/10 rounded-xl flex items-center justify-center mb-3">
+              <LinkIcon className="w-5 h-5 text-[#5056FD]" />
+            </div>
+            <h4 className="font-medium text-sm text-foreground mb-1">Share</h4>
+            <p className="text-xs text-muted-foreground">
+              Share files with secure links
+            </p>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
+
 export default function RecentFiles({
   limit = 10,
   showViewAll = true,
@@ -59,6 +130,11 @@ export default function RecentFiles({
   const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [fileToDelete, setFileToDelete] = useState(null);
+
+  // If no files, show the beautiful empty state
+  if (!fileList || fileList.length === 0) {
+    return <EmptyState />;
+  }
 
   const getFileColor = (fileType: string) => {
     switch (fileType) {
@@ -181,11 +257,6 @@ export default function RecentFiles({
     const daysDiff = Math.floor(
       (todayUTCDate.getTime() - fileUTCDate.getTime()) / (1000 * 60 * 60 * 24)
     );
-
-    // Debug logs
-    // console.log("Current UTC date:", todayUTCDate.toISOString().split("T")[0]);
-    // console.log("File UTC date:", fileUTCDate.toISOString().split("T")[0]);
-    // console.log("Days difference:", daysDiff);
 
     if (daysDiff === 0) {
       return "Today";

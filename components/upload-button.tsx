@@ -39,7 +39,11 @@ function GenerateRandomString(length: number = 10): string {
   return result;
 }
 
-export default function UploadButton() {
+interface UploadButtonProps {
+  hasFiles?: boolean;
+}
+
+export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
   const { user } = useUser();
   const { getToken } = useAuth();
   const router = useRouter();
@@ -166,7 +170,11 @@ export default function UploadButton() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button className="bg-[#5056FD] hover:bg-[#4045e0]">
+        <Button
+          className={`bg-[#5056FD] hover:bg-[#4045e0] ${
+            !hasFiles ? "px-10" : ""
+          }`}
+        >
           <Upload className="mr-2 h-4 w-4" />
           Upload File
         </Button>

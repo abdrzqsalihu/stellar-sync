@@ -485,14 +485,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             <SidebarTrigger />
 
             <div className="flex flex-1 items-center gap-4 md:gap-8">
-              <div className="ml-auto flex items-center gap-6">
+              <div className="ml-auto flex items-center gap-4 md:gap-6">
                 <ThemeToggle />
 
                 <a
                   href="https://wa.me/+2348085458632"
                   target="_blank"
                   aria-label="WhatsApp Profile"
-                  className="mr-8 hidden md:block"
+                  // className="mr-8 hidden md:block"
                 >
                   <BadgeHelp
                     size={22}

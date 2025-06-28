@@ -53,11 +53,12 @@ export default async function DashboardContent({
 
       <div className="flex flex-col gap-6 md:flex-row md:items-start">
         <div className="flex-1 space-y-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-xl font-semibold">Recent Files</h2>
-            <div className="flex gap-2">
-              <UploadButton />
-              {/* <Button
+          {allFilesCount > 0 && (
+            <div className="flex gap-4 sm:flex-row items-center justify-between">
+              <h2 className="text-xl font-semibold">Recent Files</h2>
+              <div className="flex gap-2">
+                <UploadButton hasFiles={true} />
+                {/* <Button
                 variant="outline"
                 size="sm"
                 className="group h-10 gap-2 rounded-md border-dashed hover:border-primary hover:bg-primary/5"
@@ -65,8 +66,9 @@ export default async function DashboardContent({
                 <FolderPlus className="h-4 w-4 transition-transform group-hover:scale-110 group-hover:text-primary" />
                 <span className="group-hover:text-primary">New Folder</span>
               </Button> */}
+              </div>
             </div>
-          </div>
+          )}
 
           <RecentFiles fileList={files} />
         </div>
