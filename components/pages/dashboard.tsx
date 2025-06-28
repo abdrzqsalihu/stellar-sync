@@ -1,4 +1,3 @@
-import { FolderPlus } from "lucide-react";
 import FileStats from "../file-stats";
 import { Button } from "../ui/button";
 import UploadButton from "../upload-button";
@@ -6,6 +5,7 @@ import RecentFiles from "../recent-files";
 import StorageStats from "../storage-stats";
 import { getEmailFromUserId } from "../../lib/getEmailFromUserId";
 import { dbAdmin } from "../../lib/firebase-admin";
+import { clerkClient } from "@clerk/nextjs";
 
 interface DashboardContentProps {
   userId: string;
@@ -15,6 +15,49 @@ export default async function DashboardContent({
   userId,
 }: DashboardContentProps) {
   const email = await getEmailFromUserId(userId);
+  // 👇 Get full name from Clerk
+  const user = await clerkClient.users.getUser(userId);
+  const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
+  async function ensureUserDocument(
+    userId: string,
+    email: string,
+    fullName: string = ""
+  ) {
+    const userRef = dbAdmin.collection("users").doc(userId);
+    const userSnap = await userRef.get();
+
+    if (!userSnap.exists) {
+      await userRef.set({
+        fullName,
+        email,
+        storageUsed: 0,
+        storageLimit: 1073741824, // 1GB
+        plan: "free",
+        createdAt: new Date().toISOString(),
+      });
+      console.log("Created user doc for:", email);
+    }
+
+    const userData = (await userRef.get()).data();
+    if (!userData?.storageUsed || userData.storageUsed === 0) {
+      const filesSnap = await dbAdmin
+        .collection("uploadedFiles")
+        .where("userEmail", "==", email)
+        .get();
+
+      const totalSize = filesSnap.docs.reduce((sum, doc) => {
+        const file = doc.data();
+        return sum + (file.fileSize || 0);
+      }, 0);
+
+      await userRef.update({
+        storageUsed: totalSize,
+      });
+
+      console.log(`Backfilled storageUsed for ${email}: ${totalSize} bytes`);
+    }
+  }
+  await ensureUserDocument(userId, email, fullName);
 
   let files: Array<any> = [];
   const base = dbAdmin
