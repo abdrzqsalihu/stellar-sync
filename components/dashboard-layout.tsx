@@ -13,6 +13,7 @@ import {
   Crown,
   Files,
   BadgeHelp,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -43,13 +44,98 @@ import {
 import { ThemeToggle } from "./theme-toggle";
 import Image from "next/image";
 import { useClerk, UserButton, useUser } from "@clerk/nextjs";
+import toast from "react-hot-toast";
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+interface DashboardLayoutProps {
+  children: ReactNode;
+  userData?: any;
+}
+
+export default function DashboardLayout({
+  children,
+  userData,
+}: DashboardLayoutProps) {
+  const isPro = userData?.plan === "pro" || userData?.isPro || false;
   const pathname = usePathname();
   const { signOut } = useClerk();
   const { user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  const ProStatusSection = () => (
+    <SidebarGroup>
+      <SidebarGroupContent>
+        <div className="rounded-lg bg-[#5056FD]/10 p-4 borde">
+          <div className="flex items-center gap-2 px-2">
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h4 className="font-medium text-sm">Pro Plan Active</h4>
+                <div className="inline-flex items-center rounded-full bg-green-500/20 px-2 py-0.5 text-xs font-medium text-green-500">
+                  <Crown className="mr-1 h-2.5 w-2.5" />
+                  Pro
+                </div>
+              </div>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Premium features unlocked
+              </p>
+            </div>
+          </div>
+          {/* <Button
+            variant="outline"
+            className="mt-3 w-full border-[#5056FD]/30 hover:bg-[#5056FD]/10 text-xs h-8 text-white hover:text-white"
+            onClick={() => {
+              toast.success("Thank you for being a Pro user!");
+            }}
+          >
+            Manage Plan
+          </Button> */}
+        </div>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
+
+  const UpgradeSection = () => (
+    <SidebarGroup>
+      <SidebarGroupContent>
+        <div className="rounded-lg bg-[#5056FD]/10 p-4">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#5056FD]">
+              <Crown className="h-4 w-4 text-white" />
+            </div>
+            <div>
+              <h4 className="font-medium text-sm">Upgrade to Pro</h4>
+              <p className="text-xs text-gray-400">Get more storage</p>
+            </div>
+          </div>
+          <Button
+            onClick={async () => {
+              if (!user) return toast.error("User not found");
+
+              const res = await fetch("/api/payment/initialize", {
+                method: "POST",
+                body: JSON.stringify({
+                  userId: user.id,
+                  email: user.primaryEmailAddress?.emailAddress,
+                  amount: 5,
+                  plan: "pro",
+                }),
+              });
+
+              const data = await res.json();
+              if (data.link) {
+                window.location.href = data.link;
+              } else {
+                toast.error("Failed to initiate payment");
+              }
+            }}
+            className="mt-3 w-full bg-[#5056FD] hover:bg-[#4045e0] text-xs h-8"
+          >
+            Upgrade
+          </Button>
+        </div>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  );
 
   return (
     <SidebarProvider>
@@ -421,24 +507,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
           <SidebarFooter className="bg-[#111827] text-white border-0">
             {/* Upgrade section in sidebar */}
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <div className="rounded-lg bg-[#5056FD]/10 p-4">
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#5056FD]">
-                      <Crown className="h-4 w-4 text-white" />
-                    </div>
-                    <div>
-                      <h4 className="font-medium text-sm">Upgrade to Pro</h4>
-                      <p className="text-xs text-gray-400">Get more storage</p>
-                    </div>
-                  </div>
-                  <Button className="mt-3 w-full bg-[#5056FD] hover:bg-[#4045e0] text-xs h-8">
-                    Upgrade
-                  </Button>
-                </div>
-              </SidebarGroupContent>
-            </SidebarGroup>
+            {isPro ? <ProStatusSection /> : <UpgradeSection />}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button

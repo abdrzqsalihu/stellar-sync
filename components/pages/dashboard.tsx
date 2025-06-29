@@ -6,6 +6,8 @@ import StorageStats from "../storage-stats";
 import { getEmailFromUserId } from "../../lib/getEmailFromUserId";
 import { dbAdmin } from "../../lib/firebase-admin";
 import { clerkClient } from "@clerk/nextjs";
+import toast from "react-hot-toast";
+import UpgradePlan from "../upgrade-plan";
 
 interface DashboardContentProps {
   userId: string;
@@ -128,46 +130,11 @@ export default async function DashboardContent({
             storageLimit={storageLimit}
           />
 
-          <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
-            <div className="bg-primary/5 p-6">
-              <div className="flex flex-col space-y-1.5">
-                <h3 className="font-semibold leading-none tracking-tight">
-                  Upgrade to Pro
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  Get more storage and premium features
-                </p>
-              </div>
-              <div className="mt-6 space-y-4">
-                <ul className="space-y-3 text-sm">
-                  <li className="flex items-center gap-3">
-                    <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="h-3 w-3 text-primary"
-                      >
-                        <path d="M2 20h20V8H2z" />
-                        <path d="M12 4v4" />
-                        <path d="M10 4h4" />
-                      </svg>
-                    </div>
-                    <span>4GB Storage</span>
-                  </li>
-                </ul>
-                <Button className="w-full bg-primary hover:bg-primary/90">
-                  Upgrade Now
-                </Button>
-              </div>
-            </div>
-          </div>
+          <UpgradePlan
+            userId={user.id}
+            email={email}
+            isPro={userData?.plan === "pro"}
+          />
         </div>
       </div>
     </div>

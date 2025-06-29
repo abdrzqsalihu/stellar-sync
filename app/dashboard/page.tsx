@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import DashboardSkeleton from "../../components/DashboardSkeleton";
 import DashboardContent from "../../components/pages/dashboard";
 import { redirect } from "next/navigation";
+import { dbAdmin } from "../../lib/firebase-admin";
 
 export const metadata: Metadata = {
   title: "StellarSync | Dashboard",
@@ -32,8 +33,13 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
+  const userDoc = await dbAdmin.collection("users").doc(userId).get();
+  const userData = userDoc.exists ? userDoc.data() : null;
+
+  // console.log(userData);
+
   return (
-    <DashboardLayout>
+    <DashboardLayout userData={userData}>
       <Suspense fallback={<DashboardSkeleton />}>
         <DashboardContent userId={userId} />
       </Suspense>

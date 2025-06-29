@@ -21,7 +21,7 @@ export default function StorageStats({
   storageUsed,
   storageLimit,
 }: StorageStatsProps) {
-  console.log(files);
+  // console.log(files);
 
   const bytesToMB = (bytes: number) => bytes / 1_048_576;
   const bytesToGB = (bytes: number) => bytes / 1_073_741_824;
