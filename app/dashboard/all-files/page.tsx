@@ -6,6 +6,7 @@ import DashboardLayout from "../../../components/dashboard-layout";
 import FileSkeleton from "../../../components/FileSkeleton";
 import FilesContent from "../../../components/pages/all-files";
 import { redirect } from "next/navigation";
+import { dbAdmin } from "../../../lib/firebase-admin";
 
 export const metadata: Metadata = {
   title: "StellarSync | All Files",
@@ -36,8 +37,11 @@ export default async function FilesPage({ searchParams }: FilesPageProps) {
     redirect("/sign-in");
   }
 
+  const userDoc = await dbAdmin.collection("users").doc(userId).get();
+  const userData = userDoc.exists ? userDoc.data() : null;
+
   return (
-    <DashboardLayout>
+    <DashboardLayout userData={userData}>
       <Suspense fallback={<FileSkeleton />}>
         <FilesContent userId={userId} searchParams={searchParams} />
       </Suspense>

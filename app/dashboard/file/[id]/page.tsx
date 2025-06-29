@@ -23,6 +23,7 @@ import { getEmailFromUserId } from "../../../../lib/getEmailFromUserId";
 import { dbAdmin } from "../../../../lib/firebase-admin";
 import { headers } from "next/headers";
 import FileActionsClient from "../../../../components/file-actions";
+import { redirect } from "next/navigation";
 
 export const metadata: Metadata = {
   title: "StellarSync | File Details",
@@ -94,9 +95,12 @@ export default async function FilePage({
   const resolvedParams = await params;
   const fileId = resolvedParams.id;
 
+  const userDoc = await dbAdmin.collection("users").doc(userId).get();
+  const userData = userDoc.exists ? userDoc.data() : null;
+
   if (!userId) {
     return (
-      <DashboardLayout>
+      <DashboardLayout userData={userData}>
         <div className="flex flex-col gap-8">
           <div className="flex items-center gap-4">
             <Button
@@ -162,7 +166,7 @@ export default async function FilePage({
   // Handle error state
   if (error || !file) {
     return (
-      <DashboardLayout>
+      <DashboardLayout userData={userData}>
         <div className="flex flex-col gap-8">
           <div className="flex items-center gap-4">
             <Button
@@ -198,7 +202,7 @@ export default async function FilePage({
   }
 
   return (
-    <DashboardLayout>
+    <DashboardLayout userData={userData}>
       <div className="flex flex-col gap-8">
         <div className="flex items-center gap-4">
           <Button

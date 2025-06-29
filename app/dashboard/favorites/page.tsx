@@ -5,6 +5,7 @@ import DashboardLayout from "../../../components/dashboard-layout";
 import FileSkeleton from "../../../components/FileSkeleton";
 import FavoriteContent from "../../../components/pages/favorites";
 import { redirect } from "next/navigation";
+import { dbAdmin } from "../../../lib/firebase-admin";
 
 export const metadata: Metadata = {
   title: "StellarSync | Favorites",
@@ -31,8 +32,11 @@ export default async function FavoritePage() {
     redirect("/sign-in");
   }
 
+  const userDoc = await dbAdmin.collection("users").doc(userId).get();
+  const userData = userDoc.exists ? userDoc.data() : null;
+
   return (
-    <DashboardLayout>
+    <DashboardLayout userData={userData}>
       <Suspense fallback={<FileSkeleton />}>
         <FavoriteContent userId={userId} />
       </Suspense>
