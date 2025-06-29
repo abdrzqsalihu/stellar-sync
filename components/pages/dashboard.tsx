@@ -15,7 +15,6 @@ export default async function DashboardContent({
   userId,
 }: DashboardContentProps) {
   const email = await getEmailFromUserId(userId);
-  // 👇 Get full name from Clerk
   const user = await clerkClient.users.getUser(userId);
   const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
   async function ensureUserDocument(
@@ -79,6 +78,12 @@ export default async function DashboardContent({
       (file.sharedWith && file.sharedWith.length > 0)
   ).length;
 
+  const userDoc = await dbAdmin.collection("users").doc(userId).get();
+  const userData = userDoc.exists ? userDoc.data() : null;
+
+  const storageUsed = userData?.storageUsed ?? 0;
+  const storageLimit = userData?.storageLimit ?? 1073741824; // default 1GB
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-2">
@@ -117,7 +122,11 @@ export default async function DashboardContent({
         </div>
 
         <div className="w-full md:w-80 space-y-6">
-          <StorageStats files={files} totalStorage={1} />
+          <StorageStats
+            files={files}
+            storageUsed={storageUsed}
+            storageLimit={storageLimit}
+          />
 
           <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
             <div className="bg-primary/5 p-6">

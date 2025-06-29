@@ -12,12 +12,14 @@ interface File {
 
 interface StorageStatsProps {
   files: File[];
-  totalStorage: number;
+  storageUsed: number;
+  storageLimit: number;
 }
 
 export default function StorageStats({
   files,
-  totalStorage,
+  storageUsed,
+  storageLimit,
 }: StorageStatsProps) {
   console.log(files);
 
@@ -25,15 +27,10 @@ export default function StorageStats({
   const bytesToGB = (bytes: number) => bytes / 1_073_741_824;
 
   // Calculate total storage used
-  const storageUsed = files.reduce(
-    (total, file) => total + (file.fileSize || 0),
-    0
-  );
-  const storageUsedMB = bytesToMB(storageUsed).toFixed(2);
-  const storagePercentage = (
-    (storageUsed / (totalStorage * 1_073_741_824)) *
+  const percentageUsed = Math.min(
+    (storageUsed / storageLimit) * 100,
     100
-  ).toFixed(2);
+  ).toFixed(1);
 
   // Calculate storage by file type
   const storageByType = files.reduce(
@@ -109,12 +106,12 @@ export default function StorageStats({
           <div className="flex-1">
             <div className="mb-2 flex items-center justify-between">
               <span className="text-sm font-medium">
-                {storageUsedMB} MB of {totalStorage} GB used
+                {formatBytes(storageUsed)} of {formatBytes(storageLimit)} used
               </span>
-              <span className="text-sm font-medium">{storagePercentage}%</span>
+              <span className="text-sm font-medium">{percentageUsed}%</span>
             </div>
             <Progress
-              value={Number(storagePercentage)}
+              value={Number(percentageUsed)}
               className="h-2 [&>div]:bg-[#5056FD]"
             />
           </div>
@@ -144,4 +141,11 @@ export default function StorageStats({
       </div>
     </div>
   );
+}
+
+function formatBytes(bytes: number) {
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+  if (bytes === 0) return "0 Bytes";
+  const i = Math.floor(Math.log(bytes) / Math.log(1024));
+  return parseFloat((bytes / Math.pow(1024, i)).toFixed(2)) + " " + sizes[i];
 }

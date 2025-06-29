@@ -24,7 +24,13 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 import { getAuth, signInWithCustomToken } from "firebase/auth";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  updateDoc,
+  increment,
+} from "firebase/firestore";
 import { useAuth, useUser } from "@clerk/nextjs";
 import toast from "react-hot-toast";
 
@@ -158,6 +164,11 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
       id: docId,
       shortUrl: `${process.env.NEXT_PUBLIC_BASE_URL}${docId}`,
       uploadedAt: new Date().toISOString(),
+    });
+
+    const userRef = doc(db, "users", user.id);
+    await updateDoc(userRef, {
+      storageUsed: increment(file.size),
     });
 
     // Navigate to file preview after successful save
