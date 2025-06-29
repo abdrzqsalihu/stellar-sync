@@ -14,6 +14,7 @@ import {
   FolderOpen,
   Cloud,
   Sparkles,
+  FileMusic,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -202,6 +203,20 @@ export default function RecentFiles({
       case "video/x-ms-wmv":
       case "video/x-ms-asf":
         return <Video className="h-10 w-10 text-white" />;
+      case "audio/mpeg":
+      case "audio/mp3":
+      case "audio/x-wav":
+      case "audio/aac":
+      case "audio/ogg":
+      case "audio/flac":
+      case "audio/midi":
+      case "audio/x-midi":
+      case "audio/opus":
+      case "audio/amr":
+      case "audio/aiff":
+      case "audio/wav":
+      case "audio/x-pn-realaudio":
+        return <FileMusic className="h-9 w-9 text-white" />;
       case "application/pdf":
         return <FileText className="h-10 w-10 text-white" />;
       case "application/msword":

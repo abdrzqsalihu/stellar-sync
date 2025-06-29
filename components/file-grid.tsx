@@ -10,6 +10,7 @@ import {
 import toast from "react-hot-toast";
 import {
   Download,
+  FileMusic,
   FileText,
   ImageIcon,
   LinkIcon,
@@ -55,12 +56,18 @@ export default function FileGrid({ fileList, view }: FileGridProps) {
 
   // Choose an icon based on the fileType (MIME)
   const getFileIcon = (mime: string) => {
+    // console.log(mime);
     if (mime.startsWith("image/")) {
       return <ImageIcon className="h-10 w-10 text-[#4ECDC4]" />;
     }
     if (mime.startsWith("video/")) {
       return <Video className="h-10 w-10 text-purple-500" />;
     }
+
+    if (mime.startsWith("audio/")) {
+      return <FileMusic className="h-10 w-10 text-teal-500" />;
+    }
+
     if (mime === "application/pdf") {
       return <FileText className="h-10 w-10 text-red-500" />;
     }
@@ -79,6 +86,11 @@ export default function FileGrid({ fileList, view }: FileGridProps) {
     ) {
       return <FileText className="h-10 w-10 text-green-500" />;
     }
+
+    if (mime === "application/vnd.ms-powerpoint") {
+      return <FileText className="h-10 w-10 text-red-500" />;
+    }
+
     // fallback icon
     return <FileText className="h-10 w-10 text-[#5056FD]" />;
   };
