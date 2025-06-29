@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbAdmin, storageAdmin } from "../../../../lib/firebase-admin";
+import { FieldValue } from "firebase-admin/firestore";
 
 interface Context {
   params: { id: string };
@@ -67,6 +68,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   const data = docSnap.data();
   const fileUrl: string | undefined = data?.fileUrl;
   const fileName: string | undefined = data?.fileName;
+   const fileSize: number = data?.fileSize ?? 0;
+  const userEmail: string = data?.userEmail;
   let storageDeleted = false;
 
   try {
@@ -85,6 +88,22 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   } catch (err: any) {
     console.error("Storage deletion failed:", err);
   }
+
+   if (userEmail && fileSize > 0) {
+    const userSnap = await dbAdmin
+      .collection("users")
+      .where("email", "==", userEmail)
+      .limit(1)
+      .get();
+
+    const userDoc = userSnap.docs[0];
+    if (userDoc?.exists) {
+      await userDoc.ref.update({
+        storageUsed: FieldValue.increment(-fileSize),
+      });
+    }
+  }
+
 
   await docRef.delete();
   return NextResponse.json({ ok: true, storageDeleted });

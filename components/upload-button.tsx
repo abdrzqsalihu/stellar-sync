@@ -30,6 +30,7 @@ import {
   setDoc,
   updateDoc,
   increment,
+  getDoc,
 } from "firebase/firestore";
 import { useAuth, useUser } from "@clerk/nextjs";
 import toast from "react-hot-toast";
@@ -91,6 +92,22 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
     setProgress(0);
 
     try {
+      //  Check user's current storage usage and limit
+      const userRef = doc(db, "users", user.id);
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        throw new Error("User record not found");
+      }
+
+      const { storageUsed = 0, storageLimit = 1073741824 } = userSnap.data();
+
+      if (storageUsed + selectedFile.size > storageLimit) {
+        toast.error("Storage limit exceeded. Upgrade to upload more.");
+        setUploading(false);
+        return;
+      }
+      // Proceed with upload
       const storageRef = ref(storage, `uploadedFiles/${selectedFile.name}`);
       const metadata = {
         contentType: selectedFile.type,
@@ -178,6 +195,7 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
   const handleUpload = () => {
     uploadFile();
   };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
