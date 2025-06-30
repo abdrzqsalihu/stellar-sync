@@ -111,7 +111,7 @@ export default function DashboardLayout({
             onClick={async () => {
               if (!user) return toast.error("User not found");
 
-              const res = await fetch("/api/payment/initialize", {
+              const res = await fetch("/api/payment/subscribe", {
                 method: "POST",
                 body: JSON.stringify({
                   userId: user.id,

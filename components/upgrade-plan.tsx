@@ -135,8 +135,11 @@ function UpgradePlan({ userId, email, isPro = false }: UpgradePlanProps) {
           </ul>
           <Button
             onClick={async () => {
-              const res = await fetch("/api/payment/initialize", {
+              const res = await fetch("/api/payment/subscribe", {
                 method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
                 body: JSON.stringify({
                   userId,
                   email,
@@ -149,7 +152,8 @@ function UpgradePlan({ userId, email, isPro = false }: UpgradePlanProps) {
               if (data.link) {
                 window.location.href = data.link;
               } else {
-                toast.error("Failed to initiate payment");
+                toast.error(data.error || "Failed to initiate payment");
+                // toast.error("Failed to initiate payment");
               }
             }}
             className="w-full bg-primary hover:bg-primary/90"

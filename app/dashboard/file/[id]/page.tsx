@@ -24,6 +24,11 @@ import { dbAdmin } from "../../../../lib/firebase-admin";
 import { headers } from "next/headers";
 import FileActionsClient from "../../../../components/file-actions";
 import { redirect } from "next/navigation";
+import { currentUser } from "@clerk/nextjs/server";
+import {
+  getStorageLimit,
+  serializeUserData,
+} from "../../../../utils/firestore-serializer";
 
 export const metadata: Metadata = {
   title: "StellarSync | File Details",
@@ -88,7 +93,7 @@ export default async function FilePage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await headers();
+  // await headers();
   const headersList = await headers();
   const userId = headersList.get("x-user-id");
 
@@ -96,7 +101,40 @@ export default async function FilePage({
   const fileId = resolvedParams.id;
 
   const userDoc = await dbAdmin.collection("users").doc(userId).get();
-  const userData = userDoc.exists ? userDoc.data() : null;
+  // const userData = userDoc.exists ? userDoc.data() : null;
+  let userData = null;
+  if (userDoc.exists) {
+    const rawUserData = userDoc.data();
+    // Use the robust serializer that handles ALL Firestore types
+    userData = serializeUserData({
+      id: userDoc.id,
+      ...rawUserData,
+    });
+  } else {
+    const user = await currentUser();
+    if (!user) {
+      redirect("/sign-in");
+    }
+    // Create user document if it doesn't exist - Free plan gets 1GB
+    const newUserData = {
+      fullName: `${user.firstName} ${user.lastName}`.trim(),
+      email: user.emailAddresses[0]?.emailAddress,
+      createdAt: new Date(),
+      storageUsed: 0,
+      subscriptionStatus: "free",
+      plan: "Free",
+      storageLimit: getStorageLimit("free"), // 1GB
+      updatedAt: new Date(),
+    };
+
+    await dbAdmin.collection("users").doc(user.id).set(newUserData);
+
+    // Serialize the new user data too
+    userData = serializeUserData({
+      id: user.id,
+      ...newUserData,
+    });
+  }
 
   if (!userId) {
     return (

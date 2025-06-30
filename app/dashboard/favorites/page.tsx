@@ -6,6 +6,11 @@ import FileSkeleton from "../../../components/FileSkeleton";
 import FavoriteContent from "../../../components/pages/favorites";
 import { redirect } from "next/navigation";
 import { dbAdmin } from "../../../lib/firebase-admin";
+import { currentUser } from "@clerk/nextjs/server";
+import {
+  getStorageLimit,
+  serializeUserData,
+} from "../../../utils/firestore-serializer";
 
 export const metadata: Metadata = {
   title: "StellarSync | Favorites",
@@ -14,7 +19,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function FavoritePage() {
-  await headers();
+  // await headers();
   const headersList = await headers();
   const userId = headersList.get("x-user-id");
 
@@ -33,7 +38,40 @@ export default async function FavoritePage() {
   }
 
   const userDoc = await dbAdmin.collection("users").doc(userId).get();
-  const userData = userDoc.exists ? userDoc.data() : null;
+  // const userData = userDoc.exists ? userDoc.data() : null;
+  let userData = null;
+  if (userDoc.exists) {
+    const rawUserData = userDoc.data();
+    // Use the robust serializer that handles ALL Firestore types
+    userData = serializeUserData({
+      id: userDoc.id,
+      ...rawUserData,
+    });
+  } else {
+    const user = await currentUser();
+    if (!user) {
+      redirect("/sign-in");
+    }
+    // Create user document if it doesn't exist - Free plan gets 1GB
+    const newUserData = {
+      fullName: `${user.firstName} ${user.lastName}`.trim(),
+      email: user.emailAddresses[0]?.emailAddress,
+      createdAt: new Date(),
+      storageUsed: 0,
+      subscriptionStatus: "free",
+      plan: "Free",
+      storageLimit: getStorageLimit("free"), // 1GB
+      updatedAt: new Date(),
+    };
+
+    await dbAdmin.collection("users").doc(user.id).set(newUserData);
+
+    // Serialize the new user data too
+    userData = serializeUserData({
+      id: user.id,
+      ...newUserData,
+    });
+  }
 
   return (
     <DashboardLayout userData={userData}>

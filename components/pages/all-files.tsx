@@ -58,7 +58,7 @@ export default async function FilesContent({
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex gap-2">
-          <UploadButton />
+          <UploadButton hasFiles={true} />
           {/* <Button
             variant="outline"
             size="sm"
