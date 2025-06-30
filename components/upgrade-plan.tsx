@@ -6,10 +6,11 @@ import toast from "react-hot-toast";
 interface UpgradePlanProps {
   userId: string;
   email: string;
+  name: string;
   isPro?: boolean;
 }
 
-function UpgradePlan({ userId, email, isPro = false }: UpgradePlanProps) {
+function UpgradePlan({ userId, email, name, isPro = false }: UpgradePlanProps) {
   if (isPro) {
     return (
       <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
@@ -143,6 +144,7 @@ function UpgradePlan({ userId, email, isPro = false }: UpgradePlanProps) {
                 body: JSON.stringify({
                   userId,
                   email,
+                  name,
                   amount: 5, // in USD
                   plan: "pro",
                 }),

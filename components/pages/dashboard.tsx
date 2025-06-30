@@ -1,12 +1,10 @@
 import FileStats from "../file-stats";
-import { Button } from "../ui/button";
 import UploadButton from "../upload-button";
 import RecentFiles from "../recent-files";
 import StorageStats from "../storage-stats";
 import { getEmailFromUserId } from "../../lib/getEmailFromUserId";
 import { dbAdmin } from "../../lib/firebase-admin";
 import { clerkClient } from "@clerk/nextjs";
-import toast from "react-hot-toast";
 import UpgradePlan from "../upgrade-plan";
 
 interface DashboardContentProps {
@@ -133,6 +131,7 @@ export default async function DashboardContent({
           <UpgradePlan
             userId={user.id}
             email={email}
+            name={fullName}
             isPro={userData?.plan === "pro"}
           />
         </div>

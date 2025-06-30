@@ -116,6 +116,7 @@ export default function DashboardLayout({
                 body: JSON.stringify({
                   userId: user.id,
                   email: user.primaryEmailAddress?.emailAddress,
+                  name: user?.fullName,
                   amount: 5,
                   plan: "pro",
                 }),

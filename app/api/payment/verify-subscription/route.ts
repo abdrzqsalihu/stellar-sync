@@ -9,7 +9,6 @@ export async function GET(req: NextRequest) {
 
   console.log("Subscription verification params:", { txRef, transactionId, status });
   
-  // Check if secret key is available
   if (!process.env.FLW_SECRET_KEY) {
     console.error("FLW_SECRET_KEY environment variable is not set");
     return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard?status=failed`);
@@ -17,13 +16,11 @@ export async function GET(req: NextRequest) {
   
   console.log("Secret key available:", !!process.env.FLW_SECRET_KEY);
 
-  // Handle cancelled status first
   if (status === "cancelled") {
     console.log("Subscription cancelled, redirecting to dashboard");
     return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard?status=cancelled`);
   }
 
-  // Check for missing required parameters
   if (!transactionId || !txRef) {
     console.log("Missing required parameters, redirecting with failed status");
     return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard?status=failed`);
@@ -45,25 +42,21 @@ export async function GET(req: NextRequest) {
 
     if (!res.ok) {
       console.error("Flutterwave API error:", res.status, res.statusText);
-      
       try {
         const errorData = await res.text();
         console.error("Error response body:", errorData);
       } catch (e) {
         console.error("Could not read error response");
       }
-      
       return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard?status=failed`);
     }
 
     const data = await res.json();
     console.log("Flutterwave response:", JSON.stringify(data, null, 2));
 
-    // Check if the API call was successful and the transaction status is success
     if (data.status === "success" && data.data?.status === "successful") {
       console.log("Subscription transaction verified successfully");
       
-      // Get user ID and plan from meta data
       const userId = data.data.meta?.userId;
       const plan = data.data.meta?.plan || "pro";
       
@@ -74,7 +67,6 @@ export async function GET(req: NextRequest) {
 
       console.log("Processing subscription for userId:", userId, "plan:", plan);
       
-      // Handle subscription payment
       await handleSubscriptionPayment(userId, plan, data.data, txRef);
 
       console.log("Subscription processed successfully");
@@ -89,16 +81,29 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// Handle subscription payment
 async function handleSubscriptionPayment(userId: string, plan: string, transactionData: any, txRef: string) {
   try {
     console.log("Handling subscription payment for user:", userId);
 
-    // Check if this is initial subscription or recurring payment
+    // Fetch user to get correct email and name
+    const userDoc = await dbAdmin.collection('users').doc(userId).get();
+    if (!userDoc.exists) {
+      console.error("User not found for userId:", userId);
+      throw new Error("User not found");
+    }
+    const userData = userDoc.data();
+    const userEmail = userData.email;
+    const userName = userData.fullName || "Customer";
+
+    console.log("Using original user data:", { email: userEmail, name: userName });
+    console.log("Flutterwave modified data:", { 
+      email: transactionData.customer?.email, 
+      name: transactionData.customer?.name 
+    });
+
     const isInitialSubscription = txRef.startsWith('sub-');
     
     if (isInitialSubscription) {
-      // Initial subscription - update pending subscription to active
       console.log("Processing initial subscription");
       
       const subscriptionQuery = await dbAdmin
@@ -110,21 +115,20 @@ async function handleSubscriptionPayment(userId: string, plan: string, transacti
 
       if (!subscriptionQuery.empty) {
         const subscriptionDoc = subscriptionQuery.docs[0];
-        
-        // Update subscription to active
         await subscriptionDoc.ref.update({
           status: 'active',
           subscriptionId: transactionData.id,
           flutterwaveTransactionId: transactionData.id,
           startDate: new Date(),
-          nextPaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+          nextPaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           lastPaymentDate: new Date(),
+          // Use original user data, not Flutterwave's modified data
+          email: userEmail,
+          name: userName,
           updatedAt: new Date()
         });
-
-        console.log("Subscription activated successfully");
+        console.log("Subscription activated successfully with original user data");
       } else {
-        // Fallback: create new subscription record
         console.log("Creating new subscription record");
         
         await dbAdmin.collection('subscriptions').add({
@@ -135,7 +139,9 @@ async function handleSubscriptionPayment(userId: string, plan: string, transacti
           txRef,
           amount: transactionData.amount,
           currency: transactionData.currency,
-          email: transactionData.customer.email,
+          // Use original user data, not Flutterwave's modified data
+          email: userEmail,
+          name: userName,
           startDate: new Date(),
           nextPaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           lastPaymentDate: new Date(),
@@ -143,15 +149,52 @@ async function handleSubscriptionPayment(userId: string, plan: string, transacti
           updatedAt: new Date(),
           failedPaymentCount: 0
         });
-
-        console.log("New subscription created");
+        console.log("New subscription created with original user data");
       }
     } else {
-      // This is a recurring payment handled by webhook
       console.log("Recurring payment processed via webhook");
+      const subscriptionQuery = await dbAdmin
+        .collection('subscriptions')
+        .where('userId', '==', userId)
+        .where('status', '==', 'active')
+        .limit(1)
+        .get();
+
+      if (!subscriptionQuery.empty) {
+        const subscriptionDoc = subscriptionQuery.docs[0];
+        await subscriptionDoc.ref.update({
+          lastPaymentDate: new Date(),
+          nextPaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          // Update with correct user data
+          email: userEmail,
+          name: userName,
+          updatedAt: new Date()
+        });
+        console.log("Updated subscription for recurring payment with original user data");
+      } else {
+        console.log("No active subscription found, creating new one");
+        await dbAdmin.collection('subscriptions').add({
+          userId,
+          subscriptionId: transactionData.id,
+          plan,
+          status: 'active',
+          txRef,
+          amount: transactionData.amount,
+          currency: transactionData.currency,
+          // Use original user data
+          email: userEmail,
+          name: userName,
+          startDate: new Date(),
+          nextPaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          lastPaymentDate: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          failedPaymentCount: 0
+        });
+        console.log("New subscription created with original user data");
+      }
     }
 
-    // Update user document with subscription info
     await dbAdmin.collection("users").doc(userId).update({
       plan: plan,
       subscriptionStatus: 'active',
@@ -161,7 +204,6 @@ async function handleSubscriptionPayment(userId: string, plan: string, transacti
       updatedAt: new Date()
     });
 
-    // Log the payment
     await dbAdmin.collection('payments').add({
       userId,
       flutterwaveTransactionId: transactionData.id,
@@ -171,24 +213,28 @@ async function handleSubscriptionPayment(userId: string, plan: string, transacti
       paymentDate: new Date(),
       type: isInitialSubscription ? 'initial_subscription' : 'recurring',
       plan,
-      txRef
+      txRef,
+      // Store both original and Flutterwave data for reference
+      originalCustomer: {
+        email: userEmail,
+        name: userName
+      },
+      flutterwaveCustomer: transactionData.customer
     });
 
-    console.log("Subscription payment processed successfully");
-
+    console.log("Subscription payment processed successfully with original user data");
   } catch (error) {
     console.error("Error handling subscription payment:", error);
     throw error;
   }
 }
 
-// Helper function to get storage limit based on plan
 function getStorageLimit(plan: string): number {
   switch (plan.toLowerCase()) {
     case 'pro':
-      return 4294967296; // 4GB in bytes
+      return 4294967296;
     case 'free':
     default:
-      return 1073741824; // 1GB in bytes
+      return 1073741824;
   }
 }
