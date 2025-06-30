@@ -2,6 +2,7 @@
 import React from "react";
 import { Button } from "./ui/button";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 interface UpgradePlanProps {
   userId: string;
@@ -84,15 +85,14 @@ function UpgradePlan({ userId, email, name, isPro = false }: UpgradePlanProps) {
                 <span>Premium Features Unlocked</span>
               </li>
             </ul>
-            <Button
-              variant="outline"
+            <Link
+              href="/dashboard/subscription"
               className="w-full border-primary/20 hover:bg-primary/5"
-              onClick={() => {
-                toast.success("Thank you for being a Pro user!");
-              }}
             >
-              Manage Subscription
-            </Button>
+              <Button variant="outline" className="w-full mt-5">
+                Manage Subscription
+              </Button>
+            </Link>
           </div>
         </div>
       </div>

@@ -1,8 +1,6 @@
-import { FolderPlus } from "lucide-react";
 import { getFileTypesByCategory } from "../../lib/fileTypes";
 import { dbAdmin } from "../../lib/firebase-admin";
 import { getEmailFromUserId } from "../../lib/getEmailFromUserId";
-import { Button } from "../ui/button";
 import UploadButton from "../upload-button";
 import FileGrid from "../file-grid";
 

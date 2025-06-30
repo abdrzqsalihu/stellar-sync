@@ -14,6 +14,7 @@ import {
   Files,
   BadgeHelp,
   Check,
+  CreditCard,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -504,6 +505,50 @@ export default function DashboardLayout({
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup> */}
+
+            <SidebarGroup>
+              <SidebarGroupLabel className="text-gray-400 text-xs font-medium">
+                ACCOUNT
+              </SidebarGroupLabel>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={pathname === "/dashboard/subscription"}
+                      className="hover:bg-[#1c2536] hover:text-white data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#5056FD]/20 data-[active=true]:to-transparent data-[active=true]:text-white"
+                    >
+                      <Link href="/dashboard/subscription">
+                        <div
+                          className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                            pathname === "/dashboard/subscription"
+                              ? "bg-[#5056FD]"
+                              : "bg-[#1c2536]"
+                          }`}
+                        >
+                          <CreditCard className="h-4 w-4" />
+                        </div>
+                        <span>Subscription</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      className="hover:bg-[#1c2536] hover:text-white"
+                    >
+                      <Link href="#">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1c2536]">
+                          <Settings className="h-4 w-4" />
+                        </div>
+                        <span>Settings</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </SidebarGroup>
           </SidebarContent>
 
           <SidebarFooter className="bg-[#111827] text-white border-0">
