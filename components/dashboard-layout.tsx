@@ -546,6 +546,22 @@ export default function DashboardLayout({
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      asChild
+                      className="hover:bg-[#1c2536] hover:text-white"
+                    >
+                      <div
+                        onClick={() => signOut(() => router.push("/"))}
+                        className="cursor-pointer"
+                      >
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1c2536]">
+                          <LogOut className="h-4 w-4" />
+                        </div>
+                        <span>Logout</span>
+                      </div>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
                 </SidebarMenu>
               </SidebarGroupContent>
             </SidebarGroup>

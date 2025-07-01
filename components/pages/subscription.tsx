@@ -159,11 +159,11 @@ export default async function SubscriptionContent({
         <div className="lg:col-span-2 space-y-8">
           <SubscriptionOverview subscription={subscriptionData} />
           {/* <PlanComparison /> */}
-          <BillingHistory />
+          <BillingHistory subscription={subscriptionData} />
         </div>
 
         <div className="space-y-8">
-          <PaymentMethods />
+          <PaymentMethods subscription={subscriptionData} />
         </div>
       </div>
     </div>
