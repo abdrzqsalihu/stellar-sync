@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbAdmin } from "../../../../lib/firebase-admin";
-import { handleSubscriptionPayment } from "../../payment/verify-subscription/route";
+import { handleSubscriptionPayment } from "../../../../lib/subscription-utils";
+
 
 export async function POST(req: NextRequest) {
   try {
