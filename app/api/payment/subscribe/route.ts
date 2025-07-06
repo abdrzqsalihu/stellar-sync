@@ -12,7 +12,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
     }
 
-    // Validate user email
     const userDoc = await dbAdmin.collection('users').doc(userId).get();
     if (!userDoc.exists) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -21,7 +20,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email does not match user account" }, { status: 400 });
     }
 
-    // Check if user already has an active subscription
     const existingSubscription = await dbAdmin
       .collection('subscriptions')
       .where('userId', '==', userId)
@@ -29,14 +27,10 @@ export async function POST(req: NextRequest) {
       .get();
 
     if (!existingSubscription.empty) {
-      return NextResponse.json({
-        error: "User already has an active subscription"
-      }, { status: 400 });
+      return NextResponse.json({ error: "User already has an active subscription" }, { status: 400 });
     }
 
     const paymentPlanId = process.env.FLW_PAYMENT_PLAN_ID;
-    
-    // Create txRef once and use it consistently
     const txRef = `sub-${userId}-${Date.now()}`;
 
     const requestBody = {
@@ -70,17 +64,16 @@ export async function POST(req: NextRequest) {
     console.log("Flutterwave response:", JSON.stringify(data, null, 2));
 
     if (data.status === 'success') {
-      // Store pending subscription in Firebase using the SAME txRef
       await dbAdmin.collection('subscriptions').add({
         userId,
         plan,
         status: 'pending',
-        txRef: txRef, // Use the same txRef, not a new timestamp
+        txRef,
         createdAt: new Date(),
         amount: 5,
         currency: 'USD',
         email,
-        name: name || "Customer"
+        name: name || "Customer",
       });
 
       console.log("Pending subscription stored in Firestore:", { userId, txRef });
@@ -89,7 +82,6 @@ export async function POST(req: NextRequest) {
 
     console.error("Flutterwave error:", data.message);
     return NextResponse.json({ error: data.message }, { status: 400 });
-
   } catch (error) {
     console.error('Subscription error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

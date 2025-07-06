@@ -1,9 +1,8 @@
-import React from "react";
+import { dbAdmin } from "../../lib/firebase-admin";
 import SubscriptionOverview from "../subscription-overview";
 import BillingHistory from "../billing-history";
 import PaymentMethods from "../payment-methods";
 import { getEmailFromUserId } from "../../lib/getEmailFromUserId";
-import { dbAdmin } from "../../lib/firebase-admin";
 
 interface SubscriptionContentProps {
   userId: string;
@@ -15,14 +14,36 @@ export default async function SubscriptionContent({
   const email = await getEmailFromUserId(userId);
   const userDoc = await dbAdmin.collection("users").doc(userId).get();
 
-  // Fetch subscription data from subscriptions collection
+  // Fetch subscription data
   const subscriptionQuery = await dbAdmin
     .collection("subscriptions")
     .where("userId", "==", userId)
     .limit(1)
     .get();
 
-  let subscriptionData;
+  // Fetch payment data for billingHistory
+  const paymentsSnap = await dbAdmin
+    .collection("payments")
+    .where("userId", "==", userId)
+    .orderBy("paymentDate", "desc")
+    .limit(10)
+    .get();
+
+  const billingHistory = paymentsSnap.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      paymentId: data.flutterwaveTransactionId.toString(),
+      amount: data.amount || 0,
+      currency: data.currency || "USD",
+      date: data.paymentDate ? data.paymentDate.toDate().toISOString() : null,
+      status: data.status || "successful",
+      plan: data.plan || "Free",
+      transactionId: data.flutterwaveTransactionId || null,
+      txRef: data.txRef || null,
+      customerEmail: data.originalCustomer?.email || null,
+      customerName: data.originalCustomer?.name || null,
+    };
+  });
 
   // Get user's files for shared files count
   let files: Array<any> = [];
@@ -30,12 +51,24 @@ export default async function SubscriptionContent({
     .collection("uploadedFiles")
     .where("userEmail", "==", email);
   const snap = await base.get();
-  snap.docs.forEach((d) => files.push({ id: d.id, ...d.data() }));
+  snap.forEach((d) => files.push({ id: d.id, ...d.data() }));
 
   // Get user data and storage info
   const userData = userDoc.exists ? userDoc.data() : null;
-  const storageUsedBytes = userData?.storageUsed ?? 0;
-  const storageLimitBytes = userData?.storageLimit ?? 1073741824; // default 1GB
+  let storageUsedBytes = userData?.storageUsed ?? 0;
+  const storageLimitBytes = userData?.storageLimit ?? 1073741824; // Default 1GB
+
+  // Validate storageUsed to prevent invalid values
+  const MAX_REASONABLE_STORAGE_MB = 4 * 1024; // 4 GB in MB
+  if (
+    storageUsedBytes / (1024 * 1024) > MAX_REASONABLE_STORAGE_MB ||
+    storageUsedBytes < 0
+  ) {
+    console.warn(
+      `Invalid storageUsed for user ${userId}: ${storageUsedBytes} bytes. Resetting to 0.`
+    );
+    storageUsedBytes = 0;
+  }
 
   // Get plan from user data or subscription
   let currentPlan = userData?.plan || "free";
@@ -50,32 +83,24 @@ export default async function SubscriptionContent({
   const storageLimitMB = storageLimitBytes / (1024 * 1024);
   const storageLimitGB = storageLimitMB / 1024;
 
-  // Determine display unit - show MB if usage is under 1GB for better user understanding
+  // Determine display unit
   let storageUsedDisplay,
     storageUsedUnit,
     storageLimitDisplay,
     storageLimitUnit;
   if (storageUsedGB < 1) {
-    // Show in MB if usage is under 1GB
     storageUsedDisplay = storageUsedMB;
     storageUsedUnit = "MB";
-    // Show limit in GB if it's 1GB or more, otherwise MB
-    if (storageLimitGB >= 1) {
-      storageLimitDisplay = storageLimitGB;
-      storageLimitUnit = "GB";
-    } else {
-      storageLimitDisplay = storageLimitMB;
-      storageLimitUnit = "MB";
-    }
+    storageLimitDisplay = storageLimitGB >= 1 ? storageLimitGB : storageLimitMB;
+    storageLimitUnit = storageLimitGB >= 1 ? "GB" : "MB";
   } else {
-    // Show everything in GB if usage is 1GB or more
     storageUsedDisplay = storageUsedGB;
     storageUsedUnit = "GB";
     storageLimitDisplay = storageLimitGB;
     storageLimitUnit = "GB";
   }
 
-  // Calculate remaining storage in appropriate units
+  // Calculate remaining storage
   const remainingStorageBytes = Math.max(
     0,
     storageLimitBytes - storageUsedBytes
@@ -85,11 +110,9 @@ export default async function SubscriptionContent({
 
   let remainingStorageDisplay, remainingStorageUnit;
   if (storageUsedUnit === "MB") {
-    // If showing usage in MB, show remaining in MB too
     remainingStorageDisplay = remainingStorageMB;
     remainingStorageUnit = "MB";
   } else {
-    // If showing usage in GB, show remaining in GB
     remainingStorageDisplay = remainingStorageGB;
     remainingStorageUnit = "GB";
   }
@@ -102,10 +125,10 @@ export default async function SubscriptionContent({
       (file.sharedWith && file.sharedWith.length > 0)
   ).length;
 
+  let subscriptionData;
+
   if (!subscriptionQuery.empty) {
     const subscriptionDoc = subscriptionQuery.docs[0].data();
-
-    // Map your Firestore data to the component structure
     subscriptionData = {
       plan: subscriptionDoc.plan || "free",
       status: subscriptionDoc.status || "active",
@@ -125,9 +148,9 @@ export default async function SubscriptionContent({
         : null,
       amount: subscriptionDoc.amount || 0,
       currency: subscriptionDoc.currency || "USD",
+      billingHistory,
     };
   } else {
-    // Default free plan data if no subscription found
     subscriptionData = {
       plan: "free",
       status: "active",
@@ -143,6 +166,7 @@ export default async function SubscriptionContent({
       lastPaymentDate: null,
       amount: 0,
       currency: "USD",
+      billingHistory: [],
     };
   }
 
@@ -158,7 +182,6 @@ export default async function SubscriptionContent({
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-8">
           <SubscriptionOverview subscription={subscriptionData} />
-          {/* <PlanComparison /> */}
           <BillingHistory subscription={subscriptionData} />
         </div>
 

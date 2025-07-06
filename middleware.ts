@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 
 export default authMiddleware({
   // Routes that can be accessed while signed out
-  publicRoutes: ["/", "/preview/(.*)", "/api/(.*)", "/api/payment/verify-subscription"],
+  publicRoutes: ["/", "/preview/(.*)", "/api/(.*)", "/api/payment/verify-subscription", "/api/webhook/flutterwave"],
   // Routes that can always be accessed, and have
   // no authentication information
   ignoredRoutes: [
@@ -14,6 +14,7 @@ export default authMiddleware({
     "/favorites",
     "/file-preview/(.*)",
     "/api/payment/verify-subscription",
+    "/api/webhook/flutterwave",
   ],
  
   afterAuth(auth, req) {
