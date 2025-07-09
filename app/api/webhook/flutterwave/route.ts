@@ -60,6 +60,26 @@ export async function POST(req: NextRequest) {
       console.log(`Recorded failed transaction ${flutterwaveTransactionId}`);
       return NextResponse.json({ message: "Failed transaction recorded" }, { status: 200 });
     }
+    
+    if (event === "subscription.cancelled") {
+      const { id: subscriptionId, customer, meta } = data;
+      const userId = meta?.userId || customer.email;
+      const subscriptionQuery = await dbAdmin
+        .collection("subscriptions")
+        .where("userId", "==", userId)
+        .limit(1)
+        .get();
+      if (!subscriptionQuery.empty) {
+        await subscriptionQuery.docs[0].ref.update({
+          status: "canceled",
+          nextPaymentDate: null,
+          updatedAt: new Date(),
+        });
+        console.log(`Subscription ${subscriptionId} canceled for user ${userId}`);
+      }
+      return NextResponse.json({ message: "Subscription cancellation processed" }, { status: 200 });
+    }
+
 
     console.log(`Received unhandled event: ${event}`);
     return NextResponse.json({ message: "Webhook received" }, { status: 200 });

@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
+import toast from "react-hot-toast";
 
 interface SubscriptionData {
   plan: string;
@@ -22,10 +23,12 @@ interface SubscriptionData {
 
 interface PaymentMethodsProps {
   subscription: SubscriptionData;
+  userId: string;
 }
 
 export default function PaymentMethods({
   subscription: { nextBilling, amount, currency, plan },
+  userId,
 }: PaymentMethodsProps) {
   return (
     <div className="space-y-6">
@@ -75,7 +78,27 @@ export default function PaymentMethods({
                 </p>
                 <Button
                   variant="outline"
-                  className="border-red-200 text-red-600 hover:bg-red-50 bg-transparent"
+                  onClick={async () => {
+                    try {
+                      const response = await fetch("/api/payment/cancel", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ userId }),
+                      });
+                      if (response.ok) {
+                        toast.error("Subscription canceled successfully");
+                        window.location.reload();
+                      } else {
+                        const error = await response.json();
+                        toast.error(
+                          `Failed to cancel subscription: ${error.error}`
+                        );
+                      }
+                    } catch (error) {
+                      toast.error("Error canceling subscription");
+                    }
+                  }}
+                  className="border-red-200 text-red-600 hover:bg-red-50 dark:hover:text-white dark:hover:bg-red-800 bg-transparent"
                 >
                   Cancel Subscription
                 </Button>

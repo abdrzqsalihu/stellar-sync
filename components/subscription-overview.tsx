@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Progress } from "./ui/progress";
 import { Badge } from "./ui/badge";
 import { Calendar, Crown, HardDrive, Users, Zap } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import toast from "react-hot-toast";
 
 interface SubscriptionData {
   plan: string;
@@ -67,6 +69,8 @@ export default function SubscriptionOverview({
       ? (subscription.sharedFiles / subscription.sharedLimit) * 100
       : 0; // No percentage for "Unlimited"
 
+  const { user } = useUser();
+
   return (
     <Card className="overflow-hidden">
       <CardHeader className="bg-gradient-to-r from-[#5056FD]/10 to-[#5056FD]/5 border-b">
@@ -98,7 +102,30 @@ export default function SubscriptionOverview({
             </div>
           </div>
           {subscription.plan === "free" && (
-            <Button className="bg-[#5056FD] hover:bg-[#4045e0]">
+            <Button
+              onClick={async () => {
+                if (!user) return toast.error("User not found");
+
+                const res = await fetch("/api/payment/subscribe", {
+                  method: "POST",
+                  body: JSON.stringify({
+                    userId: user.id,
+                    email: user.primaryEmailAddress?.emailAddress,
+                    name: user?.fullName,
+                    amount: 5,
+                    plan: "pro",
+                  }),
+                });
+
+                const data = await res.json();
+                if (data.link) {
+                  window.location.href = data.link;
+                } else {
+                  toast.error("Failed to initiate payment");
+                }
+              }}
+              className="bg-[#5056FD] hover:bg-[#4045e0]"
+            >
               <Zap className="mr-2 h-4 w-4" />
               Upgrade Plan
             </Button>

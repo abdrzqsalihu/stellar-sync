@@ -186,7 +186,7 @@ export default async function SubscriptionContent({
         </div>
 
         <div className="space-y-8">
-          <PaymentMethods subscription={subscriptionData} />
+          <PaymentMethods subscription={subscriptionData} userId={userId} />
         </div>
       </div>
     </div>
