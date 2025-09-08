@@ -27,7 +27,7 @@ interface PaymentMethodsProps {
 }
 
 export default function PaymentMethods({
-  subscription: { nextBilling, amount, currency, plan },
+  subscription: { nextBilling, amount, currency, plan, status },
   userId,
 }: PaymentMethodsProps) {
   return (
@@ -63,7 +63,7 @@ export default function PaymentMethods({
       </Card>
 
       {/* Cancel Subscription */}
-      {plan === "pro" ? (
+      {plan === "pro" && status === "active" ? (
         <Card className="border-red-200">
           <CardHeader>
             <CardTitle className="text-lg text-red-600">Danger Zone</CardTitle>

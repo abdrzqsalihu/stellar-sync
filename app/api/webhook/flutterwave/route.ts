@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { dbAdmin } from "../../../../lib/firebase-admin";
 import { handleSubscriptionPayment } from "../../../../lib/subscription-utils";
 
-
 export async function POST(req: NextRequest) {
   try {
     // Verify webhook signature
@@ -20,10 +19,22 @@ export async function POST(req: NextRequest) {
       transactionId: data.id,
       txRef: data.tx_ref,
       status: data.status,
+      paymentPlan: data.payment_plan || 'none'
     });
 
+    // Handle successful payments
     if (event === "charge.completed" && data.status === "successful") {
-      const { id: flutterwaveTransactionId, tx_ref: txRef, amount, currency, customer, created_at: paymentDate, meta } = data;
+      const { 
+        id: flutterwaveTransactionId, 
+        tx_ref: txRef, 
+        amount, 
+        currency, 
+        customer, 
+        created_at: paymentDate, 
+        meta,
+        payment_plan 
+      } = data;
+
       const userId = meta?.userId || txRef.split("-")[1];
       const plan = meta?.plan || "pro";
 
@@ -35,15 +46,79 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ message: "Duplicate transaction" }, { status: 200 });
       }
 
-      // Process payment
-      await handleSubscriptionPayment(userId, plan, data, txRef);
-      console.log(`Processed webhook for transaction ${flutterwaveTransactionId}`);
-      return NextResponse.json({ message: "Webhook processed" }, { status: 200 });
+      // Check if this is a subscription payment (has payment_plan)
+      if (payment_plan) {
+        console.log(`Processing recurring subscription payment for user ${userId}`);
+        
+        // Check if user already has an active subscription for this month
+        const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
+        const existingMonthlyPayment = await dbAdmin
+          .collection("payments")
+          .where("userId", "==", userId)
+          .where("status", "==", "successful")
+          .where("type", "==", "recurring")
+          .where("billingMonth", "==", currentMonth)
+          .limit(1)
+          .get();
+
+        if (!existingMonthlyPayment.empty) {
+          console.log(`User ${userId} already has payment for month ${currentMonth}`);
+          return NextResponse.json({ message: "Monthly payment already processed" }, { status: 200 });
+        }
+
+        // Record the recurring payment
+        await paymentRef.set({
+          userId,
+          flutterwaveTransactionId,
+          amount,
+          currency,
+          status: "successful",
+          paymentDate: new Date(paymentDate),
+          type: "recurring",
+          plan,
+          txRef,
+          billingMonth: currentMonth,
+          paymentPlan: payment_plan,
+          originalCustomer: { email: customer.email, name: customer.name || "Customer" },
+          flutterwaveCustomer: customer,
+          createdAt: new Date(),
+        });
+
+        // Update subscription with latest payment
+        const subscriptionQuery = await dbAdmin
+          .collection("subscriptions")
+          .where("userId", "==", userId)
+          .where("status", "==", "active")
+          .limit(1)
+          .get();
+
+        if (!subscriptionQuery.empty) {
+          const subscriptionDoc = subscriptionQuery.docs[0];
+          const nextPaymentDate = new Date(paymentDate);
+          nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
+
+          await subscriptionDoc.ref.update({
+            lastPaymentDate: new Date(paymentDate),
+            nextPaymentDate: nextPaymentDate,
+            updatedAt: new Date(),
+          });
+        }
+
+        console.log(`Processed recurring subscription payment ${flutterwaveTransactionId} for user ${userId}`);
+      } else {
+        // Handle initial subscription payment
+        console.log(`Processing initial subscription payment for user ${userId}`);
+        await handleSubscriptionPayment(userId, plan, data, txRef);
+      }
+
+      return NextResponse.json({ message: "Payment processed" }, { status: 200 });
     }
 
+    // Handle failed payments
     if (event === "charge.completed" && data.status === "failed") {
       const { id: flutterwaveTransactionId, tx_ref: txRef, customer } = data;
       const userId = txRef.split("-")[1];
+      
       await dbAdmin.collection("payments").doc(flutterwaveTransactionId.toString()).set({
         userId,
         flutterwaveTransactionId,
@@ -56,30 +131,80 @@ export async function POST(req: NextRequest) {
         txRef,
         originalCustomer: { email: customer.email, name: customer.name || "Customer" },
         flutterwaveCustomer: customer,
+        createdAt: new Date(),
       });
+      
       console.log(`Recorded failed transaction ${flutterwaveTransactionId}`);
       return NextResponse.json({ message: "Failed transaction recorded" }, { status: 200 });
     }
     
+    // Handle subscription cancellation
     if (event === "subscription.cancelled") {
       const { id: subscriptionId, customer, meta } = data;
       const userId = meta?.userId || customer.email;
+      
       const subscriptionQuery = await dbAdmin
         .collection("subscriptions")
         .where("userId", "==", userId)
+        .where("status", "==", "active")
         .limit(1)
         .get();
+
       if (!subscriptionQuery.empty) {
         await subscriptionQuery.docs[0].ref.update({
-          status: "canceled",
+          status: "cancelled",
+          cancelledAt: new Date(),
           nextPaymentDate: null,
           updatedAt: new Date(),
         });
-        console.log(`Subscription ${subscriptionId} canceled for user ${userId}`);
+        
+        // Update user subscription status
+        await dbAdmin.collection("users").doc(userId).update({
+          plan: "free", // Reset to free plan after cancellation
+          subscriptionStatus: "cancelled",
+          updatedAt: new Date(),
+        });
+        
+        console.log(`Subscription ${subscriptionId} cancelled for user ${userId}`);
       }
+      
       return NextResponse.json({ message: "Subscription cancellation processed" }, { status: 200 });
     }
 
+    // Handle subscription activated (when first payment is successful)
+    if (event === "subscription.activated") {
+      const { id: subscriptionId, customer, meta } = data;
+      const userId = meta?.userId;
+
+      if (userId) {
+        const subscriptionQuery = await dbAdmin
+          .collection("subscriptions")
+          .where("userId", "==", userId)
+          .where("status", "==", "pending")
+          .limit(1)
+          .get();
+
+        if (!subscriptionQuery.empty) {
+          await subscriptionQuery.docs[0].ref.update({
+            status: "active",
+            flutterwaveSubscriptionId: subscriptionId,
+            activatedAt: new Date(),
+            updatedAt: new Date(),
+          });
+
+          await dbAdmin.collection("users").doc(userId).update({
+            subscriptionStatus: "active",
+            subscriptionPlan: "pro",
+            subscriptionId: subscriptionId,
+            updatedAt: new Date(),
+          });
+
+          console.log(`Subscription activated for user ${userId}`);
+        }
+      }
+
+      return NextResponse.json({ message: "Subscription activation processed" }, { status: 200 });
+    }
 
     console.log(`Received unhandled event: ${event}`);
     return NextResponse.json({ message: "Webhook received" }, { status: 200 });

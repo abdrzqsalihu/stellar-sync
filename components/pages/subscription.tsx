@@ -131,7 +131,7 @@ export default async function SubscriptionContent({
     const subscriptionDoc = subscriptionQuery.docs[0].data();
     subscriptionData = {
       plan: subscriptionDoc.plan || "free",
-      status: subscriptionDoc.status || "active",
+      status: subscriptionDoc.subscriptionStatus || "active",
       nextBilling: subscriptionDoc.nextPaymentDate
         ? subscriptionDoc.nextPaymentDate.toDate().toISOString()
         : null,
