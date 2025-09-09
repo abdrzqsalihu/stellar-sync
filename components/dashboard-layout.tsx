@@ -536,10 +536,17 @@ export default function DashboardLayout({
                   <SidebarMenuItem>
                     <SidebarMenuButton
                       asChild
-                      className="hover:bg-[#1c2536] hover:text-white"
+                      isActive={pathname === "/dashboard/user-profile"}
+                      className="hover:bg-[#1c2536] hover:text-white data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#5056FD]/20 data-[active=true]:to-transparent data-[active=true]:text-white"
                     >
-                      <Link href="#">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1c2536]">
+                      <Link href="/dashboard/user-profile">
+                        <div
+                          className={`flex h-8 w-8 items-center justify-center rounded-lg ${
+                            pathname === "/dashboard/user-profile"
+                              ? "bg-[#5056FD]"
+                              : "bg-[#1c2536]"
+                          }`}
+                        >
                           <Settings className="h-4 w-4" />
                         </div>
                         <span>Settings</span>
