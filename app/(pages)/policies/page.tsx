@@ -70,7 +70,7 @@ function Policies() {
             </h3>
             <ol className="list-decimal ml-6 space-y-2 text-sm md:text-base leading-6">
               <li>
-                You must be at least 18 years old to use Stellarsync services.
+                You must be at least 12 years old to use Stellarsync services.
               </li>
               <li>
                 Stellarsync provides digital tools for uploading, managing, and
