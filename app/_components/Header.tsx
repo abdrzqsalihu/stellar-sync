@@ -47,7 +47,7 @@ function Header() {
                     <li key={links.id}>
                       <Link
                         className={`text-gray-600 transition hover:text-primary hover:font-medium text-[0.9rem]`}
-                        href={`#${links.id}`}
+                        href={`${links.id}`}
                       >
                         {links.title}
                       </Link>

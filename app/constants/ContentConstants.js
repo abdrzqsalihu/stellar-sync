@@ -3,15 +3,15 @@ import { ExternalLink, Folders, LayoutGrid, Star } from "lucide-react";
 // Navigiation link
 export const navLinks = [
   {
-    id: "home",
+    id: "./",
     title: "Home",
   },
   {
-    id: "features",
+    id: "/#features",
     title: "Features",
   },
   {
-    id: "pricing",
+    id: "/#pricing",
     title: "Pricing",
   },
 ];

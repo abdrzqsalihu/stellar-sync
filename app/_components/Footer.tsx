@@ -13,18 +13,26 @@ function Footer() {
             <li key={links.id}>
               <Link
                 className={`text-gray-500 transition hover:opacity-75 text-[0.9rem]`}
-                href={`#${links.id}`}
+                href={`${links.id}`}
               >
                 {links.title}
               </Link>
             </li>
           ))}
+          <li>
+            <Link
+              className={`text-gray-500 transition hover:opacity-75 text-[0.9rem]`}
+              href={`/policies`}
+            >
+              Policies
+            </Link>
+          </li>
         </ul>
         {/* Social Icon */}
         <ul className="mt-8 flex justify-center gap-6 sm:mt-0 lg:justify-end">
           <li>
             <a
-              href="#"
+              href="https://x.com/abdrzqsalihu"
               rel="noreferrer"
               target="_blank"
               className="text-gray-700 transition hover:opacity-75"
@@ -36,7 +44,7 @@ function Footer() {
 
           <li>
             <a
-              href="#"
+              href="https://www.instagram.com/abdrzq.dev/"
               rel="noreferrer"
               target="_blank"
               className="text-gray-700 transition hover:opacity-75"
