@@ -60,6 +60,20 @@
 }
 
 /* Clerk + shadcn Overrides: Add this block for text color sync */
+.dark .cl-providerIcon__apple {
+  filter: invert(1);
+}
+
+.dark .cl-socialButtonsIconButton {
+  border: rgba(29, 40, 64, 0.83) solid 1px !important;
+  padding: 13px;
+  color: white !important;
+}
+
+.dark .cl-dividerLine {
+  background-color: rgba(29, 40, 64, 0.83);
+}
+
 .cl-button, .cl-input, .cl-menuList { @apply !shadow-none; }
 .cl-formButtonPrimary { 
   @apply inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md bg-primary px-3 font-medium text-primary-foreground !shadow-none ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50; 
