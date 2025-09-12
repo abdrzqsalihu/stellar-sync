@@ -29,7 +29,7 @@ function Header() {
           <div className="flex h-16 items-center justify-between">
             <div className="md:flex md:items-center md:gap-12">
               {/* Logo  */}
-              <a className="block" href="/">
+              <Link className="block" href="/">
                 <Image
                   src="/logo.png"
                   width={100}
@@ -37,7 +37,7 @@ function Header() {
                   style={{ width: "auto", height: "auto" }}
                   alt="logo"
                 />
-              </a>
+              </Link>
             </div>
 
             <div className="hidden md:block">

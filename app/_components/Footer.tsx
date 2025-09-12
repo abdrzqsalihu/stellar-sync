@@ -24,7 +24,7 @@ function Footer() {
               className={`text-gray-500 transition hover:opacity-75 text-[0.9rem]`}
               href={`/policies`}
             >
-              Policies
+              Terms & Policies
             </Link>
           </li>
         </ul>
