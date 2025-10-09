@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import { dbAdmin } from "../../../../lib/firebase-admin";
 import jsPDF from "jspdf";
 
@@ -53,12 +54,22 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ paym
       return NextResponse.json({ error: "Payment not found" }, { status: 404 });
     }
 
-    const paymentData = paymentDoc.data() as PaymentData;
+    // const paymentData = paymentDoc.data() as PaymentData;
+    const paymentData = paymentDoc.data() as PaymentData & { userId?: string };
     if (paymentData?.status !== "successful") {
       return NextResponse.json(
         { error: "Invoice not available for non-successful payments" },
         { status: 400 }
       );
+    }
+
+  // Check if user is authorized
+   const { userId } = auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    if (paymentData.userId !== userId) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Initialize PDF document
