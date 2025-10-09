@@ -8,7 +8,20 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const response = await fetch(fileUrl);
+    
+    const parsedUrl = new URL(fileUrl);
+     const allowedHosts = (process.env.ALLOWED_DOWNLOAD_HOSTS ?? "")
+      .split(",")
+      .map((host) => host.trim())
+      .filter(Boolean);
+    if (allowedHosts.length > 0 && !allowedHosts.includes(parsedUrl.host)) {
+      return NextResponse.json(
+        { error: "File host not allowed" },
+        { status: 400 }
+      );
+    }
+    
+     const response = await fetch(parsedUrl.toString());
 
     if (!response.ok) {
       return NextResponse.json({ error: `Failed to fetch file: ${response.statusText}` }, { status: 500 });

@@ -639,7 +639,7 @@ export default function DashboardLayout({
                   />
                 </a>
 
-                <UserButton />
+                <UserButton afterSignOutUrl="/" />
               </div>
             </div>
           </header>

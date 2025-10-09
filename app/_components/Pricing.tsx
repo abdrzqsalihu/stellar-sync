@@ -6,7 +6,7 @@ function Pricing() {
   return (
     <div className="h-full" id="pricing">
       <div className="mx-auto max-w-[92%] md:max-w-3xl px-4 py-8 sm:px-6 sm:py-20 lg:px-8">
-        <h2 className="text-3xl font-bold sm:text-4xl text-center mb-10 dark:text-gray-900">
+        <h2 className="text-3xl font-bold sm:text-4xl text-center mb-10 text-gray-900">
           Pricing
         </h2>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-center sm:gap-8">
