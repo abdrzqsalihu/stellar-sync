@@ -2,33 +2,159 @@
 @tailwind components;
 @tailwind utilities;
 
-/* :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 240 80% 66%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 240 80% 66%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 240 80% 66%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 240 80% 66%;
+  }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+
+@layer base {
+  * {
+    @apply border-border;
   }
-} */
+  body {
+    @apply bg-background text-foreground;
+  }
+}
 
-/* body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-} */
+/* Clerk + shadcn Overrides: Add this block for text color sync */
+.dark .cl-providerIcon__apple {
+  filter: invert(1);
+}
 
-/* * {
-  scroll-behavior: smooth;
-} */
+.dark .cl-socialButtonsIconButton {
+  border: rgba(29, 40, 64, 0.83) solid 1px !important;
+  padding: 13px;
+  color: white !important;
+}
+
+.dark .cl-dividerLine {
+  background-color: rgba(29, 40, 64, 0.83);
+}
+
+.cl-button, .cl-input, .cl-menuList { @apply !shadow-none; }
+.cl-formButtonPrimary { 
+  @apply inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md bg-primary px-3 font-medium text-primary-foreground !shadow-none ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50; 
+}
+.cl-card, .cl-socialButtonsBlockButton, .cl-alert, .cl-phoneInputBox, .cl-userButtonPopoverCard, .cl-organizationSwitcherPopoverCard { 
+  @apply rounded-2xl border border-input bg-background shadow-sm; 
+}
+.cl-headerTitle, .cl-socialButtonsBlockButtonText, .cl-loading, .cl-formFieldLabel, .cl-formHeaderTitle, .cl-selectButton__countryCode, .cl-selectButton__countryCode p, .cl-selectOption p, .cl-selectOption div, .cl-modalCloseButton, .cl-navbarButton, .cl-breadcrumbsItem.cl-breadcrumbsItem__currentPage, .cl-profileSectionTitle p, .cl-userPreviewTextContainer, .cl-organizationPreviewTextContainer, .cl-profileSectionContent p, .cl-form p, .cl-accordionTriggerButton, .cl-organizationSwitcherTrigger, .cl-userPreviewSecondaryIdentifier, .cl-userPreviewSecondaryIdentifier__userButton,.cl-internal-1ptfnbv { 
+  @apply text-foreground; /* Key: Forces Clerk text to use shadcn foreground (white in dark, dark in light) */
+}
+.cl-headerSubtitle, .cl-dividerText, .cl-footerActionText, .cl-alertText, .cl-formFieldInfoText, .cl-formFieldSuccessText, .cl-identityPreviewText, .cl-userButtonPopoverActionButton, .cl-userButtonPopoverActionButtonText { 
+  @apply text-muted-foreground; 
+}
+.cl-formFieldErrorText { 
+  @apply !text-destructive; 
+}
+/* Existing shadcn vars, Tailwind, and Clerk overrides... */
+
+/* Enhanced: Icon Styling for Clerk UserButton Popover (Manage Account Lock + Others) */
+.cl-userButtonPopoverActionButtonIconBox,
+.cl-userButtonPopoverActionButtonIconBox__manageAccount {  /* Targets the icon box/container for manage account and similar */
+  @apply text-foreground; /* Theme-aware color: dark in light mode, light in dark mode */
+  color: hsl(var(--foreground)); /* Fallback CSS var for explicit inheritance */
+  transition: all 0.2s ease; /* Smooth theme/hover transitions */
+}
+
+.cl-userButtonPopoverActionButtonIcon,
+.cl-userButtonPopoverActionButtonIcon__manageAccount {  /* Targets the SVG icon itself (lock for manage account) */
+  @apply h-3.5 w-3.5; /* Consistent size (adjust if needed, e.g., h-5 w-5 for larger) */
+  fill: currentColor; /* Keeps the filled lock path using inherited color */
+  stroke: none; /* No stroke since it's a filled icon (unlike outline icons) */
+  color: rgba(0, 0, 0, 0.386); /* Ensures SVG inherits from parent (text-foreground) */
+  transition: all 0.2s ease;
+}
+
+/* Hover/Focus for Popover Action Icons (e.g., lock on "Manage Account") */
+.cl-userButtonPopoverActionButton:hover .cl-userButtonPopoverActionButtonIcon,
+.cl-userButtonPopoverActionButton:focus .cl-userButtonPopoverActionButtonIcon,
+.cl-userButtonPopoverActionButton:hover .cl-userButtonPopoverActionButtonIcon__manageAccount,
+.cl-userButtonPopoverActionButton:hover .cl-userButtonPopoverActionButtonIcon__signOut {
+  @apply text-primary; /* Tints to your blue primary on hover for feedback */
+  color: hsl(var(--primary)); /* Matches --primary var (e.g., blue-500) */
+  fill: hsl(var(--primary)); /* Explicit fill for the lock path */
+  transform: scale(1.1); /* Subtle scale on hover for emphasis (optional) */
+}
+
+/* General UserButton Popover Icons (e.g., sign out, custom actions) */
+.cl-userButtonPopoverIcon {  /* Broader class for other popover icons */
+  @apply text-muted-foreground; /* Subtle for non-primary actions */
+  fill: currentColor;
+  stroke: none;
+  color: hsl(var(--muted-foreground));
+}
+
+.cl-userButtonPopoverActionButton:hover .cl-userButtonPopoverIcon {
+  @apply text-primary;
+  color: hsl(var(--primary));
+  fill: hsl(var(--primary));
+}
+
+/* Dark Mode Reinforcement (ensures icons pop in dark cards/popovers) */
+.dark .cl-userButtonPopoverActionButtonIconBox__manageAccount,
+.dark .cl-userButtonPopoverActionButtonIcon__manageAccount,
+.dark .cl-userButtonPopoverActionButtonIcon__signOut {
+  @apply text-card-foreground; /* Brighter in dark mode if on a card */
+  color: hsl(var(--card-foreground));
+}
+
+/* Optional: If the icon appears too small or offset, adjust the box */
+.cl-userButtonPopoverActionButtonIconBox,
+.cl-userButtonPopoverActionButtonIconBox__signOut {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1rem; /* Ensures consistent spacing */
+  margin-right: 0.5rem; /* Space between icon and text in popover */
+}
+
+* {
+  scroll-behavior: smooth !important;
+}
 
 /* Optional: Only hide scrollbar, still allow scrolling */
 body {
