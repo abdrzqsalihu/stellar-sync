@@ -23,8 +23,8 @@ function Policies() {
               Contact Information
             </h3>
             <div className="space-y-1 text-sm md:text-base">
-              <p>Stellarsync</p>
-              <p>Kubwa, Abuja, Nigeria.</p>
+              <p>StellarSync</p>
+              <p>BHND TRUTH AND TRUST ACADE.</p>
               <p>Phone: 08085458632</p>
               {/* <p>Email: abdrzq.salihu@gmail.com</p> */}
             </div>
