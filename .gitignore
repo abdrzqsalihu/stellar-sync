@@ -35,3 +35,5 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 app/api/admin/cleanup-subscriptions/route.ts
+
+stellar-sync-9bb8a-firebase-adminsdk-gvakd-06da50e2a0.json
