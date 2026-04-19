@@ -28,6 +28,7 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    const secretKey = (process.env.FLW_SECRET_KEY || "").trim().replace(/^["']|["']$/g, "");
     console.log("Verifying subscription transaction with Flutterwave API");
     console.log("API URL:", `https://api.flutterwave.com/v3/transactions/${transactionId}/verify`);
 
@@ -35,7 +36,7 @@ export async function GET(req: NextRequest) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.FLW_SECRET_KEY?.trim()}`,
+        'Authorization': `Bearer ${secretKey}`,
       },
     });
 
