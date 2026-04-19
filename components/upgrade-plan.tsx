@@ -151,11 +151,12 @@ function UpgradePlan({ userId, email, name, isPro = false }: UpgradePlanProps) {
               });
 
               const data = await res.json();
+              console.log("Subscription response:", data);
               if (data.link) {
                 window.location.href = data.link;
               } else {
+                console.error("Subscription error details:", data);
                 toast.error(data.error || "Failed to initiate payment");
-                // toast.error("Failed to initiate payment");
               }
             }}
             className="w-full bg-primary hover:bg-primary/90"
