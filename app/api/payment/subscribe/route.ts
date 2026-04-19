@@ -17,6 +17,8 @@ export async function POST(req: NextRequest) {
 
     // Debug: Log environment variables (without exposing secrets)
     const secretKey = (process.env.FLW_SECRET_KEY || "").trim().replace(/^["']|["']$/g, "");
+    const isVercelPreview = !!process.env.VERCEL_URL && !process.env.VERCEL_URL.includes("-prod-");
+
     console.log("Environment check:", {
       hasSecretKey: !!secretKey,
       secretKeyLength: secretKey.length,
@@ -25,17 +27,27 @@ export async function POST(req: NextRequest) {
       hasPaymentPlan: !!process.env.FLW_PAYMENT_PLAN_ID,
       paymentPlanId: process.env.FLW_PAYMENT_PLAN_ID,
       appUrl: process.env.NEXT_PUBLIC_APP_URL,
-      nodeEnv: process.env.NODE_ENV
+      nodeEnv: process.env.NODE_ENV,
+      isVercelPreview
     });
 
-    if (!process.env.FLW_SECRET_KEY || !process.env.FLW_PAYMENT_PLAN_ID || !process.env.NEXT_PUBLIC_APP_URL) {
+    if (!secretKey || !process.env.FLW_PAYMENT_PLAN_ID || !process.env.NEXT_PUBLIC_APP_URL) {
       console.error("Missing critical environment variables:", {
-        hasSecretKey: !!process.env.FLW_SECRET_KEY,
+        hasSecretKey: !!secretKey,
         hasPaymentPlan: !!process.env.FLW_PAYMENT_PLAN_ID,
-        hasAppUrl: !!process.env.NEXT_PUBLIC_APP_URL
+        hasAppUrl: !!process.env.NEXT_PUBLIC_APP_URL,
+        isVercelPreview
       });
       return NextResponse.json({ 
-        error: "Server configuration error. Missing environment variables." 
+        error: `Server configuration error. ${isVercelPreview ? "This is a Vercel Preview deployment - check if your environment variables are enabled for 'Preview' scope." : "Check your Vercel Environment Variables."}`,
+        details: { isVercelPreview, hasSecretKey: !!secretKey }
+      }, { status: 500 });
+    }
+
+    if (!secretKey.startsWith("FLWSECK")) {
+      console.error("Invalid Secret Key format: Does not start with FLWSECK");
+      return NextResponse.json({ 
+        error: "FLW_SECRET_KEY is incorrectly formatted. It must start with 'FLWSECK' or 'FLWSECK_TEST'." 
       }, { status: 500 });
     }
 
