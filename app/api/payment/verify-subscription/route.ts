@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.FLW_SECRET_KEY}`,
+        'Authorization': `Bearer ${process.env.FLW_SECRET_KEY?.trim()}`,
       },
     });
 
