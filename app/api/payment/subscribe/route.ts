@@ -16,9 +16,12 @@ export async function POST(req: NextRequest) {
     const { amount, userId, email, plan, name } = body;
 
     // Debug: Log environment variables (without exposing secrets)
+    const secretKey = process.env.FLW_SECRET_KEY || "";
     console.log("Environment check:", {
-      hasSecretKey: !!process.env.FLW_SECRET_KEY,
-      secretKeyLength: process.env.FLW_SECRET_KEY?.length,
+      hasSecretKey: !!secretKey,
+      secretKeyLength: secretKey.length,
+      secretKeyPrefix: secretKey.substring(0, 7), // e.g., FLWSECK
+      secretKeySuffix: secretKey.length > 4 ? secretKey.substring(secretKey.length - 4) : "****",
       hasPaymentPlan: !!process.env.FLW_PAYMENT_PLAN_ID,
       paymentPlanId: process.env.FLW_PAYMENT_PLAN_ID,
       appUrl: process.env.NEXT_PUBLIC_APP_URL,
@@ -104,34 +107,33 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.FLW_SECRET_KEY}`,
+        "Authorization": `Bearer ${process.env.FLW_SECRET_KEY?.trim()}`,
       },
       body: JSON.stringify(requestBody),
+      cache: 'no-store',
     });
 
-    console.log("Response status:", res.status);
-    console.log("Response headers:", Object.fromEntries(res.headers.entries()));
-
-    // Get response text first to see what we're actually receiving
+    console.log("Flutterwave Response Status:", res.status);
     const responseText = await res.text();
-    console.log("Raw response:", responseText.substring(0, 500));
+    
+    if (!res.ok && (responseText.includes('<!DOCTYPE') || responseText.includes('<html>'))) {
+      console.error("Flutterwave returned HTML error:", responseText.substring(0, 500));
+      return NextResponse.json({ 
+        error: `Flutterwave API returned an HTML error page (Status: ${res.status}). This usually indicates a configuration issue, an invalid endpoint, or a WAF block.`,
+        status: res.status,
+        preview: responseText.substring(0, 200)
+      }, { status: 500 });
+    }
 
     let data;
     try {
       data = JSON.parse(responseText);
     } catch (parseError) {
       console.error("JSON parse error:", parseError);
-      console.error("Response was:", responseText.substring(0, 1000));
-      
-      // Check if response is HTML (likely an error page)
-      if (responseText.includes('<!DOCTYPE') || responseText.includes('<html>')) {
-        return NextResponse.json({ 
-          error: "Flutterwave API returned HTML instead of JSON. Check your API key and endpoint." 
-        }, { status: 500 });
-      }
-      
       return NextResponse.json({ 
-        error: "Invalid response from Flutterwave API" 
+        error: "Invalid JSON response from Flutterwave",
+        status: res.status,
+        preview: responseText.substring(0, 200)
       }, { status: 500 });
     }
 
