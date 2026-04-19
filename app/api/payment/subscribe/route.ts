@@ -4,7 +4,8 @@ import { cancelAllPendingSubscriptions } from "../../../../lib/subscription-util
 
 export async function POST(req: NextRequest) {
   try {
-    const { amount, userId, email, plan, name } = await req.json();
+    const body = await req.json().catch(() => ({}));
+    const { amount, userId, email, plan, name } = body;
 
     // Debug: Log environment variables (without exposing secrets)
     console.log("Environment check:", {
@@ -15,19 +16,39 @@ export async function POST(req: NextRequest) {
       appUrl: process.env.NEXT_PUBLIC_APP_URL
     });
 
-    if (plan !== "pro") {
-      return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+    if (!process.env.FLW_SECRET_KEY || !process.env.FLW_PAYMENT_PLAN_ID || !process.env.NEXT_PUBLIC_APP_URL) {
+      console.error("Missing critical environment variables:", {
+        hasSecretKey: !!process.env.FLW_SECRET_KEY,
+        hasPaymentPlan: !!process.env.FLW_PAYMENT_PLAN_ID,
+        hasAppUrl: !!process.env.NEXT_PUBLIC_APP_URL
+      });
+      return NextResponse.json({ 
+        error: "Server configuration error. Missing environment variables." 
+      }, { status: 500 });
     }
-    if (amount !== 5) {
-      return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
+
+    if (!plan || plan !== "pro") {
+      console.error("Invalid plan provided:", plan);
+      return NextResponse.json({ error: "Invalid plan", details: { provided: plan } }, { status: 400 });
+    }
+    if (!amount || amount !== 5) {
+      console.error("Invalid amount provided:", amount);
+      return NextResponse.json({ error: "Invalid amount", details: { provided: amount } }, { status: 400 });
     }
 
     const userDoc = await dbAdmin.collection('users').doc(userId).get();
     if (!userDoc.exists) {
+      console.error(`User not found in Firestore: ${userId}`);
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-    if (userDoc.data().email !== email) {
-      return NextResponse.json({ error: "Email does not match user account" }, { status: 400 });
+
+    const userEmail = userDoc.data().email;
+    if (!userEmail || userEmail.toLowerCase() !== email?.toLowerCase()) {
+      console.error(`Email mismatch: doc=${userEmail}, provided=${email}`);
+      return NextResponse.json({ 
+        error: "Email does not match user account",
+        details: { expected: userEmail, provided: email }
+      }, { status: 400 });
     }
 
     // Check for any existing ACTIVE subscription
@@ -38,6 +59,7 @@ export async function POST(req: NextRequest) {
       .get();
 
     if (!existingSubscription.empty) {
+      console.warn(`User ${userId} already has an active subscription`);
       return NextResponse.json({ 
         error: "User already has an active subscription" 
       }, { status: 400 });

@@ -108,6 +108,9 @@ export default function SubscriptionOverview({
 
                 const res = await fetch("/api/payment/subscribe", {
                   method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
                   body: JSON.stringify({
                     userId: user.id,
                     email: user.primaryEmailAddress?.emailAddress,
