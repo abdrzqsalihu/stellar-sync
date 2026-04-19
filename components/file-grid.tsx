@@ -166,7 +166,7 @@ export default function FileGrid({ fileList, view }: FileGridProps) {
         {fileList.map((f) => (
           <div
             key={f.id}
-            className="group relative flex flex-col overflow-hidden rounded-lg border bg-card shadow-sm transition-all hover:shadow-md"
+            className="group relative flex flex-col overflow-hidden rounded-lg border bg-card shadow-sm transition-all"
           >
             <Link
               href={`/dashboard/file/${f.id}`}

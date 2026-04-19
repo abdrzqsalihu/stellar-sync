@@ -56,7 +56,7 @@ export function serializeUserData(userData) {
 export function getStorageLimit(plan) {
   switch (plan?.toLowerCase()) {
     case 'pro':
-      return 4 * 1024 * 1024 * 1024; // 4GB in bytes
+      return 10 * 1024 * 1024 * 1024; // 10GB in bytes
     case 'free':
     default:
       return 1 * 1024 * 1024 * 1024; // 1GB in bytes

@@ -63,7 +63,7 @@ function UpgradePlan({ userId, email, name, isPro = false }: UpgradePlanProps) {
                     <path d="M9 12l2 2 4-4" />
                   </svg>
                 </div>
-                <span>4GB Storage</span>
+                <span>10GB Storage</span>
               </li>
               <li className="flex items-center gap-3">
                 <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20">
@@ -131,7 +131,7 @@ function UpgradePlan({ userId, email, name, isPro = false }: UpgradePlanProps) {
                   <path d="M10 4h4" />
                 </svg>
               </div>
-              <span>4GB Storage</span>
+              <span>10GB Storage</span>
             </li>
           </ul>
           <Button

@@ -15,11 +15,22 @@ export default async function SubscriptionContent({
   const userDoc = await dbAdmin.collection("users").doc(userId).get();
 
   // Fetch subscription data
-  const subscriptionQuery = await dbAdmin
+  const subscriptionSnap = await dbAdmin
     .collection("subscriptions")
     .where("userId", "==", userId)
-    .limit(1)
     .get();
+
+  // Get the most recent subscription by sorting in memory to avoid requiring a composite index
+  const subscriptions = subscriptionSnap.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+
+  const latestSubscription = subscriptions.sort((a: any, b: any) => {
+    const timeA = a.createdAt?.toDate?.()?.getTime() || 0;
+    const timeB = b.createdAt?.toDate?.()?.getTime() || 0;
+    return timeB - timeA;
+  })[0];
 
   // Fetch payment data for billingHistory
   const paymentsSnap = await dbAdmin
@@ -59,7 +70,7 @@ export default async function SubscriptionContent({
   const storageLimitBytes = userData?.storageLimit ?? 1073741824; // Default 1GB
 
   // Validate storageUsed to prevent invalid values
-  const MAX_REASONABLE_STORAGE_MB = 4 * 1024; // 4 GB in MB
+  const MAX_REASONABLE_STORAGE_MB = 10 * 1024; // 10 GB in MB
   if (
     storageUsedBytes / (1024 * 1024) > MAX_REASONABLE_STORAGE_MB ||
     storageUsedBytes < 0
@@ -72,9 +83,8 @@ export default async function SubscriptionContent({
 
   // Get plan from user data or subscription
   let currentPlan = userData?.plan || "free";
-  if (!subscriptionQuery.empty) {
-    const subscriptionDoc = subscriptionQuery.docs[0].data();
-    currentPlan = subscriptionDoc.plan || currentPlan;
+  if (latestSubscription) {
+    currentPlan = latestSubscription.plan || currentPlan;
   }
 
   // Convert bytes to MB and GB
@@ -127,13 +137,12 @@ export default async function SubscriptionContent({
 
   let subscriptionData;
 
-  if (!subscriptionQuery.empty) {
-    const subscriptionDoc = subscriptionQuery.docs[0].data();
+  if (latestSubscription) {
     subscriptionData = {
-      plan: subscriptionDoc.plan || "free",
-      status: subscriptionDoc.subscriptionStatus || "active",
-      nextBilling: subscriptionDoc.nextPaymentDate
-        ? subscriptionDoc.nextPaymentDate.toDate().toISOString()
+      plan: latestSubscription.plan || "free",
+      status: latestSubscription.status || "active",
+      nextBilling: latestSubscription.nextPaymentDate
+        ? latestSubscription.nextPaymentDate.toDate().toISOString()
         : null,
       storageUsed: Number(storageUsedDisplay.toFixed(2)),
       storageUsedUnit: storageUsedUnit,
@@ -142,12 +151,12 @@ export default async function SubscriptionContent({
       remainingStorage: Number(remainingStorageDisplay.toFixed(2)),
       remainingStorageUnit: remainingStorageUnit,
       sharedFiles: sharedFilesCount,
-      sharedLimit: subscriptionDoc.plan === "pro" ? "Unlimited" : 100,
-      lastPaymentDate: subscriptionDoc.lastPaymentDate
-        ? subscriptionDoc.lastPaymentDate.toDate().toISOString()
+      sharedLimit: latestSubscription.plan === "pro" ? "Unlimited" : 100,
+      lastPaymentDate: latestSubscription.lastPaymentDate
+        ? latestSubscription.lastPaymentDate.toDate().toISOString()
         : null,
-      amount: subscriptionDoc.amount || 0,
-      currency: subscriptionDoc.currency || "USD",
+      amount: latestSubscription.amount || 0,
+      currency: latestSubscription.currency || "USD",
       billingHistory,
     };
   } else {

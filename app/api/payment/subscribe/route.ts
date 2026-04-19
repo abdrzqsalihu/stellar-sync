@@ -29,16 +29,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Email does not match user account" }, { status: 400 });
     }
 
-    // Check for any existing subscription (active or pending)
+    // Check for any existing ACTIVE subscription
     const existingSubscription = await dbAdmin
       .collection('subscriptions')
       .where('userId', '==', userId)
-      .where('status', 'in', ['active', 'pending'])
+      .where('status', '==', 'active')
       .get();
 
     if (!existingSubscription.empty) {
       return NextResponse.json({ 
-        error: "User already has an active or pending subscription" 
+        error: "User already has an active subscription" 
       }, { status: 400 });
     }
 

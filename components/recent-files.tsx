@@ -59,62 +59,31 @@ interface RecentFilesProps {
 const EmptyState = () => {
   return (
     <>
-      <div className="flex flex-col items-center justify-center py-20 px-6">
+      <div className="flex flex-col items-center justify-center py-24 px-6 w-full max-w-4xl mx-auto">
         {/* Animated Background Elements */}
-        <div className="relative mb-8">
-          {/* Main Cloud Icon with Gradient */}
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#5056FD]/10 to-[#5056FD]/5 rounded-full blur-xl animate-pulse"></div>
-            <div className="relative bg-gradient-to-br from-[#5056FD]/10 to-[#5056FD]/5 p-8 rounded-full border border-[#5056FD]/10 shadow-sm">
-              <Cloud className="h-16 w-16 text-[#5056FD]" />
+        <div className="relative mb-6 group cursor-default">
+          <div className="absolute -inset-6 bg-[#5056FD]/5 rounded-full blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-700 ease-in-out animate-pulse"></div>
+          {/* Layered rings for depth */}
+          <div className="relative flex items-center justify-center w-28 h-28 rounded-full border border-[#5056FD]/10 bg-gradient-to-b from-[#5056FD]/5 to-transparent transition-transform duration-500 ease-out group-hover:scale-[1.02]">
+            <div className="flex items-center justify-center w-20 h-20 rounded-full border border-[#5056FD]/20 bg-gradient-to-tr from-[#5056FD]/10 to-[#5056FD]/5 transition-transform duration-300 ease-out group-hover:scale-105">
+              <Cloud className="h-8 w-8 text-[#5056FD] drop-shadow-none" strokeWidth={1.25} />
             </div>
           </div>
         </div>
-        {/* Text Content */}
-        <div className="text-center space-y-4 mb-8">
-          <h3 className="text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-500 via-primary to-purple-700 bg-clip-text text-transparent">
+
+        <div className="text-center space-y-3 mb-10 max-w-xl mx-auto">
+          <h3 className="text-2xl font-semibold tracking-tight text-foreground transition-colors">
             No files yet
           </h3>
-          <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-            Upload your first files to get started. Store, organize, and share
-            your documents, images, and videos securely.
+          <p className="text-sm text-muted-foreground/80 leading-relaxed">
+            Drag and drop your documents, images, and videos here to start building an organized library. Everything you need, one click away.
           </p>
         </div>
-        {/* Action Button */}
-        <UploadButton hasFiles={false} />
-        <div className="mt-14 grid grid-cols-1 sm:grid-cols-3 gap-10 text-center">
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 bg-[#5056FD]/10 rounded-xl flex items-center justify-center mb-3">
-              <Upload className="w-5 h-5 text-[#5056FD]" />
-            </div>
-            <h4 className="font-medium text-sm text-foreground mb-1">
-              Drag & Drop
-            </h4>
-            <p className="text-xs text-muted-foreground">
-              Simply drag files here to upload
-            </p>
-          </div>
 
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 bg-[#5056FD]/10 rounded-xl flex items-center justify-center mb-3">
-              <Star className="w-5 h-5 text-[#5056FD]" />
-            </div>
-            <h4 className="font-medium text-sm text-foreground mb-1">
-              Organize
-            </h4>
-            <p className="text-xs text-muted-foreground">
-              Star important files for quick access
-            </p>
-          </div>
-
-          <div className="flex flex-col items-center">
-            <div className="w-12 h-12 bg-[#5056FD]/10 rounded-xl flex items-center justify-center mb-3">
-              <LinkIcon className="w-5 h-5 text-[#5056FD]" />
-            </div>
-            <h4 className="font-medium text-sm text-foreground mb-1">Share</h4>
-            <p className="text-xs text-muted-foreground">
-              Share files with secure links
-            </p>
+        <div className="relative group/btn mb-20">
+          <div className="absolute -inset-2 bg-[#5056FD]/10 rounded-xl blur-xl opacity-0 group-hover/btn:opacity-100 transition-opacity duration-500 ease-out"></div>
+          <div className="relative">
+            <UploadButton hasFiles={false} />
           </div>
         </div>
       </div>
@@ -357,7 +326,7 @@ export default function RecentFiles({
                 {groupedFiles[group].map((file) => (
                   <div
                     key={file.id}
-                    className="group relative flex overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md dark:border-border"
+                    className="group relative flex overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all dark:border-border"
                   >
                     <Link
                       href={`/dashboard/file/${file.id}`}

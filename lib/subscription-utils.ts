@@ -77,10 +77,10 @@ async function createOrUpdateSubscription(
 ) {
   const { customer, created_at: paymentDate, id: flutterwaveTransactionId } = flutterwaveData;
 
-  // Check if subscription already exists
+  // Check if subscription already exists for this transaction
   const existingSubscription = await dbAdmin
     .collection("subscriptions")
-    .where("userId", "==", userId)
+    .where("txRef", "==", txRef)
     .limit(1)
     .get();
 
@@ -120,7 +120,7 @@ async function createOrUpdateSubscription(
   }
 
   // Update user with subscription ID
-  const storageLimit = plan === "pro" ? 4294967296 : 1073741824; // 4GB for Pro, 1GB for Free
+  const storageLimit = plan === "pro" ? 10737418240 : 1073741824; // 10GB for Pro, 1GB for Free
 
   await dbAdmin.collection("users").doc(userId).update({
     subscriptionId: subscriptionId,
@@ -185,6 +185,30 @@ export async function cancelSubscription(userId: string) {
     return false;
   } catch (error) {
     console.error("Error cancelling subscription:", error);
+    throw error;
+  }
+}
+
+export async function cancelPendingSubscription(txRef: string) {
+  try {
+    const subscriptionQuery = await dbAdmin
+      .collection("subscriptions")
+      .where("txRef", "==", txRef)
+      .where("status", "==", "pending")
+      .limit(1)
+      .get();
+
+    if (!subscriptionQuery.empty) {
+      await subscriptionQuery.docs[0].ref.update({
+        status: "cancelled",
+        updatedAt: new Date(),
+      });
+      console.log(`Pending subscription ${txRef} cancelled`);
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error("Error cancelling pending subscription:", error);
     throw error;
   }
 }

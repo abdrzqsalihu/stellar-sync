@@ -43,7 +43,7 @@ export default function FileStats({
       {stats.map((stat) => (
         <div
           key={stat.title}
-          className="rounded-xl border bg-card p-7 shadow-sm transition-all hover:shadow-md"
+          className="rounded-xl border bg-card p-7 shadow-sm transition-all"
         >
           <div className="flex items-center justify-between">
             <div>
