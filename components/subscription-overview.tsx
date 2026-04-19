@@ -121,10 +121,12 @@ export default function SubscriptionOverview({
                 });
 
                 const data = await res.json();
+                console.log("Subscription response:", data);
                 if (data.link) {
                   window.location.href = data.link;
                 } else {
-                  toast.error("Failed to initiate payment");
+                  console.error("Subscription error details:", data);
+                  toast.error(data.error || "Failed to initiate payment");
                 }
               }}
               className="bg-[#5056FD] hover:bg-[#4045e0]"

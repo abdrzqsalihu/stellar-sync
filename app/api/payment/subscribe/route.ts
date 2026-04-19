@@ -4,7 +4,15 @@ import { cancelAllPendingSubscriptions } from "../../../../lib/subscription-util
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json().catch(() => ({}));
+    let body;
+    try {
+      body = await req.json();
+    } catch (e) {
+      console.error("Failed to parse request body:", e);
+      return NextResponse.json({ error: "Invalid JSON request body" }, { status: 400 });
+    }
+    
+    console.log("Incoming request body:", JSON.stringify(body, null, 2));
     const { amount, userId, email, plan, name } = body;
 
     // Debug: Log environment variables (without exposing secrets)
@@ -13,7 +21,8 @@ export async function POST(req: NextRequest) {
       secretKeyLength: process.env.FLW_SECRET_KEY?.length,
       hasPaymentPlan: !!process.env.FLW_PAYMENT_PLAN_ID,
       paymentPlanId: process.env.FLW_PAYMENT_PLAN_ID,
-      appUrl: process.env.NEXT_PUBLIC_APP_URL
+      appUrl: process.env.NEXT_PUBLIC_APP_URL,
+      nodeEnv: process.env.NODE_ENV
     });
 
     if (!process.env.FLW_SECRET_KEY || !process.env.FLW_PAYMENT_PLAN_ID || !process.env.NEXT_PUBLIC_APP_URL) {
@@ -36,10 +45,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid amount", details: { provided: amount } }, { status: 400 });
     }
 
-    const userDoc = await dbAdmin.collection('users').doc(userId).get();
+    const userDoc = await dbAdmin.collection('users').doc(userId || 'unknown').get();
     if (!userDoc.exists) {
       console.error(`User not found in Firestore: ${userId}`);
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
+      return NextResponse.json({ 
+        error: "User account record not found. Please ensure you are logged in and your profile is created.",
+        details: { userId }
+      }, { status: 404 });
     }
 
     const userEmail = userDoc.data().email;

@@ -123,10 +123,12 @@ export default function DashboardLayout({
               });
 
               const data = await res.json();
+              console.log("Subscription response:", data);
               if (data.link) {
                 window.location.href = data.link;
               } else {
-                toast.error("Failed to initiate payment");
+                console.error("Subscription error details:", data);
+                toast.error(data.error || "Failed to initiate payment");
               }
             }}
             className="mt-3 w-full bg-[#5056FD] hover:bg-[#4045e0] text-xs h-8"
