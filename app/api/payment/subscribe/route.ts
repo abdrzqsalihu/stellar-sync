@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { dbAdmin } from "../../../../lib/firebase-admin";
+import { cancelAllPendingSubscriptions } from "../../../../lib/subscription-utils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,6 +42,9 @@ export async function POST(req: NextRequest) {
         error: "User already has an active subscription" 
       }, { status: 400 });
     }
+
+    // Cancel any existing pending subscriptions to avoid accumulation
+    await cancelAllPendingSubscriptions(userId);
 
     const txRef = `sub-${userId}-${Date.now()}`;
 

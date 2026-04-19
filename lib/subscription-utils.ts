@@ -201,6 +201,7 @@ export async function cancelPendingSubscription(txRef: string) {
     if (!subscriptionQuery.empty) {
       await subscriptionQuery.docs[0].ref.update({
         status: "cancelled",
+        cancelledAt: new Date(),
         updatedAt: new Date(),
       });
       console.log(`Pending subscription ${txRef} cancelled`);
@@ -209,6 +210,37 @@ export async function cancelPendingSubscription(txRef: string) {
     return false;
   } catch (error) {
     console.error("Error cancelling pending subscription:", error);
+    throw error;
+  }
+}
+
+export async function cancelAllPendingSubscriptions(userId: string) {
+  try {
+    const pendingSubscriptions = await dbAdmin
+      .collection("subscriptions")
+      .where("userId", "==", userId)
+      .where("status", "==", "pending")
+      .get();
+
+    if (pendingSubscriptions.empty) {
+      return 0;
+    }
+
+    const batch = dbAdmin.batch();
+    pendingSubscriptions.docs.forEach((doc) => {
+      batch.update(doc.ref, {
+        status: "cancelled",
+        reason: "New subscription initiated",
+        cancelledAt: new Date(),
+        updatedAt: new Date(),
+      });
+    });
+
+    await batch.commit();
+    console.log(`Cancelled ${pendingSubscriptions.size} pending subscriptions for user ${userId}`);
+    return pendingSubscriptions.size;
+  } catch (error) {
+    console.error("Error cancelling all pending subscriptions:", error);
     throw error;
   }
 }
