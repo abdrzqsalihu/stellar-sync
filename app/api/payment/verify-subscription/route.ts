@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { handleSubscriptionPayment } from "../../../../lib/subscription-utils";
+import { handleSubscriptionPayment, cancelPendingSubscription } from "../../../../lib/subscription-utils";
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
@@ -15,7 +15,10 @@ export async function GET(req: NextRequest) {
   }
 
   if (status === "cancelled") {
-    console.log("Subscription cancelled, redirecting to dashboard");
+    console.log("Subscription cancelled, updating status and redirecting to dashboard");
+    if (txRef) {
+      await cancelPendingSubscription(txRef);
+    }
     return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard?status=cancelled`);
   }
 
@@ -82,7 +85,7 @@ export async function GET(req: NextRequest) {
 function getStorageLimit(plan: string): number {
   switch (plan.toLowerCase()) {
     case 'pro':
-    return 4294967296;
+    return 10737418240;
     case 'free':
     default:
     return 1073741824;

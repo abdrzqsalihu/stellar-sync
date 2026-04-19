@@ -1,9 +1,6 @@
 "use client";
 import {
-  Calendar,
-  Clock,
   FileText,
-  FolderOpen,
   Home,
   LogOut,
   Settings,
@@ -13,7 +10,6 @@ import {
   Crown,
   Files,
   BadgeHelp,
-  Check,
   CreditCard,
 } from "lucide-react";
 import Link from "next/link";
@@ -262,30 +258,27 @@ export default function DashboardLayout({
               <SidebarGroupContent>
                 <SidebarMenu>
                   <SidebarMenuItem>
-                    <SidebarMenuItem>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={
-                          pathname === "/dashboard/all-files" &&
-                          searchParams.get("category") === "document"
-                        }
-                        className="hover:bg-[#1c2536] hover:text-white data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#5056FD]/20 data-[active=true]:to-transparent data-[active=true]:text-white"
-                      >
-                        <Link href="/dashboard/all-files?category=document">
-                          <div
-                            className={`flex h-8 w-8 items-center justify-center rounded-lg ${
-                              pathname === "/dashboard/all-files" &&
+                    <SidebarMenuButton
+                      asChild
+                      isActive={
+                        pathname === "/dashboard/all-files" &&
+                        searchParams.get("category") === "document"
+                      }
+                      className="hover:bg-[#1c2536] hover:text-white data-[active=true]:bg-gradient-to-r data-[active=true]:from-[#5056FD]/20 data-[active=true]:to-transparent data-[active=true]:text-white"
+                    >
+                      <Link href="/dashboard/all-files?category=document">
+                        <div
+                          className={`flex h-8 w-8 items-center justify-center rounded-lg ${pathname === "/dashboard/all-files" &&
                               searchParams.get("category") === "document"
-                                ? "bg-[#5056FD]"
-                                : "bg-[#1c2536]"
+                            ? "bg-[#5056FD]"
+                            : "bg-[#1c2536]"
                             }`}
-                          >
-                            <FileText className="h-4 w-4" />
-                          </div>
-                          <span>Documents</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
+                        >
+                          <FileText className="h-4 w-4" />
+                        </div>
+                        <span>Documents</span>
+                      </Link>
+                    </SidebarMenuButton>
                   </SidebarMenuItem>
 
                   <SidebarMenuItem>
@@ -585,7 +578,7 @@ export default function DashboardLayout({
                 >
                   <UserButton />
                   <div className="flex flex-col items-start">
-                    <span className="text-sm font-medium">
+                    <span className="text-sm font-medium text-white">
                       {user?.fullName}
                     </span>
                     <span className="text-xs text-gray-400">

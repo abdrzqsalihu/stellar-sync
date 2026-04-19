@@ -86,7 +86,7 @@ function Pricing() {
               <li className="flex items-center gap-1">
                 <Check size={20} color="#5056FD" />
 
-                <span className="text-gray-700"> 4GB of storage </span>
+                <span className="text-gray-700"> 10GB of storage </span>
               </li>
 
               <li className="flex items-center gap-1">
