@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     const { amount, userId, email, plan, name } = body;
 
     // Debug: Log environment variables (without exposing secrets)
-    const secretKey = process.env.FLW_SECRET_KEY || "";
+    const secretKey = (process.env.FLW_SECRET_KEY || "").trim().replace(/^["']|["']$/g, "");
     console.log("Environment check:", {
       hasSecretKey: !!secretKey,
       secretKeyLength: secretKey.length,
@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${process.env.FLW_SECRET_KEY?.trim()}`,
+        "Authorization": `Bearer ${secretKey}`,
       },
       body: JSON.stringify(requestBody),
       cache: 'no-store',
