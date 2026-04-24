@@ -1,5 +1,6 @@
 "use client";
-import React from "react";
+import { Loader2 } from "lucide-react";
+import React, { useState } from "react";
 import { Button } from "./ui/button";
 import toast from "react-hot-toast";
 import Link from "next/link";
@@ -15,10 +16,11 @@ interface UpgradePlanProps {
 function UpgradePlan({
   userId,
   email,
-  name,
+  name, 
   isPro = false,
   isNigeria = false
 }: UpgradePlanProps) {
+  const [isLoading, setIsLoading] = useState(false);
   if (isPro) {
     return (
       <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
@@ -142,34 +144,48 @@ function UpgradePlan({
             </li>
           </ul>
           <Button
+            disabled={isLoading}
             onClick={async () => {
-              const amount = isNigeria ? 7000 : 5;
-              const res = await fetch("/api/payment/subscribe", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  userId,
-                  email,
-                  name,
-                  amount: amount,
-                  plan: "pro",
-                }),
-              });
+              setIsLoading(true);
+              const toastId = toast.loading("Preparing your upgrade...");
 
-              const data = await res.json();
-              console.log("Subscription response:", data);
-              if (data.link) {
-                window.location.href = data.link;
-              } else {
-                console.error("Subscription error details:", data);
-                toast.error(data.error || "Failed to initiate payment");
+              try {
+                const amount = isNigeria ? 7000 : 5;
+                const res = await fetch("/api/payment/subscribe", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    userId,
+                    email,
+                    name,
+                    amount: amount,
+                    plan: "pro",
+                  }),
+                });
+
+                const data = await res.json();
+                console.log("Subscription response:", data);
+                if (data.link) {
+                  toast.success("Redirecting to payment...", { id: toastId });
+                  window.location.href = data.link;
+                } else {
+                  setIsLoading(false);
+                  console.error("Subscription error details:", data);
+                  toast.error(data.error || "Failed to initiate payment", { id: toastId });
+                }
+              } catch (error) {
+                setIsLoading(false);
+                toast.error("An unexpected error occurred", { id: toastId });
               }
             }}
             className="w-full bg-primary hover:bg-primary/90"
           >
-            Upgrade Now
+            {isLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : null}
+            {isLoading ? "Processing..." : "Upgrade Now"}
           </Button>
         </div>
       </div>

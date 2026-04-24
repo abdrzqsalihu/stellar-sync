@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { handleSubscriptionPayment, cancelPendingSubscription } from "../../../../lib/subscription-utils";
+import { dbAdmin } from "../../../../lib/firebase-admin";
 
 export async function GET(req: NextRequest) {
   const url = new URL(req.url);
@@ -68,6 +69,15 @@ export async function GET(req: NextRequest) {
       }
 
       console.log("Processing subscription for userId:", userId, "plan:", plan);
+
+      // Idempotency check: Check if payment already processed
+      const paymentRef = dbAdmin.collection("payments").doc(transactionId.toString());
+      const existingPayment = await paymentRef.get();
+      
+      if (existingPayment.exists) {
+        console.log(`Transaction ${transactionId} already processed (idempotency)`);
+        return NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_URL}/dashboard?status=success`);
+      }
 
       await handleSubscriptionPayment(userId, plan, data.data, txRef);
 

@@ -11,10 +11,11 @@ import {
   Files,
   BadgeHelp,
   CreditCard,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import type { ReactNode } from "react";
+import { ReactNode, useState } from "react";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -42,6 +43,7 @@ import { ThemeToggle } from "./theme-toggle";
 import Image from "next/image";
 import { useClerk, UserButton, useUser } from "@clerk/nextjs";
 import toast from "react-hot-toast";
+import { useEffect } from "react";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -52,6 +54,7 @@ export default function DashboardLayout({
   children,
   userData,
 }: DashboardLayoutProps) {
+  const [isLoading, setIsLoading] = useState(false);
   const isPro = userData?.plan === "pro" || userData?.isPro || false;
   const isNigeria = userData?.country === "NG";
   const pathname = usePathname();
@@ -59,6 +62,21 @@ export default function DashboardLayout({
   const { user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const status = searchParams.get("status");
+    if (status === "success") {
+      toast.success("Payment successful! Your account has been upgraded.");
+      // Clear the query param without refreshing the page
+      router.replace(pathname);
+    } else if (status === "cancelled") {
+      toast.error("Payment was cancelled.");
+      router.replace(pathname);
+    } else if (status === "failed") {
+      toast.error("Payment failed. Please try again.");
+      router.replace(pathname);
+    }
+  }, [searchParams, router, pathname]);
 
   const ProStatusSection = () => (
     <SidebarGroup>
@@ -106,37 +124,51 @@ export default function DashboardLayout({
             </div>
           </div>
           <Button
+            disabled={isLoading}
             onClick={async () => {
               if (!user) return toast.error("User not found");
 
-              const amount = isNigeria ? 7000 : 5;
+              setIsLoading(true);
+              const toastId = toast.loading("Preparing your upgrade...");
 
-              const res = await fetch("/api/payment/subscribe", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                  userId: user.id,
-                  email: user.primaryEmailAddress?.emailAddress,
-                  name: user?.fullName,
-                  amount: amount,
-                  plan: "pro",
-                }),
-              });
+              try {
+                const amount = isNigeria ? 7000 : 5;
 
-              const data = await res.json();
-              console.log("Subscription response:", data);
-              if (data.link) {
-                window.location.href = data.link;
-              } else {
-                console.error("Subscription error details:", data);
-                toast.error(data.error || "Failed to initiate payment");
+                const res = await fetch("/api/payment/subscribe", {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    userId: user.id,
+                    email: user.primaryEmailAddress?.emailAddress,
+                    name: user?.fullName,
+                    amount: amount,
+                    plan: "pro",
+                  }),
+                });
+
+                const data = await res.json();
+                console.log("Subscription response:", data);
+                if (data.link) {
+                  toast.success("Redirecting to payment...", { id: toastId });
+                  window.location.href = data.link;
+                } else {
+                  setIsLoading(false);
+                  console.error("Subscription error details:", data);
+                  toast.error(data.error || "Failed to initiate payment", { id: toastId });
+                }
+              } catch (error) {
+                setIsLoading(false);
+                toast.error("An unexpected error occurred", { id: toastId });
               }
             }}
             className="mt-3 w-full bg-[#5056FD] hover:bg-[#4045e0] text-xs h-8"
           >
-            Upgrade
+            {isLoading ? (
+              <Loader2 className="mr-2 h-3 w-3 animate-spin" />
+            ) : null}
+            {isLoading ? "Processing..." : "Upgrade"}
           </Button>
         </div>
       </SidebarGroupContent>
