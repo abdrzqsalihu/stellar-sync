@@ -4,9 +4,10 @@ import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Progress } from "./ui/progress";
 import { Badge } from "./ui/badge";
-import { Calendar, Crown, HardDrive, Users, Zap } from "lucide-react";
+import { Calendar, Crown, HardDrive, Users, Zap, Loader2 } from "lucide-react";
 import { useUser } from "@clerk/nextjs";
 import toast from "react-hot-toast";
+import { useState } from "react";
 
 interface SubscriptionData {
   plan: string;
@@ -34,6 +35,7 @@ export default function SubscriptionOverview({
   subscription,
   isNigeria = false,
 }: SubscriptionOverviewProps) {
+  const [isLoading, setIsLoading] = useState(false);
   // Calculate storage percentage for progress bar
   // Convert both values to the same unit for consistent percentage calculation
   let storageUsedForPercentage, storageLimitForPercentage;
@@ -105,38 +107,53 @@ export default function SubscriptionOverview({
           </div>
           {subscription.plan === "free" && (
             <Button
+              disabled={isLoading}
               onClick={async () => {
                 if (!user) return toast.error("User not found");
 
-                const amount = isNigeria ? 7000 : 5;
+                setIsLoading(true);
+                const toastId = toast.loading("Preparing your upgrade...");
 
-                const res = await fetch("/api/payment/subscribe", {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    userId: user.id,
-                    email: user.primaryEmailAddress?.emailAddress,
-                    name: user?.fullName,
-                    amount: amount,
-                    plan: "pro",
-                  }),
-                });
+                try {
+                  const amount = isNigeria ? 7000 : 5;
 
-                const data = await res.json();
-                console.log("Subscription response:", data);
-                if (data.link) {
-                  window.location.href = data.link;
-                } else {
-                  console.error("Subscription error details:", data);
-                  toast.error(data.error || "Failed to initiate payment");
+                  const res = await fetch("/api/payment/subscribe", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      userId: user.id,
+                      email: user.primaryEmailAddress?.emailAddress,
+                      name: user?.fullName,
+                      amount: amount,
+                      plan: "pro",
+                    }),
+                  });
+
+                  const data = await res.json();
+                  console.log("Subscription response:", data);
+                  if (data.link) {
+                    toast.success("Redirecting to payment...", { id: toastId });
+                    window.location.href = data.link;
+                  } else {
+                    setIsLoading(false);
+                    console.error("Subscription error details:", data);
+                    toast.error(data.error || "Failed to initiate payment", { id: toastId });
+                  }
+                } catch (error) {
+                  setIsLoading(false);
+                  toast.error("An unexpected error occurred", { id: toastId });
                 }
               }}
               className="bg-[#5056FD] hover:bg-[#4045e0]"
             >
-              <Zap className="mr-2 h-4 w-4" />
-              Upgrade Plan
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                  <Zap className="mr-2 h-4 w-4" />
+              )}
+              {isLoading ? "Processing..." : "Upgrade Plan"}
             </Button>
           )}
         </div>

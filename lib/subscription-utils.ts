@@ -21,143 +21,122 @@ export async function handleSubscriptionPayment(
 
     console.log(`handleSubscriptionPayment: userId=${userId}, isInitial=${isInitialPayment}, hasPaymentPlan=${!!payment_plan}`);
 
-    // Record the payment
-    await dbAdmin.collection("payments").doc(flutterwaveTransactionId.toString()).set({
-      userId,
-      flutterwaveTransactionId,
-      amount,
-      currency,
-      status: "successful",
-      paymentDate: new Date(paymentDate),
-      type: isInitialPayment && !payment_plan ? "initial_subscription" : "recurring",
-      plan,
-      txRef,
-      billingMonth: currentMonth,
-      paymentPlan: payment_plan || null,
-      originalCustomer: {
-        email: customer.email,
-        name: customer.name || "Customer",
-      },
-      flutterwaveCustomer: customer,
-      createdAt: new Date(),
-    });
+    // Use a transaction to ensure idempotency and atomic updates
+    await dbAdmin.runTransaction(async (transaction) => {
+      const paymentRef = dbAdmin.collection("payments").doc(flutterwaveTransactionId.toString());
+      const paymentDoc = await transaction.get(paymentRef);
 
-    console.log(`Payment recorded: ${flutterwaveTransactionId}`);
+      if (paymentDoc.exists) {
+        console.log(`Payment ${flutterwaveTransactionId} already processed in transaction`);
+        return;
+      }
 
-    // Handle subscription creation or update
-    if (isInitialPayment && !payment_plan) {
-      // This is an initial subscription payment
-      await createOrUpdateSubscription(userId, plan, flutterwaveData, txRef);
-    } else {
-      // This is a recurring payment, update existing subscription
-      await updateSubscriptionPayment(userId, paymentDate);
-    }
+      // Record the payment
+      transaction.set(paymentRef, {
+        userId,
+        flutterwaveTransactionId,
+        amount,
+        currency,
+        status: "successful",
+        paymentDate: new Date(paymentDate),
+        type: isInitialPayment && !payment_plan ? "initial_subscription" : "recurring",
+        plan,
+        txRef,
+        billingMonth: currentMonth,
+        paymentPlan: payment_plan || null,
+        originalCustomer: {
+          email: customer.email,
+          name: customer.name || "Customer",
+        },
+        flutterwaveCustomer: customer,
+        createdAt: new Date(),
+      });
 
-    // Update user's subscription status and plan
-    await dbAdmin.collection("users").doc(userId).update({
-      plan: plan,
-      subscriptionStatus: "active",
-      subscriptionPlan: plan,
-      lastPaymentDate: new Date(paymentDate),
-      updatedAt: new Date(),
+      // Handle subscription creation or update
+      if (isInitialPayment && !payment_plan) {
+        // Find existing subscription by txRef
+        const subscriptionQuery = await dbAdmin
+          .collection("subscriptions")
+          .where("txRef", "==", txRef)
+          .limit(1)
+          .get();
+
+        const nextPaymentDate = new Date(paymentDate);
+        nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
+
+        const subscriptionData = {
+          userId,
+          plan,
+          status: "active",
+          amount: amount || 5,
+          currency: currency || "USD",
+          email: customer.email,
+          name: customer.name || "Customer",
+          txRef,
+          lastPaymentDate: new Date(paymentDate),
+          nextPaymentDate: nextPaymentDate,
+          flutterwaveTransactionId: flutterwaveTransactionId,
+          updatedAt: new Date(),
+        };
+
+        let subscriptionId;
+        if (subscriptionQuery.empty) {
+          const newSubscriptionRef = dbAdmin.collection("subscriptions").doc();
+          transaction.set(newSubscriptionRef, {
+            ...subscriptionData,
+            createdAt: new Date(),
+          });
+          subscriptionId = newSubscriptionRef.id;
+        } else {
+          transaction.update(subscriptionQuery.docs[0].ref, subscriptionData);
+          subscriptionId = subscriptionQuery.docs[0].id;
+        }
+
+        // Update user's subscription ID and storage limit
+        const storageLimit = plan === "pro" ? 10737418240 : 1073741824;
+        transaction.update(dbAdmin.collection("users").doc(userId), {
+          subscriptionId: subscriptionId,
+          storageLimit: storageLimit,
+          plan: plan,
+          subscriptionStatus: "active",
+          subscriptionPlan: plan,
+          lastPaymentDate: new Date(paymentDate),
+          updatedAt: new Date(),
+        });
+      } else {
+        // Recurring payment or update
+        const subscriptionQuery = await dbAdmin
+          .collection("subscriptions")
+          .where("userId", "==", userId)
+          .limit(1)
+          .get();
+
+        if (!subscriptionQuery.empty) {
+          const nextPaymentDate = new Date(paymentDate);
+          nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
+
+          transaction.update(subscriptionQuery.docs[0].ref, {
+            status: "active",
+            lastPaymentDate: new Date(paymentDate),
+            nextPaymentDate: nextPaymentDate,
+            updatedAt: new Date(),
+          });
+        }
+
+        transaction.update(dbAdmin.collection("users").doc(userId), {
+          plan: plan,
+          subscriptionStatus: "active",
+          subscriptionPlan: plan,
+          lastPaymentDate: new Date(paymentDate),
+          updatedAt: new Date(),
+        });
+      }
     });
 
     console.log(`Successfully processed payment for user ${userId}`);
   } catch (error) {
     console.error("Error handling subscription payment:", error);
     throw error;
-  }
-}
-
-async function createOrUpdateSubscription(
-  userId: string,
-  plan: string,
-  flutterwaveData: any,
-  txRef: string
-) {
-  const { 
-    customer, 
-    created_at: paymentDate, 
-    id: flutterwaveTransactionId,
-    amount,
-    currency 
-  } = flutterwaveData;
-
-  // Check if subscription already exists for this transaction
-  const existingSubscription = await dbAdmin
-    .collection("subscriptions")
-    .where("txRef", "==", txRef)
-    .limit(1)
-    .get();
-
-  const nextPaymentDate = new Date(paymentDate);
-  nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
-
-  const subscriptionData = {
-    userId,
-    plan,
-    status: "active",
-    amount: amount || 5,
-    currency: currency || "USD",
-    email: customer.email,
-    name: customer.name || "Customer",
-    txRef,
-    lastPaymentDate: new Date(paymentDate),
-    nextPaymentDate: nextPaymentDate,
-    flutterwaveTransactionId: flutterwaveTransactionId,
-    updatedAt: new Date(),
-  };
-
-  let subscriptionId;
-
-  if (existingSubscription.empty) {
-    // Create new subscription
-    const newSubscriptionRef = await dbAdmin.collection("subscriptions").add({
-      ...subscriptionData,
-      createdAt: new Date(),
-    });
-    subscriptionId = newSubscriptionRef.id;
-    console.log(`New subscription created: ${subscriptionId}`);
-  } else {
-    // Update existing subscription
-    await existingSubscription.docs[0].ref.update(subscriptionData);
-    subscriptionId = existingSubscription.docs[0].id;
-    console.log(`Existing subscription updated: ${subscriptionId}`);
-  }
-
-  // Update user with subscription ID
-  const storageLimit = plan === "pro" ? 10737418240 : 1073741824; // 10GB for Pro, 1GB for Free
-
-  await dbAdmin.collection("users").doc(userId).update({
-    subscriptionId: subscriptionId,
-    storageLimit: storageLimit,
-    updatedAt: new Date(),
-  });
-
-  return subscriptionId;
-}
-
-async function updateSubscriptionPayment(userId: string, paymentDate: string) {
-  const subscriptionQuery = await dbAdmin
-    .collection("subscriptions")
-    .where("userId", "==", userId)
-    .limit(1)
-    .get();
-
-  if (!subscriptionQuery.empty) {
-    const nextPaymentDate = new Date(paymentDate);
-    nextPaymentDate.setMonth(nextPaymentDate.getMonth() + 1);
-
-    await subscriptionQuery.docs[0].ref.update({
-      status: "active",
-      lastPaymentDate: new Date(paymentDate),
-      nextPaymentDate: nextPaymentDate,
-      updatedAt: new Date(),
-    });
-
-    console.log(`Subscription payment updated for user ${userId}`);
-  } else {
-    console.warn(`No active subscription found for user ${userId}`);
   }
 }
 
