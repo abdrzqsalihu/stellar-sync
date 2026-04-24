@@ -27,10 +27,12 @@ interface SubscriptionData {
 
 interface SubscriptionOverviewProps {
   subscription: SubscriptionData;
+  isNigeria?: boolean;
 }
 
 export default function SubscriptionOverview({
   subscription,
+  isNigeria = false,
 }: SubscriptionOverviewProps) {
   // Calculate storage percentage for progress bar
   // Convert both values to the same unit for consistent percentage calculation
@@ -106,6 +108,8 @@ export default function SubscriptionOverview({
               onClick={async () => {
                 if (!user) return toast.error("User not found");
 
+                const amount = isNigeria ? 7000 : 5;
+
                 const res = await fetch("/api/payment/subscribe", {
                   method: "POST",
                   headers: {
@@ -115,7 +119,7 @@ export default function SubscriptionOverview({
                     userId: user.id,
                     email: user.primaryEmailAddress?.emailAddress,
                     name: user?.fullName,
-                    amount: 5,
+                    amount: amount,
                     plan: "pro",
                   }),
                 });
@@ -199,8 +203,8 @@ export default function SubscriptionOverview({
               <div>
                 <h4 className="font-medium text-sm">Ready to unlock more?</h4>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Upgrade to Pro for unlimited storage, advanced sharing
-                  options, and priority support.
+                  Upgrade to Pro for just {isNigeria ? "₦7,000" : "$5"}/month and
+                  get 10GB storage, unlimited shares, and priority support.
                 </p>
               </div>
             </div>

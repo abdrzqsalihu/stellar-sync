@@ -3,6 +3,7 @@ import SubscriptionOverview from "../subscription-overview";
 import BillingHistory from "../billing-history";
 import PaymentMethods from "../payment-methods";
 import { getEmailFromUserId } from "../../lib/getEmailFromUserId";
+import { headers } from "next/headers";
 
 interface SubscriptionContentProps {
   userId: string;
@@ -11,6 +12,10 @@ interface SubscriptionContentProps {
 export default async function SubscriptionContent({
   userId,
 }: SubscriptionContentProps) {
+  const headerList = headers();
+  const country = (await headerList).get("x-vercel-ip-country") || "US";
+  const isNigeria = country === "NG";
+
   const email = await getEmailFromUserId(userId);
   const userDoc = await dbAdmin.collection("users").doc(userId).get();
 
@@ -190,7 +195,10 @@ export default async function SubscriptionContent({
 
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-8">
-          <SubscriptionOverview subscription={subscriptionData} />
+          <SubscriptionOverview
+            subscription={subscriptionData}
+            isNigeria={isNigeria}
+          />
           <BillingHistory subscription={subscriptionData} />
         </div>
 

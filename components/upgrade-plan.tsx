@@ -9,9 +9,16 @@ interface UpgradePlanProps {
   email: string;
   name: string;
   isPro?: boolean;
+  isNigeria?: boolean;
 }
 
-function UpgradePlan({ userId, email, name, isPro = false }: UpgradePlanProps) {
+function UpgradePlan({
+  userId,
+  email,
+  name,
+  isPro = false,
+  isNigeria = false
+}: UpgradePlanProps) {
   if (isPro) {
     return (
       <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
@@ -107,7 +114,7 @@ function UpgradePlan({ userId, email, name, isPro = false }: UpgradePlanProps) {
             Upgrade to Pro
           </h3>
           <p className="text-sm text-muted-foreground">
-            Get more storage and premium features
+            Get 10GB storage for just {isNigeria ? "₦7,000" : "$5"}/month
           </p>
         </div>
         <div className="mt-6 space-y-4">
@@ -136,6 +143,7 @@ function UpgradePlan({ userId, email, name, isPro = false }: UpgradePlanProps) {
           </ul>
           <Button
             onClick={async () => {
+              const amount = isNigeria ? 7000 : 5;
               const res = await fetch("/api/payment/subscribe", {
                 method: "POST",
                 headers: {
@@ -145,7 +153,7 @@ function UpgradePlan({ userId, email, name, isPro = false }: UpgradePlanProps) {
                   userId,
                   email,
                   name,
-                  amount: 5, // in USD
+                  amount: amount,
                   plan: "pro",
                 }),
               });

@@ -75,7 +75,13 @@ async function createOrUpdateSubscription(
   flutterwaveData: any,
   txRef: string
 ) {
-  const { customer, created_at: paymentDate, id: flutterwaveTransactionId } = flutterwaveData;
+  const { 
+    customer, 
+    created_at: paymentDate, 
+    id: flutterwaveTransactionId,
+    amount,
+    currency 
+  } = flutterwaveData;
 
   // Check if subscription already exists for this transaction
   const existingSubscription = await dbAdmin
@@ -91,8 +97,8 @@ async function createOrUpdateSubscription(
     userId,
     plan,
     status: "active",
-    amount: 5,
-    currency: "USD",
+    amount: amount || 5,
+    currency: currency || "USD",
     email: customer.email,
     name: customer.name || "Customer",
     txRef,

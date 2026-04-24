@@ -6,6 +6,7 @@ import { getEmailFromUserId } from "../../lib/getEmailFromUserId";
 import { dbAdmin } from "../../lib/firebase-admin";
 import { clerkClient } from "@clerk/nextjs";
 import UpgradePlan from "../upgrade-plan";
+import { headers } from "next/headers";
 
 interface DashboardContentProps {
   userId: string;
@@ -14,6 +15,10 @@ interface DashboardContentProps {
 export default async function DashboardContent({
   userId,
 }: DashboardContentProps) {
+  const headerList = headers();
+  const country = (await headerList).get("x-vercel-ip-country") || "US";
+  const isNigeria = country === "NG";
+
   const email = await getEmailFromUserId(userId);
   const user = await clerkClient.users.getUser(userId);
   const fullName = `${user.firstName ?? ""} ${user.lastName ?? ""}`.trim();
@@ -133,6 +138,7 @@ export default async function DashboardContent({
             email={email}
             name={fullName}
             isPro={userData?.plan === "pro"}
+            isNigeria={isNigeria}
           />
         </div>
       </div>
