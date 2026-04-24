@@ -13,7 +13,23 @@ export async function POST(req: NextRequest) {
     }
     
     console.log("Incoming request body:", JSON.stringify(body, null, 2));
-    const { amount, userId, email, plan, name } = body;
+    const { userId, email, plan, name } = body;
+    let { amount } = body;
+
+    // Get user's country from Vercel headers
+    let country = req.headers.get("x-vercel-ip-country") || "US";
+    
+    // For local development testing, you can uncomment the line below:
+    // if (process.env.NODE_ENV === 'development') country = 'NG';
+
+    const isNigeria = country === "NG";
+    
+    const currency = isNigeria ? "NGN" : "USD";
+    const paymentPlanId = isNigeria 
+      ? (process.env.FLW_PAYMENT_PLAN_ID_NGN || process.env.FLW_PAYMENT_PLAN_ID) 
+      : process.env.FLW_PAYMENT_PLAN_ID;
+
+    console.log(`Payment details: Country=${country}, Currency=${currency}, Plan=${paymentPlanId}`);
 
     // Debug: Log environment variables (without exposing secrets)
     const secretKey = (process.env.FLW_SECRET_KEY || "").trim().replace(/^["']|["']$/g, "");
@@ -25,16 +41,16 @@ export async function POST(req: NextRequest) {
       secretKeyPrefix: secretKey.substring(0, 7), // e.g., FLWSECK
       secretKeySuffix: secretKey.length > 4 ? secretKey.substring(secretKey.length - 4) : "****",
       hasPaymentPlan: !!process.env.FLW_PAYMENT_PLAN_ID,
-      paymentPlanId: process.env.FLW_PAYMENT_PLAN_ID,
+      paymentPlanId: paymentPlanId,
       appUrl: process.env.NEXT_PUBLIC_APP_URL,
       nodeEnv: process.env.NODE_ENV,
       isVercelPreview
     });
 
-    if (!secretKey || !process.env.FLW_PAYMENT_PLAN_ID || !process.env.NEXT_PUBLIC_APP_URL) {
+    if (!secretKey || !paymentPlanId || !process.env.NEXT_PUBLIC_APP_URL) {
       console.error("Missing critical environment variables:", {
         hasSecretKey: !!secretKey,
-        hasPaymentPlan: !!process.env.FLW_PAYMENT_PLAN_ID,
+        hasPaymentPlan: !!paymentPlanId,
         hasAppUrl: !!process.env.NEXT_PUBLIC_APP_URL,
         isVercelPreview
       });
@@ -55,9 +71,12 @@ export async function POST(req: NextRequest) {
       console.error("Invalid plan provided:", plan);
       return NextResponse.json({ error: "Invalid plan", details: { provided: plan } }, { status: 400 });
     }
-    if (!amount || amount !== 5) {
-      console.error("Invalid amount provided:", amount);
-      return NextResponse.json({ error: "Invalid amount", details: { provided: amount } }, { status: 400 });
+    
+    // Set amount based on currency
+    if (isNigeria) {
+      amount = 7000;
+    } else {
+      amount = 5;
     }
 
     const userDoc = await dbAdmin.collection('users').doc(userId || 'unknown').get();
@@ -100,15 +119,15 @@ export async function POST(req: NextRequest) {
     const requestBody = {
       tx_ref: txRef,
       amount,
-      currency: "USD",
+      currency,
       redirect_url: `${process.env.NEXT_PUBLIC_APP_URL}/api/payment/verify-subscription`,
       payment_options: "card,banktransfer,ussd,paypal",
       customer: { email, name: name || "Customer" },
-      payment_plan: process.env.FLW_PAYMENT_PLAN_ID,
+      payment_plan: paymentPlanId,
       meta: { userId, plan, subscription: true },
       customizations: {
         title: "StellarSync Monthly Plan",
-        description: `Subscribe to ${plan} Plan - $5/month`,
+        description: `Subscribe to ${plan} Plan - ${currency} ${amount}/month`,
         logo: `${process.env.NEXT_PUBLIC_APP_URL}/favicon.png`,
       },
     };
@@ -157,14 +176,15 @@ export async function POST(req: NextRequest) {
         userId,
         plan,
         status: 'pending',
-        paymentPlanId: process.env.FLW_PAYMENT_PLAN_ID,
+        paymentPlanId,
         txRef,
         createdAt: new Date(),
-        amount: 5,
-        currency: 'USD',
+        amount,
+        currency,
         email,
         name: name || "Customer",
-        flutterwaveData: data.data
+        flutterwaveData: data.data,
+        countryDetected: country
       });
 
       console.log("Subscription created successfully");

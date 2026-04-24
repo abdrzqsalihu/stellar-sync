@@ -38,6 +38,8 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
+  const country = headersList.get("x-vercel-ip-country") || "US";
+
   const userDoc = await dbAdmin.collection("users").doc(userId).get();
   // const userData = userDoc.exists ? userDoc.data() : null;
   let userData = null;
@@ -47,6 +49,7 @@ export default async function DashboardPage() {
     userData = serializeUserData({
       id: userDoc.id,
       ...rawUserData,
+      country,
     });
   } else {
     const user = await currentUser();
@@ -71,6 +74,7 @@ export default async function DashboardPage() {
     userData = serializeUserData({
       id: user.id,
       ...newUserData,
+      country,
     });
   }
 

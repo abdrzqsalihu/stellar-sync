@@ -53,6 +53,7 @@ export default function DashboardLayout({
   userData,
 }: DashboardLayoutProps) {
   const isPro = userData?.plan === "pro" || userData?.isPro || false;
+  const isNigeria = userData?.country === "NG";
   const pathname = usePathname();
   const { signOut } = useClerk();
   const { user } = useUser();
@@ -108,6 +109,8 @@ export default function DashboardLayout({
             onClick={async () => {
               if (!user) return toast.error("User not found");
 
+              const amount = isNigeria ? 7000 : 5;
+
               const res = await fetch("/api/payment/subscribe", {
                 method: "POST",
                 headers: {
@@ -117,7 +120,7 @@ export default function DashboardLayout({
                   userId: user.id,
                   email: user.primaryEmailAddress?.emailAddress,
                   name: user?.fullName,
-                  amount: 5,
+                  amount: amount,
                   plan: "pro",
                 }),
               });
