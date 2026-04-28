@@ -19,15 +19,23 @@ export async function POST(req: NextRequest) {
     // Get user's country from Vercel headers
     let country = req.headers.get("x-vercel-ip-country") || "US";
     
-    // For local development testing, you can uncomment the line below:
+    // For local development testing:
     // if (process.env.NODE_ENV === 'development') country = 'NG';
 
     const isNigeria = country === "NG";
     
-    const currency = isNigeria ? "NGN" : "USD";
-    const paymentPlanId = isNigeria 
-      ? (process.env.FLW_PAYMENT_PLAN_ID_NGN || process.env.FLW_PAYMENT_PLAN_ID) 
-      : process.env.FLW_PAYMENT_PLAN_ID;
+    // Determine currency and plan ID together to ensure they match
+    let currency = "USD";
+    let paymentPlanId = process.env.FLW_PAYMENT_PLAN_ID_USD;
+    
+    if (isNigeria && process.env.FLW_PAYMENT_PLAN_ID_NGN) {
+      currency = "NGN";
+      paymentPlanId = process.env.FLW_PAYMENT_PLAN_ID_NGN;
+    } else {
+      // Fallback to USD if not Nigeria OR if NGN plan ID is missing
+      currency = "USD";
+      paymentPlanId = process.env.FLW_PAYMENT_PLAN_ID_USD;
+    }
 
     console.log(`Payment details: Country=${country}, Currency=${currency}, Plan=${paymentPlanId}`);
 
@@ -40,7 +48,7 @@ export async function POST(req: NextRequest) {
       secretKeyLength: secretKey.length,
       secretKeyPrefix: secretKey.substring(0, 7), // e.g., FLWSECK
       secretKeySuffix: secretKey.length > 4 ? secretKey.substring(secretKey.length - 4) : "****",
-      hasPaymentPlan: !!process.env.FLW_PAYMENT_PLAN_ID,
+      hasPaymentPlan: !!process.env.FLW_PAYMENT_PLAN_ID_USD,
       paymentPlanId: paymentPlanId,
       appUrl: process.env.NEXT_PUBLIC_APP_URL,
       nodeEnv: process.env.NODE_ENV,
@@ -73,7 +81,7 @@ export async function POST(req: NextRequest) {
     }
     
     // Set amount based on currency
-    if (isNigeria) {
+    if (currency === "NGN") {
       amount = 7000;
     } else {
       amount = 5;
