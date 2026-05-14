@@ -108,9 +108,12 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
         return;
       }
       // Proceed with upload
-      const storageRef = ref(storage, `uploadedFiles/${selectedFile.name}`);
+      // Sanitize filename for storage to avoid issues with special characters and spaces
+      const sanitizedName = selectedFile.name.replace(/\s+/g, '_').replace(/[()]/g, '');
+      const storageRef = ref(storage, `uploadedFiles/${sanitizedName}`);
+
       const metadata = {
-        contentType: selectedFile.type,
+        contentType: selectedFile.type || 'application/octet-stream',
         customMetadata: {
           uploadedBy: user.primaryEmailAddress.emailAddress,
         },
@@ -134,12 +137,12 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
         (error) => {
           console.error("Error during upload:", error.message);
           setUploading(false);
-          toast.error("Upload failed");
+          toast.error(`Upload failed: ${error.message}`);
         },
         async () => {
           try {
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            await saveInfo(selectedFile, downloadURL);
+            await saveInfo(selectedFile, downloadURL, sanitizedName);
 
             setUploading(false);
             setOpen(false);
@@ -161,7 +164,7 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
     }
   };
 
-  const saveInfo = async (file: File, fileUrl: string) => {
+  const saveInfo = async (file: File, fileUrl: string, storageName?: string) => {
     if (!user?.primaryEmailAddress?.emailAddress) {
       throw new Error("User email not available");
     }
@@ -169,7 +172,7 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
     const docId = GenerateRandomString(10);
 
     await setDoc(doc(db, "uploadedFiles", docId), {
-      fileName: file.name,
+      fileName: storageName || file.name,
       fileSize: file.size,
       fileType: file.type,
       fileUrl: fileUrl,
