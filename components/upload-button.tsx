@@ -15,7 +15,7 @@ import {
 import { Progress } from "../components/ui/progress";
 import { Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { app } from "../firebaseConfig";
 import {
   getStorage,
@@ -46,6 +46,20 @@ function GenerateRandomString(length: number = 10): string {
   return result;
 }
 
+// helper function to truncate file names in the middle
+function truncateFileName(fileName: string, maxLength: number = 30): string {
+  if (fileName.length <= maxLength) return fileName;
+
+  const extension = fileName.lastIndexOf('.') > 0 ? fileName.slice(fileName.lastIndexOf('.')) : '';
+  const nameWithoutExtension = fileName.slice(0, fileName.lastIndexOf('.') > 0 ? fileName.lastIndexOf('.') : undefined);
+
+  const availableLength = maxLength - extension.length - 3; // 3 for '...'
+  const start = Math.ceil(availableLength / 2);
+  const end = nameWithoutExtension.length - Math.floor(availableLength / 2);
+
+  return `${nameWithoutExtension.slice(0, start)}...${nameWithoutExtension.slice(end)}${extension}`;
+}
+
 interface UploadButtonProps {
   hasFiles?: boolean;
 }
@@ -57,13 +71,16 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const uploadTasksRef = useRef<any[]>([]);
+  const isUploadingRef = useRef(false); // Use a ref for sync state
   const storage = getStorage(app);
   const db = getFirestore(app);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      setSelectedFile(e.target.files[0]);
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setSelectedFiles(prev => [...prev, ...newFiles]);
     }
   };
 
@@ -82,18 +99,33 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
     user && signInWithClerk();
   }, [user, getToken]);
 
+  const cancelUpload = () => {
+    isUploadingRef.current = false; // Update ref immediately
+    uploadTasksRef.current.forEach(task => {
+      task.cancel();
+    });
+    setUploading(false);
+    uploadTasksRef.current = [];
+    setProgress(0);
+    toast.success("Upload cancelled");
+  };
+
   const uploadFile = async () => {
-    if (!selectedFile || !user?.primaryEmailAddress?.emailAddress) {
-      toast.error("Please select a file and ensure you're logged in.");
+    // console.log("uploadFile called! selectedFiles:", selectedFiles);
+    if (selectedFiles.length === 0 || !user?.primaryEmailAddress?.emailAddress) {
+      toast.error("Please select files and ensure you're logged in.");
       return;
     }
 
-    setUploading(true);
+    isUploadingRef.current = true; // Update ref immediately
+    setUploading(true); // Update state for UI
     setProgress(0);
+    uploadTasksRef.current = [];
 
     try {
-      //  Check user's current storage usage and limit
+      // Check user's current storage usage and limit
       const userRef = doc(db, "users", user.id);
+      // console.log("Fetching user record...");
       const userSnap = await getDoc(userRef);
 
       if (!userSnap.exists()) {
@@ -101,66 +133,122 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
       }
 
       const { storageUsed = 0, storageLimit = 1073741824 } = userSnap.data();
+      // console.log("User storage used:", storageUsed, "limit:", storageLimit);
 
-      if (storageUsed + selectedFile.size > storageLimit) {
+      const totalSize = selectedFiles.reduce((acc, file) => acc + file.size, 0);
+      // console.log("Total file size to upload:", totalSize);
+      if (storageUsed + totalSize > storageLimit) {
         toast.error("Storage limit exceeded. Upgrade to upload more.");
+        isUploadingRef.current = false;
         setUploading(false);
         return;
       }
-      // Proceed with upload
-      // Sanitize filename for storage to avoid issues with special characters and spaces
-      const sanitizedName = selectedFile.name.replace(/\s+/g, '_').replace(/[()]/g, '');
-      const storageRef = ref(storage, `uploadedFiles/${sanitizedName}`);
 
-      const metadata = {
-        contentType: selectedFile.type || 'application/octet-stream',
-        customMetadata: {
-          uploadedBy: user.primaryEmailAddress.emailAddress,
-        },
-      };
+      let uploadedFilesCount = 0;
+      const totalFiles = selectedFiles.length;
 
-      const uploadTask = uploadBytesResumable(
-        storageRef,
-        selectedFile,
-        metadata
-      );
-
-      uploadTask.on(
-        "state_changed",
-        (snapshot) => {
-          const progressPercent = (
-            (snapshot.bytesTransferred / snapshot.totalBytes) *
-            100
-          ).toFixed(2);
-          setProgress(Number(progressPercent));
-        },
-        (error) => {
-          console.error("Error during upload:", error.message);
-          setUploading(false);
-          toast.error(`Upload failed: ${error.message}`);
-        },
-        async () => {
-          try {
-            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-            await saveInfo(selectedFile, downloadURL, sanitizedName);
-
-            setUploading(false);
-            setOpen(false);
-            setProgress(0);
-            setSelectedFile(null);
-
-            toast.success("File uploaded successfully");
-          } catch (error) {
-            console.error("Error getting download URL or saving info:", error);
-            setUploading(false);
-            toast.error("Upload failed");
-          }
+      // Upload each file
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        // console.log("Starting upload for file", i, ":", file.name);
+        // If upload was cancelled, stop - check the ref instead of state!
+        if (!isUploadingRef.current) {
+          // console.log("Upload cancelled, breaking loop");
+          break;
         }
-      );
-    } catch (error) {
-      console.error("Upload failed:", error);
+
+      // Sanitize filename for storage to avoid issues with special characters and spaces
+        const sanitizedName = file.name.replace(/\s+/g, '_').replace(/[()]/g, '');
+        // console.log("Sanitized name:", sanitizedName);
+        const storageRef = ref(storage, `uploadedFiles/${sanitizedName}`);
+
+        const metadata = {
+          contentType: file.type || 'application/octet-stream',
+          customMetadata: {
+            uploadedBy: user.primaryEmailAddress.emailAddress,
+          },
+        };
+
+        await new Promise((resolve, reject) => {
+        // console.log("Creating upload task...");
+          const uploadTask = uploadBytesResumable(
+            storageRef,
+            file,
+            metadata
+          );
+          // console.log("Upload task created:", uploadTask);
+
+          // Track the upload task
+          uploadTasksRef.current.push(uploadTask);
+
+          // console.log("Attaching event listeners to upload task...");
+          uploadTask.on(
+            "state_changed",
+            (snapshot) => {
+              // console.log("state_changed event triggered:", snapshot);
+              const currentFileProgress = (
+                (snapshot.bytesTransferred / snapshot.totalBytes) *
+                (100 / totalFiles)
+              );
+              const totalProgress = (uploadedFilesCount / totalFiles) * 100 + currentFileProgress;
+              // console.log("Upload progress:", totalProgress);
+              setProgress(Number(totalProgress.toFixed(2)));
+            },
+            (error) => {
+              // console.error("Error during upload:", error);
+              if (error.code !== 'storage/cancelled') {
+                // toast.error(`Upload failed: ${error.message}`);
+              }
+              isUploadingRef.current = false;
+              setUploading(false);
+              uploadTasksRef.current = [];
+              reject(error);
+            },
+            async () => {
+              try {
+                // console.log("File uploaded! Getting download URL...");
+                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                // console.log("Download URL:", downloadURL);
+                await saveInfo(file, downloadURL, sanitizedName);
+                uploadedFilesCount++;
+                // console.log("File info saved!");
+                resolve(null);
+              } catch (error) {
+                // console.error("Error getting download URL or saving info:", error);
+                isUploadingRef.current = false;
+                setUploading(false);
+                uploadTasksRef.current = [];
+                toast.error("Upload failed");
+                reject(error);
+              }
+            }
+          );
+        });
+      }
+
+      // Only show success if we weren't cancelled - check ref!
+      if (isUploadingRef.current) {
+        isUploadingRef.current = false;
+        setUploading(false);
+        setOpen(false);
+        setProgress(0);
+        setSelectedFiles([]);
+        uploadTasksRef.current = [];
+
+        toast.success(`${totalFiles} file${totalFiles !== 1 ? 's' : ''} uploaded successfully`);
+
+        // Refresh the page to show new files!
+        router.refresh();
+      }
+    } catch (error: any) {
+      // console.error("Upload failed in try/catch:", error);
+      if (error.code !== 'storage/cancelled') {
+        toast.error("An error occurred during upload");
+    // toast.error("An error occurred during upload: " + error.message);
+      }
+      isUploadingRef.current = false;
       setUploading(false);
-      toast.error("An error occurred during upload");
+      uploadTasksRef.current = [];
     }
   };
 
@@ -191,11 +279,11 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
       storageUsed: increment(file.size),
     });
 
-    // Navigate to file preview after successful save
-    router.push(`/dashboard/file/${docId}`);
+    // Note: We don't navigate here for multiple files - handled in uploadFile
   };
 
   const handleUpload = () => {
+    // console.log("handleUpload clicked!");
     uploadFile();
   };
 
@@ -223,7 +311,7 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
           <div className="space-y-4 py-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">
-                Uploading {selectedFile?.name}
+                Uploading {selectedFiles.length} file{selectedFiles.length !== 1 ? 's' : ''}
               </span>
               <span className="text-sm font-medium">{progress}%</span>
             </div>
@@ -237,7 +325,7 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center gap-4 py-4">
-            {!selectedFile && (
+              {selectedFiles.length === 0 && (
               <div className="group flex h-40 w-full cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#5056FD]/20 bg-[#5056FD]/5 p-4 text-center transition-all hover:border-[#5056FD]/40 hover:bg-[#5056FD]/10">
                 <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#5056FD]/10 transition-transform group-hover:scale-110">
                   <Upload className="h-8 w-8 text-[#5056FD]" />
@@ -250,15 +338,17 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
                 </p>
                 <input
                   type="file"
+                    multiple
                   className="absolute inset-0 cursor-pointer opacity-0"
                   onChange={handleFileChange}
                 />
               </div>
             )}
 
-            {selectedFile && (
-              <div className="w-full rounded-xl border p-4 shadow-sm z-40">
-                <div className="flex items-center justify-between">
+              {selectedFiles.length > 0 && (
+                <div className="w-full rounded-xl border p-4 shadow-sm z-40 space-y-3">
+                  {selectedFiles.map((file, index) => (
+                    <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-[#5056FD]/10">
                       <svg
@@ -277,10 +367,10 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
                         <polyline points="14 2 14 8 20 8" />
                       </svg>
                     </div>
-                    <div>
-                      <p className="text-sm font-medium">{selectedFile.name}</p>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium" title={file.name}>{truncateFileName(file.name)}</p>
                       <p className="text-xs text-muted-foreground">
-                        {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB
+                            {(file.size / (1024 * 1024)).toFixed(2)} MB
                       </p>
                     </div>
                   </div>
@@ -288,7 +378,7 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
                     variant="ghost"
                     size="sm"
                     className="h-8 w-8 rounded-full p-0 text-red-500 hover:bg-red-50 hover:text-red-600"
-                    onClick={() => setSelectedFile(null)}
+                        onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== index))}
                   >
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -308,24 +398,25 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
                     <span className="sr-only">Remove</span>
                   </Button>
                 </div>
+                  ))}
               </div>
             )}
-          </div>
+            </div>
         )}
 
         <DialogFooter className="sm:justify-end z-40">
           <Button
             variant="outline"
-            onClick={() => setOpen(false)}
-            disabled={uploading}
+            onClick={uploading ? cancelUpload : () => setOpen(false)}
+            disabled={!uploading && selectedFiles.length === 0}
             className="rounded-lg border-[#5056FD]/20 hover:bg-[#5056FD]/5 hover:text-[#5056FD]"
           >
-            Cancel
+            {uploading ? "Cancel Upload" : "Cancel"}
           </Button>
           <Button
             className="rounded-lg bg-[#5056FD] hover:bg-[#4045e0]"
             onClick={handleUpload}
-            disabled={!selectedFile || uploading}
+            disabled={selectedFiles.length === 0 || uploading}
           >
             {uploading ? "Uploading..." : "Upload"}
           </Button>
