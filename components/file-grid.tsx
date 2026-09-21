@@ -32,6 +32,7 @@ import {
   AlertDialogFooter,
 } from "./ui/alert-dialog";
 import { useState } from "react";
+import UploadedAt from "./uploaded-at";
 
 export interface File {
   id: string;
@@ -198,7 +199,7 @@ export default function FileGrid({ fileList, view }: FileGridProps) {
 
               <div className="mt-auto pt-4">
                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>Uploaded {f.uploadedAt}</span>
+                  <span><UploadedAt value={f.uploadedAt} /></span>
                   {f.shared && (
                     <span className="flex items-center gap-1 rounded-full bg-[#5056FD]/10 px-2 py-0.5 text-[#5056FD]">
                       <LinkIcon className="h-3 w-3" /> Shared
@@ -223,7 +224,7 @@ export default function FileGrid({ fileList, view }: FileGridProps) {
                     Copy Link
                   </DropdownMenuItem>
                   <a
-                    href={`/api/download?url=${encodeURIComponent(f.fileUrl)}`}
+                    href={`/api/download?url=${encodeURIComponent(f.fileUrl)}&name=${encodeURIComponent(f.fileName)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                   >

@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ReactNode, useState } from "react";
+import { ReactNode, useRef, useState } from "react";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -62,6 +62,24 @@ export default function DashboardLayout({
   const { user } = useUser();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const isSigningOutRef = useRef(false);
+
+  // Clerk's Next integration fires router.refresh()/router.push(currentUrl) around session
+  // changes, which races with a router.push("/") inside the signOut callback. Wait for
+  // sign-out to finish, then do a full navigation so no stale router/auth state survives.
+  const handleSignOut = async () => {
+    if (isSigningOutRef.current) return;
+    isSigningOutRef.current = true;
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Sign out failed:", error);
+      toast.error("Logout failed. Please try again.");
+      isSigningOutRef.current = false;
+      return;
+    }
+    window.location.assign("/");
+  };
 
   useEffect(() => {
     const status = searchParams.get("status");
@@ -592,7 +610,7 @@ export default function DashboardLayout({
                       className="hover:bg-[#1c2536] hover:text-white"
                     >
                       <div
-                        onClick={() => signOut(() => router.push("/"))}
+                        onClick={handleSignOut}
                         className="cursor-pointer"
                       >
                         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1c2536]">
@@ -616,7 +634,7 @@ export default function DashboardLayout({
                   variant="ghost"
                   className="w-full justify-start gap-2 hover:bg-[#1c2536] text-white mt-2"
                 >
-                  <UserButton />
+                  <UserButton afterSignOutUrl="/" />
                   <div className="flex flex-col items-start">
                     <span className="text-sm font-medium text-white">
                       {user?.fullName}
@@ -640,7 +658,7 @@ export default function DashboardLayout({
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="cursor-pointer"
-                  onClick={() => signOut(() => router.push("/"))}
+                  onClick={handleSignOut}
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
