@@ -1,5 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// ASCII fallback plus RFC 5987 filename* so the exact name survives; strips header-breaking chars
+function contentDispositionFor(filename: string): string {
+  const clean = filename.replace(/[\r\n\\/]/g, "");
+  const fallback = clean.replace(/[^\x20-\x7e]/g, "_").replace(/["%]/g, "_");
+  const encoded = encodeURIComponent(clean).replace(
+    /['()*]/g,
+    (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`
+  );
+  return `attachment; filename="${fallback}"; filename*=UTF-8''${encoded}`;
+}
+
 export async function GET(req: NextRequest) {
   const fileUrl = req.nextUrl.searchParams.get("url");
 
@@ -32,10 +43,16 @@ export async function GET(req: NextRequest) {
 
     // Extract filename from URL or Content-Disposition header
     let filename = "downloaded-file";
-    
+
+    // Original filename supplied by the client takes priority
+    const requestedName = req.nextUrl.searchParams.get("name")?.trim();
+    if (requestedName) {
+      filename = requestedName;
+    }
+
     // Try to get filename from Content-Disposition header
     const contentDisposition = response.headers.get("content-disposition");
-    if (contentDisposition) {
+    if (!requestedName && contentDisposition) {
       const filenameMatch = contentDisposition.match(/filename="?([^"]*)"?/);
       if (filenameMatch && filenameMatch[1]) {
         filename = filenameMatch[1];
@@ -43,7 +60,7 @@ export async function GET(req: NextRequest) {
     }
     
     // If no filename in header, try to extract from URL
-    if (filename === "downloaded-file") {
+    if (!requestedName && filename === "downloaded-file") {
       const urlFilename = new URL(fileUrl).pathname.split('/').pop();
       if (urlFilename) {
         // Remove query parameters if present
@@ -57,7 +74,7 @@ export async function GET(req: NextRequest) {
     return new NextResponse(Buffer.from(arrayBuffer), {
       headers: {
         "Content-Type": contentType,
-        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Disposition": contentDispositionFor(filename),
         "Content-Length": arrayBuffer.byteLength.toString(),
       },
     });

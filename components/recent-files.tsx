@@ -401,7 +401,7 @@ export default function RecentFiles({
                           <a
                             href={`/api/download?url=${encodeURIComponent(
                               file.fileUrl
-                            )}`}
+                            )}&name=${encodeURIComponent(file.fileName)}`}
                             target="_blank"
                             rel="noopener noreferrer"
                           >

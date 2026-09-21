@@ -23,6 +23,7 @@ import { getEmailFromUserId } from "../../../../lib/getEmailFromUserId";
 import { dbAdmin } from "../../../../lib/firebase-admin";
 import { headers } from "next/headers";
 import FileActionsClient from "../../../../components/file-actions";
+import UploadedAt from "../../../../components/uploaded-at";
 import { redirect } from "next/navigation";
 import { currentUser } from "@clerk/nextjs/server";
 import {
@@ -271,8 +272,7 @@ export default async function FilePage({
                     </div>
                     <div className="text-xl font-medium">{file.fileName}</div>
                     <div className="text-sm text-muted-foreground">
-                      {(file.fileSize / 1024 / 1024).toFixed(2)}MB • Uploaded{" "}
-                      {file.uploadedAt}
+                      {(file.fileSize / 1024 / 1024).toFixed(2)}MB • <UploadedAt value={file.uploadedAt} />
                     </div>
                     <div className="mt-4 flex gap-3">
                       <a
@@ -288,7 +288,7 @@ export default async function FilePage({
                       <a
                         href={`/api/download?url=${encodeURIComponent(
                           file.fileUrl
-                        )}`}
+                        )}&name=${encodeURIComponent(file.fileName)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
