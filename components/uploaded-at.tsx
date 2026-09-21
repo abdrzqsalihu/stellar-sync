@@ -8,7 +8,7 @@ export function formatUploadDate(value: unknown): string | null {
   if (!value) return null;
   const date = new Date(value as string);
   if (isNaN(date.getTime())) return null;
-  return date.toLocaleString("en-US", {
+  return date.toLocaleString(undefined, {
     dateStyle: "medium",
     timeStyle: "short",
   });

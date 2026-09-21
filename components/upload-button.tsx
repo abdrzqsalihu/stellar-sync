@@ -27,8 +27,7 @@ import { getAuth, signInWithCustomToken } from "firebase/auth";
 import {
   getFirestore,
   doc,
-  setDoc,
-  updateDoc,
+  runTransaction,
   increment,
   getDoc,
 } from "firebase/firestore";
@@ -166,7 +165,7 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
     toast.success("Upload cancelled");
   };
 
-  const uploadOne = (item: QueuedFile, email: string) =>
+  const uploadOne = (item: QueuedFile, email: string, runId: number) =>
     new Promise<void>((resolve, reject) => {
       // Storage key is the unique doc id; the original filename lives only in Firestore
       const storageRef = ref(storage, `uploadedFiles/${item.id}`);
@@ -187,7 +186,10 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
         (error) => reject(error),
         async () => {
           try {
+            // A cancelled/superseded run must not write metadata
+            if (runIdRef.current !== runId) throw new Error("Upload cancelled");
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+            if (runIdRef.current !== runId) throw new Error("Upload cancelled");
             await saveInfo(item.file, downloadURL, item.id);
             resolve();
           } catch (error) {
@@ -248,7 +250,11 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
 
         updateItem(item.id, { status: "uploading", progress: 0, error: undefined });
         try {
-          await uploadOne(item, email);
+          await uploadOne(item, email, runId);
+          if (runIdRef.current !== runId) {
+            cancelled = true;
+            break;
+          }
           used += item.file.size;
           succeeded++;
           updateItem(item.id, { status: "success", progress: 100 });
@@ -297,24 +303,37 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
       throw new Error("User email not available");
     }
 
-    await setDoc(doc(db, "uploadedFiles", docId), {
-      fileName: file.name,
-      fileSize: file.size,
-      fileType: file.type,
-      fileUrl: fileUrl,
-      userEmail: user.primaryEmailAddress.emailAddress,
-      userName: user.fullName || "",
-      password: "",
-      starred: false,
-      shared: false,
-      id: docId,
-      shortUrl: `${process.env.NEXT_PUBLIC_BASE_URL}${docId}`,
-      uploadedAt: new Date().toISOString(),
-    });
-
+    const userEmail = user.primaryEmailAddress.emailAddress;
+    const fileRef = doc(db, "uploadedFiles", docId);
     const userRef = doc(db, "users", user.id);
-    await updateDoc(userRef, {
-      storageUsed: increment(file.size),
+
+    // Atomic and idempotent per docId: usage is only counted the first time this doc is recorded
+    await runTransaction(db, async (tx) => {
+      const existing = await tx.get(fileRef);
+      if (existing.exists()) {
+        tx.update(fileRef, {
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type,
+          fileUrl: fileUrl,
+        });
+        return;
+      }
+      tx.set(fileRef, {
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        fileUrl: fileUrl,
+        userEmail,
+        userName: user.fullName || "",
+        password: "",
+        starred: false,
+        shared: false,
+        id: docId,
+        shortUrl: `${process.env.NEXT_PUBLIC_BASE_URL}${docId}`,
+        uploadedAt: new Date().toISOString(),
+      });
+      tx.update(userRef, { storageUsed: increment(file.size) });
     });
   };
 
