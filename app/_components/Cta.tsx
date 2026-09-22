@@ -1,30 +1,38 @@
+"use client";
+
+import { motion } from "framer-motion";
 import Link from "next/link";
-import React from "react";
+import { ArrowRight } from "lucide-react";
+import { fadeUp, viewport } from "./motion";
 
 function Cta() {
   return (
-    <div className="h-full">
-      <div className="bg-primary">
-        <div className="mx-auto  max-w-[92%] md:max-w-screen-xl px-4 sm:px-6 lg:px-8 py-16">
-          <div className="text-center">
-            <h2 className="text-[1.7rem] font-extrabold text-white sm:text-5xl">
-              Share files effortlessly
-            </h2>
-
-            <p className="mx-auto mt-4 max-w-sm text-gray-200">
-              Secure file sharing made easy. Keep your files safe and
-              collaborate effortlessly with StellarSync.
-            </p>
-            <Link
-              href="/dashboard"
-              className="mt-8 inline-block rounded-full border border-white bg-transparent px-12 py-3 text-center text-sm font-medium text-white hover:ring-1 hover:ring-white focus:outline-none focus:ring active:text-white"
-            >
-              Start for Free
-            </Link>
-          </div>
-        </div>
-      </div>
-    </div>
+    <section className="bg-[#5056FD] py-24 sm:py-32">
+      <motion.div
+        variants={fadeUp}
+        initial="hidden"
+        whileInView="visible"
+        viewport={viewport}
+        className="mx-auto max-w-screen-xl px-5 text-center sm:px-8"
+      >
+        <h2 className="font-serif text-4xl leading-[1.1] tracking-tight text-white sm:text-6xl">
+          Start free. Stay in sync.
+        </h2>
+        <p className="mx-auto mt-6 max-w-lg text-lg text-white/80">
+          1GB of storage, no credit card, set up in under a minute.
+        </p>
+        <Link
+          href="/dashboard"
+          className="group mt-9 inline-flex items-center gap-2 rounded-full bg-white px-8 py-3.5 text-sm font-medium text-[#111827] transition-transform hover:scale-[1.03]"
+        >
+          Get started
+          <ArrowRight
+            size={15}
+            className="transition-transform group-hover:translate-x-0.5"
+          />
+        </Link>
+      </motion.div>
+    </section>
   );
 }
 

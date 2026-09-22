@@ -1,92 +1,70 @@
-import { Earth, Lock, Share2 } from "lucide-react";
-import React from "react";
+"use client";
+
+import { motion } from "framer-motion";
+import { FileText, ImageIcon, Shapes, AudioLines, Film } from "lucide-react";
+import { fadeUp, stagger, viewport } from "./motion";
+
+const categories = [
+  { label: "Documents", count: 128, Icon: FileText, bg: "#5056FD" },
+  { label: "Images", count: 342, Icon: ImageIcon, bg: "#4ECDC4" },
+  { label: "Design files", count: 46, Icon: Shapes, bg: "#f97316" },
+  { label: "Audio", count: 19, Icon: AudioLines, bg: "#eab308" },
+  { label: "Video", count: 27, Icon: Film, bg: "#a855f7" },
+];
 
 function GetStarted() {
   return (
-    <div className="bg-gray-100 py-14">
-      <h1 className="text-center text-[1.7rem] md:text-[2.3rem] font-bold text-secondary mb-8">
-        Why StellarSync?
-      </h1>
-      <div className="mx-auto max-w-[92%] md:max-w-screen-xl px-4 sm:px-6">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-8">
-          {/* GRID 1  */}
-          <div className="group relative block h-52 sm:h-80 lg:h-[16rem] cursor-pointer">
-            <span className="absolute inset-0 border-2 border-dashed border-primary rounded-lg"></span>
+    <section id="organize" className="bg-[#FBFAF7] py-24 sm:py-32">
+      <div className="mx-auto grid max-w-screen-xl grid-cols-1 items-center gap-14 px-5 sm:px-8 lg:grid-cols-2 lg:gap-24">
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewport}
+        >
+          <span className="text-[13px] font-medium uppercase tracking-[0.14em] text-[#5056FD]">
+            Chapter 01 — Organize
+          </span>
+          <h2 className="mt-5 font-serif text-4xl leading-[1.1] tracking-tight text-[#111827] sm:text-5xl">
+            Everything finds its place.
+          </h2>
+          <p className="mt-6 max-w-md text-lg leading-relaxed text-gray-500">
+            No folders to build, no rules to configure. Every upload is
+            sorted by type the moment it lands, so your library stays
+            legible whether you have ten files or ten thousand.
+          </p>
+        </motion.div>
 
-            <div className="relative flex h-full transform items-end border-2 border-secondary bg-white transition-transform group-hover:-translate-x-2 group-hover:-translate-y-2 rounded-lg">
-              <div className="p-4 !pt-0 transition-opacity group-hover:absolute group-hover:opacity-0 sm:p-6 lg:p-8">
-                <Earth size={45} color="#5056FD" />
-                <h2 className="mt-4 text-xl font-medium sm:text-2xl text-secondary">
-                  File Accessibility
-                </h2>
+        <motion.div
+          variants={stagger}
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewport}
+          className="space-y-2.5"
+        >
+          {categories.map((cat, i) => (
+            <motion.div
+              key={cat.label}
+              custom={i}
+              variants={fadeUp}
+              whileHover={{ x: 6 }}
+              className="flex items-center gap-4 rounded-2xl border border-black/[0.05] bg-white p-4 shadow-[0_1px_2px_rgba(17,24,39,0.04)] transition-colors hover:border-[#5056FD]/25 hover:bg-[#5056FD]/[0.025]"
+            >
+              <div
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                style={{ backgroundColor: `${cat.bg}1A` }}
+              >
+                <cat.Icon className="h-5 w-5" style={{ color: cat.bg }} strokeWidth={1.75} />
               </div>
-
-              <div className="absolute p-4 py-10 opacity-0 transition-opacity group-hover:relative group-hover:opacity-100 sm:p-6 lg:p-10">
-                <h3 className="mt-4 text-xl font-medium sm:text-2xl text-primary">
-                  File Accessibility
-                </h3>
-
-                <p className="mt-4 text-sm sm:text-base dark:text-gray-900">
-                  Never be without your important files again. Experience true
-                  flexibility and convenience with seamless access to your
-                  files, anytime, anywhere.
-                </p>
-              </div>
-            </div>
-          </div>
-          {/* GRID 2 */}
-          <div className="group relative block h-52 sm:h-80 lg:h-[16rem] cursor-pointer">
-            <span className="absolute inset-0 border-2 border-dashed border-primary rounded-lg"></span>
-
-            <div className="relative flex h-full transform items-end border-2 border-secondary bg-white transition-transform group-hover:-translate-x-2 group-hover:-translate-y-2 rounded-lg">
-              <div className="p-4 !pt-0 transition-opacity group-hover:absolute group-hover:opacity-0 sm:p-6 lg:p-8">
-                <Lock size={45} color="#5056FD" />
-                <h2 className="mt-4 text-xl font-medium sm:text-2xl text-secondary">
-                  Secured
-                </h2>
-              </div>
-
-              <div className="absolute p-4 py-10 opacity-0 transition-opacity group-hover:relative group-hover:opacity-100 sm:p-6 lg:p-10">
-                <h3 className="mt-4 text-xl font-medium sm:text-2xl text-primary">
-                  Secured
-                </h3>
-
-                <p className="mt-4 text-sm sm:text-base dark:text-gray-900">
-                  Advanced security, including encryption, authentication, and
-                  access control to safeguards your data from unauthorized
-                  access.
-                </p>
-              </div>
-            </div>
-          </div>
-          {/* GRID 3 */}
-          <div className="group relative block h-52 sm:h-80 lg:h-[16rem] cursor-pointer">
-            <span className="absolute inset-0 border-2 border-dashed border-primary rounded-lg"></span>
-
-            <div className="relative flex h-full transform items-end border-2 border-secondary bg-white transition-transform group-hover:-translate-x-2 group-hover:-translate-y-2 rounded-lg">
-              <div className="p-4 !pt-0 transition-opacity group-hover:absolute group-hover:opacity-0 sm:p-6 lg:p-8">
-                <Share2 size={45} color="#5056FD" />
-                <h2 className="mt-4 text-xl font-medium sm:text-2xl text-secondary">
-                  Seamless Sharing
-                </h2>
-              </div>
-
-              <div className="absolute p-4 py-10 opacity-0 transition-opacity group-hover:relative group-hover:opacity-100 sm:p-6 lg:p-10">
-                <h3 className="mt-4 text-xl font-medium sm:text-2xl text-primary">
-                  Seamless Sharing
-                </h3>
-
-                <p className="mt-4 text-sm sm:text-base dark:text-gray-900">
-                  Share your content seamlessly with colleagues, clients, or
-                  friends directly. Generate shareable links for effortless
-                  distribution.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+              <span className="flex-1 text-[15px] font-medium text-[#111827]">
+                {cat.label}
+              </span>
+              <span className="text-sm text-gray-400">{cat.count} files</span>
+            </motion.div>
+          ))}
+        </motion.div>
       </div>
-    </div>
+    </section>
   );
 }
 

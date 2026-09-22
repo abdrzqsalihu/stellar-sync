@@ -1,90 +1,88 @@
-import React from "react";
-import { navLinks } from "../constants/ContentConstants";
+import Image from "next/image";
 import Link from "next/link";
 import { Github, Instagram, Twitter } from "lucide-react";
+import { navLinks } from "../constants/ContentConstants";
 
 function Footer() {
   return (
-    <footer className="h-full">
-      <div className="py-10 border-b border-gray-100 sm:flex sm:items-center sm:justify-between mx-auto max-w-[92%] md:max-w-screen-xl px-4 sm:px-6 sm:py-12 lg:px-8 lg:py-16">
-        {/* Quick Links  */}
-        <ul className="flex flex-wrap justify-center gap-4 text-xs lg:justify-end">
-          {navLinks.map((links) => (
-            <li key={links.id}>
+    <footer className="border-t border-black/[0.06] bg-white">
+      <div className="mx-auto max-w-screen-xl px-5 py-14 sm:px-8">
+        <div className="flex flex-col items-start justify-between gap-10 sm:flex-row sm:items-center">
+          <div>
+            <Image
+              src="/logo.png"
+              width={120}
+              height={28}
+              style={{ width: "auto", height: "22px" }}
+              alt="StellarSync"
+            />
+            <p className="mt-3 max-w-xs text-sm text-gray-400">
+              A fast, uncluttered home for your files.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+            {navLinks.map((link) => (
               <Link
-                className={`text-gray-500 transition hover:opacity-75 text-[0.9rem]`}
-                href={`${links.id}`}
+                key={link.id}
+                href={link.id}
+                className="text-sm text-gray-500 transition-colors hover:text-[#111827]"
               >
-                {links.title}
+                {link.title}
               </Link>
-            </li>
-          ))}
-          <li>
+            ))}
             <Link
-              className={`text-gray-500 transition hover:opacity-75 text-[0.9rem]`}
-              href={`/policies`}
+              href="/policies"
+              className="text-sm text-gray-500 transition-colors hover:text-[#111827]"
             >
               Terms & Policies
             </Link>
-          </li>
-        </ul>
-        {/* Social Icon */}
-        <ul className="mt-8 flex justify-center gap-6 sm:mt-0 lg:justify-end">
-          <li>
+          </div>
+
+          <div className="flex items-center gap-5">
             <a
               href="https://x.com/abdrzqsalihu"
               rel="noreferrer"
               target="_blank"
-              className="text-gray-700 transition hover:opacity-75"
+              aria-label="Twitter"
+              className="text-gray-400 transition-colors hover:text-[#111827]"
             >
-              <span className="sr-only">Twitter</span>
-              <Twitter size={22} />
+              <Twitter size={18} />
             </a>
-          </li>
-
-          <li>
             <a
               href="https://www.instagram.com/abdrzq.dev/"
               rel="noreferrer"
               target="_blank"
-              className="text-gray-700 transition hover:opacity-75"
+              aria-label="Instagram"
+              className="text-gray-400 transition-colors hover:text-[#111827]"
             >
-              <span className="sr-only">Instagram</span>
-              <Instagram size={22} />
+              <Instagram size={18} />
             </a>
-          </li>
-
-          <li>
             <a
               href="https://github.com/abdrzqsalihu/stellar-sync"
               rel="noreferrer"
               target="_blank"
-              className="text-gray-700 transition hover:opacity-75"
+              aria-label="GitHub"
+              className="text-gray-400 transition-colors hover:text-[#111827]"
             >
-              <span className="sr-only">GitHub</span>
-              <Github size={22} />
+              <Github size={18} />
             </a>
-          </li>
-        </ul>
-      </div>
-      <div className="py-4 flex flex-col md:flex-row justify-center items-center">
-        <p className="text-center text-[1rem] text-gray-900">
-          &copy; {new Date().getFullYear()} StellarSync.
-        </p>
-        <div className="mt-1 md:ml-1 md:mt-0 text-[0.9rem] md:text-[1rem]">
-          <span className="md:inline-block text-gray-900">
-            Built with ❤️ by{" "}
-          </span>
-          <a
-            href="https://abdrzqsalihu.vercel.app/"
-            rel="noreferrer"
-            target="_blank"
-            className="md:ml-1"
-          >
-            <span className="text-primary underline font-medium">
+          </div>
+        </div>
+
+        <div className="mt-12 flex flex-col items-center justify-between gap-2 border-t border-black/[0.06] pt-8 text-xs text-gray-400 sm:flex-row">
+          <p>&copy; {new Date().getFullYear()} StellarSync.</p>
+          <p>
+            Built with{" "}
+            <a
+              href="https://abdrzqsalihu.vercel.app/"
+              rel="noreferrer"
+              target="_blank"
+              className="font-medium text-gray-500 underline underline-offset-2 hover:text-[#111827]"
+            >
               Abdulrazaq Salihu
-            </span>
-          </a>
+            </a>
+          </p>
         </div>
       </div>
     </footer>

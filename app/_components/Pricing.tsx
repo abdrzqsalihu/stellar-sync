@@ -1,125 +1,105 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import Link from "next/link";
-import React from "react";
+import { fadeUp, viewport } from "./motion";
+
+const plans = [
+  {
+    name: "Starter",
+    price: "$0",
+    period: "/forever",
+    features: ["1GB of storage", "Email support", "Help center access"],
+    cta: "Start free",
+    highlight: false,
+  },
+  {
+    name: "Pro",
+    price: "$5",
+    period: "/month",
+    features: [
+      "10GB of storage",
+      "Priority email support",
+      "Phone support",
+      "Help center access",
+    ],
+    cta: "Upgrade to Pro",
+    highlight: true,
+  },
+];
 
 function Pricing() {
   return (
-    <div className="h-full" id="pricing">
-      <div className="mx-auto max-w-[92%] md:max-w-3xl px-4 py-8 sm:px-6 sm:py-20 lg:px-8">
-        <h2 className="text-3xl font-bold sm:text-4xl text-center mb-10 text-gray-900">
-          Pricing
-        </h2>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:items-center sm:gap-8">
-          <div className="rounded-2xl border border-gray-200 p-6 shadow-sm sm:px-8 lg:p-12">
-            <div className="text-center">
-              <h2 className="text-lg font-medium text-gray-900">
-                Starter
-                <span className="sr-only">Plan</span>
-              </h2>
+    <section id="pricing" className="bg-white py-24 sm:py-32">
+      <div className="mx-auto max-w-screen-xl px-5 sm:px-8">
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewport}
+          className="mx-auto max-w-xl text-center"
+        >
+          <span className="text-[13px] font-medium uppercase tracking-[0.14em] text-[#5056FD]">
+            Pricing
+          </span>
+          <h2 className="mt-5 font-serif text-4xl leading-[1.1] tracking-tight text-[#111827] sm:text-5xl">
+            Simple, honest pricing.
+          </h2>
+          <p className="mt-5 text-lg text-gray-500">
+            Start free. Upgrade only when you actually need the room.
+          </p>
+        </motion.div>
 
-              <p className="mt-2 sm:mt-4">
-                <strong className="text-3xl font-bold text-gray-900 sm:text-4xl">
-                  {" "}
-                  0${" "}
-                </strong>
-
-                <span className="text-sm font-medium text-gray-700">
-                  /forever
-                </span>
-              </p>
-            </div>
-
-            <ul className="mt-6 space-y-2">
-              {/* <li className="flex items-center gap-1">
-                <Check size={20} color="#5056FD" />
-                <span className="text-gray-700"> 10 users included </span>
-              </li> */}
-
-              <li className="flex items-center gap-1">
-                <Check size={20} color="#5056FD" />
-                <span className="text-gray-700"> 1GB of storage </span>
-              </li>
-
-              <li className="flex items-center gap-1">
-                <Check size={20} color="#5056FD" />
-                <span className="text-gray-700"> Email support </span>
-              </li>
-
-              <li className="flex items-center gap-1">
-                <Check size={20} color="#5056FD" />
-                <span className="text-gray-700"> Help center access </span>
-              </li>
-            </ul>
-
-            <Link
-              href="/dashboard"
-              className="mt-8 block rounded-full border border-primary bg-white px-12 py-3 text-center text-sm font-medium text-primary hover:ring-1 hover:ring-primary focus:outline-none focus:ring active:text-primary"
+        <motion.div
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="visible"
+          viewport={viewport}
+          custom={1}
+          className="mx-auto mt-16 grid max-w-3xl grid-cols-1 divide-y divide-black/[0.06] sm:grid-cols-2 sm:divide-x sm:divide-y-0"
+        >
+          {plans.map((plan) => (
+            <div
+              key={plan.name}
+              className={`px-8 py-10 sm:px-12 ${
+                plan.highlight ? "bg-[#5056FD]/[0.03]" : ""
+              }`}
             >
-              Get Started
-            </Link>
-          </div>
-          <div className="rounded-2xl border border-primary p-6 shadow-sm ring-1 ring-primary sm:px-8 lg:p-12">
-            <div className="text-center">
-              <h2 className="text-lg font-medium text-gray-900">
-                Pro
-                <span className="sr-only">Plan</span>
-              </h2>
-
-              <p className="mt-2 sm:mt-4">
-                <strong className="text-3xl font-bold text-secondary sm:text-4xl">
-                  {" "}
-                  5${" "}
-                </strong>
-
-                <span className="text-sm font-medium text-gray-700">
-                  /month
+              <h3 className="text-sm font-medium uppercase tracking-wide text-gray-400">
+                {plan.name}
+              </h3>
+              <p className="mt-4 flex items-baseline gap-1">
+                <span className="font-serif text-5xl tracking-tight text-[#111827]">
+                  {plan.price}
                 </span>
+                <span className="text-sm text-gray-400">{plan.period}</span>
               </p>
+
+              <ul className="mt-8 space-y-3">
+                {plan.features.map((f) => (
+                  <li key={f} className="flex items-center gap-2.5 text-sm text-gray-600">
+                    <Check size={16} className="text-[#5056FD]" strokeWidth={2.25} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href="/dashboard"
+                className={`mt-9 block rounded-full px-6 py-3 text-center text-sm font-medium transition-colors ${
+                  plan.highlight
+                    ? "bg-[#111827] text-white hover:bg-[#5056FD]"
+                    : "border border-black/10 text-[#111827] hover:border-[#111827]"
+                }`}
+              >
+                {plan.cta}
+              </Link>
             </div>
-
-            <ul className="mt-6 space-y-2">
-              {/* <li className="flex items-center gap-1">
-                <Check size={20} color="#5056FD" />
-                <span className="text-gray-700"> 20 users included </span>
-              </li> */}
-
-              <li className="flex items-center gap-1">
-                <Check size={20} color="#5056FD" />
-
-                <span className="text-gray-700"> 10GB of storage </span>
-              </li>
-
-              <li className="flex items-center gap-1">
-                <Check size={20} color="#5056FD" />
-                <span className="text-gray-700"> Email support </span>
-              </li>
-
-              <li className="flex items-center gap-1">
-                <Check size={20} color="#5056FD" />
-                <span className="text-gray-700"> Help center access </span>
-              </li>
-
-              <li className="flex items-center gap-1">
-                <Check size={20} color="#5056FD" />
-                <span className="text-gray-700"> Phone support </span>
-              </li>
-
-              {/* <li className="flex items-center gap-1">
-                <Check size={20} color="#5056FD" />
-                <span className="text-gray-700"> Community access </span>
-              </li> */}
-            </ul>
-
-            <Link
-              href="/dashboard"
-              className="mt-8 block rounded-full border border-primary bg-primary px-12 py-3 text-center text-sm font-medium text-white hover:bg-primary hover:ring-1 hover:ring-primary focus:outline-none focus:ring active:text-primary hover:opacity-90"
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
+          ))}
+        </motion.div>
       </div>
-    </div>
+    </section>
   );
 }
 
