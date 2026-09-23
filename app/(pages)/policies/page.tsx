@@ -22,7 +22,7 @@ function Policies() {
             <h1 className="mt-5 font-serif text-4xl leading-[1.1] tracking-tight text-[#111827] sm:text-5xl">
               Legal &amp; policies
             </h1>
-            <p className="mt-5 max-w-lg text-lg leading-relaxed text-gray-500">
+            <p className="mt-5 max-w-lg text-base md:text-lg leading-relaxed text-gray-500">
               Transparency matters. Here&rsquo;s everything you need to know
               about refunds, your data, and the terms of using StellarSync.
             </p>
