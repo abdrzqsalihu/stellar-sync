@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { fadeUp, viewport } from "./motion";
+import ChapterMark from "./ChapterMark";
 
 const breakdown = [
   { label: "Documents", value: 38, color: "#5056FD" },
@@ -20,17 +21,15 @@ function Track() {
           whileInView="visible"
           viewport={viewport}
         >
-          <span className="text-[13px] font-medium uppercase tracking-[0.14em] text-[#5056FD]">
-            Chapter 03 — Track
-          </span>
-          <h2 className="mt-5 font-serif text-4xl leading-[1.1] tracking-tight text-[#111827] sm:text-5xl">
+          <ChapterMark index={3} label="Track" />
+          <h2 className="font-serif text-4xl leading-[1.1] tracking-tight text-[#111827] sm:text-5xl">
             Know exactly
             <br />
             what&apos;s where.
           </h2>
           <p className="mt-6 max-w-md text-lg leading-relaxed text-gray-500">
-            A clear read on your storage — broken down by file type, not
-            buried in a settings page — so you always know what&apos;s
+            A clear read on your storage, broken down by file type, not
+            buried in a settings page, so you always know what&apos;s
             taking up space before you run out of it.
           </p>
         </motion.div>
@@ -63,7 +62,7 @@ function Track() {
             ))}
           </div>
 
-          <div className="mt-6 grid grid-cols-2 gap-y-3">
+          <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-3">
             {breakdown.map((seg) => (
               <div key={seg.label} className="flex items-center gap-2 text-sm">
                 <span

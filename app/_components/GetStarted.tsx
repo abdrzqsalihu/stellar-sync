@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { FileText, ImageIcon, Shapes, AudioLines, Film } from "lucide-react";
 import { fadeUp, stagger, viewport } from "./motion";
+import ChapterMark from "./ChapterMark";
 
 const categories = [
   { label: "Documents", count: 128, Icon: FileText, bg: "#5056FD" },
@@ -22,10 +23,8 @@ function GetStarted() {
           whileInView="visible"
           viewport={viewport}
         >
-          <span className="text-[13px] font-medium uppercase tracking-[0.14em] text-[#5056FD]">
-            Chapter 01 — Organize
-          </span>
-          <h2 className="mt-5 font-serif text-4xl leading-[1.1] tracking-tight text-[#111827] sm:text-5xl">
+          <ChapterMark index={1} label="Organize" />
+          <h2 className="font-serif text-4xl leading-[1.1] tracking-tight text-[#111827] sm:text-5xl">
             Everything finds its place.
           </h2>
           <p className="mt-6 max-w-md text-lg leading-relaxed text-gray-500">

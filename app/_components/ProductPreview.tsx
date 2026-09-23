@@ -48,9 +48,9 @@ export default function ProductPreview() {
       initial={{ opacity: 0, y: 24, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-      className="relative mx-auto w-full max-w-[480px]"
+      className="relative mx-auto w-full min-w-0 max-w-[480px]"
     >
-      {/* soft brand glow behind the window, no blobs — just depth */}
+      {/* soft brand glow behind the window, no blobs, just depth */}
       <div className="absolute -inset-6 -z-10 rounded-[2rem] bg-[#5056FD]/[0.06] blur-2xl" />
 
       <div className="overflow-hidden rounded-2xl border border-black/[0.06] bg-white shadow-[0_1px_2px_rgba(17,24,39,0.04),0_24px_48px_-16px_rgba(17,24,39,0.16)]">
@@ -59,7 +59,7 @@ export default function ProductPreview() {
           <span className="h-2.5 w-2.5 rounded-full bg-black/10" />
           <span className="h-2.5 w-2.5 rounded-full bg-black/10" />
           <span className="h-2.5 w-2.5 rounded-full bg-black/10" />
-          <div className="ml-3 flex-1 rounded-md bg-black/[0.04] px-3 py-1 text-center text-[11px] text-gray-400">
+          <div className="ml-3 min-w-0 flex-1 truncate rounded-md bg-black/[0.04] px-3 py-1 text-center text-[11px] text-gray-400">
             stellarsync.app/dashboard
           </div>
         </div>
@@ -79,12 +79,12 @@ export default function ProductPreview() {
           </div>
 
           {/* content */}
-          <div className="flex-1 p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <span className="text-[13px] font-medium text-gray-900">
+          <div className="min-w-0 flex-1 p-5">
+            <div className="mb-4 flex items-center justify-between gap-2">
+              <span className="shrink-0 text-[13px] font-medium text-gray-900">
                 Recent files
               </span>
-              <div className="flex items-center gap-1.5 rounded-full bg-[#5056FD]/10 px-2 py-1 text-[11px] font-medium text-[#5056FD]">
+              <div className="flex shrink-0 items-center gap-1.5 rounded-full bg-[#5056FD]/10 px-2 py-1 text-[11px] font-medium text-[#5056FD]">
                 <HardDrive className="h-3 w-3" />
                 2.4 / 10 GB
               </div>

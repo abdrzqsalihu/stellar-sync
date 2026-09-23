@@ -38,7 +38,7 @@ function Hero() {
             className="mt-6 max-w-md text-lg leading-relaxed text-gray-500"
           >
             A fast, uncluttered home for your files. Drop anything in,
-            watch it organize itself, and hand a link to anyone — no
+            watch it organize itself, and hand a link to anyone. No
             account required on their end.
           </motion.p>
 

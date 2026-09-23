@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Copy, Lock, FileText, Link as LinkIcon } from "lucide-react";
 import { fadeUp, viewport } from "./motion";
+import ChapterMark from "./ChapterMark";
 
 function Share() {
   return (
@@ -67,17 +68,15 @@ function Share() {
           viewport={viewport}
           className="order-1 lg:order-2"
         >
-          <span className="text-[13px] font-medium uppercase tracking-[0.14em] text-[#5056FD]">
-            Chapter 02 — Share
-          </span>
-          <h2 className="mt-5 font-serif text-4xl leading-[1.1] tracking-tight text-[#111827] sm:text-5xl">
+          <ChapterMark index={2} label="Share" />
+          <h2 className="font-serif text-4xl leading-[1.1] tracking-tight text-[#111827] sm:text-5xl">
             One link.
             <br />
             Zero friction.
           </h2>
           <p className="mt-6 max-w-md text-lg leading-relaxed text-gray-500">
             Turn any file into a link in one click. Add a password when it
-            matters, or send it straight to an inbox — the recipient
+            matters, or send it straight to an inbox. The recipient
             doesn&apos;t need an account, just the link.
           </p>
         </motion.div>

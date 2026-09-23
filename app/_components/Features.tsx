@@ -14,7 +14,7 @@ const capabilities = [
   },
   {
     title: "Direct email delivery",
-    copy: "Send a file straight to an inbox — no downloading, attaching, and re-uploading somewhere else.",
+    copy: "Send a file straight to an inbox. No downloading, attaching, and re-uploading somewhere else.",
   },
   {
     title: "Storage insights",
