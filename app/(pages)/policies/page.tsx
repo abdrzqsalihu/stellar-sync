@@ -16,7 +16,7 @@ function Policies() {
         {/* Intro */}
         <section className="border-b border-black/[0.06] bg-[#FBFAF7] pb-14 pt-32 sm:pb-16 sm:pt-40">
           <div className="mx-auto max-w-screen-xl px-5 sm:px-8">
-            <span className="text-[13px] font-medium uppercase tracking-[0.14em] text-[#5056FD]">
+            <span className="text-xs md:text-[13px] font-medium uppercase tracking-[0.14em] text-[#5056FD]">
               Legal
             </span>
             <h1 className="mt-5 font-serif text-4xl leading-[1.1] tracking-tight text-[#111827] sm:text-5xl">
