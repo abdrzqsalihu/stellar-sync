@@ -74,10 +74,10 @@ function Share() {
             <br />
             Zero friction.
           </h2>
-          <p className="mt-6 max-w-md text-lg leading-relaxed text-gray-500">
+          <p className="mt-6 max-w-md text-base md:text-lg leading-relaxed text-gray-500">
             Turn any file into a link in one click. Add a password when it
-            matters, or send it straight to an inbox. The recipient
-            doesn&apos;t need an account, just the link.
+            matters, or send it straight to an inbox. The recipient doesn&apos;t
+            need an account, just the link.
           </p>
         </motion.div>
       </div>

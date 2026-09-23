@@ -27,10 +27,10 @@ function Track() {
             <br />
             what&apos;s where.
           </h2>
-          <p className="mt-6 max-w-md text-lg leading-relaxed text-gray-500">
-            A clear read on your storage, broken down by file type, not
-            buried in a settings page, so you always know what&apos;s
-            taking up space before you run out of it.
+          <p className="mt-6 max-w-md text-base md:text-lg leading-relaxed text-gray-500">
+            A clear read on your storage, broken down by file type, not buried
+            in a settings page, so you always know what&apos;s taking up space
+            before you run out of it.
           </p>
         </motion.div>
 
@@ -56,7 +56,11 @@ function Track() {
                 initial={{ width: 0 }}
                 whileInView={{ width: `${seg.value}%` }}
                 viewport={viewport}
-                transition={{ duration: 0.8, delay: 0.1 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                transition={{
+                  duration: 0.8,
+                  delay: 0.1 + i * 0.08,
+                  ease: [0.22, 1, 0.36, 1],
+                }}
                 style={{ backgroundColor: seg.color }}
               />
             ))}

@@ -18,7 +18,7 @@ function Cta() {
         <h2 className="font-serif text-4xl leading-[1.1] tracking-tight text-white sm:text-6xl">
           Start free. Stay in sync.
         </h2>
-        <p className="mx-auto mt-6 max-w-lg text-lg text-white/80">
+        <p className="mx-auto mt-6 max-w-lg text-base md:text-lg text-white/80">
           1GB of storage, no credit card, set up in under a minute.
         </p>
         <Link

@@ -14,32 +14,35 @@ function Hero() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="mb-6 text-[13px] font-medium uppercase tracking-[0.14em] text-[#5056FD]"
+            className="mb-6 text-[10px] md:text-[13px] font-medium uppercase tracking-[0.14em] text-[#5056FD]"
           >
-            File storage, rebuilt calmly
+            Your files, beautifully in sync.
           </motion.p>
 
           <motion.h1
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.08, ease: [0.22, 1, 0.36, 1] }}
+            transition={{
+              duration: 0.7,
+              delay: 0.08,
+              ease: [0.22, 1, 0.36, 1],
+            }}
             className="font-serif text-[2.75rem] leading-[1.05] tracking-tight text-[#111827] sm:text-6xl lg:text-[4.25rem]"
           >
             Your files.
             <br />
-            <span className="italic text-[#5056FD]">Always</span> within
-            reach.
+            <span className="italic text-[#5056FD]">Always</span> within reach.
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="mt-6 max-w-md text-lg leading-relaxed text-gray-500"
+            className="mt-6 max-w-md text-base md:text-lg leading-relaxed text-gray-500"
           >
-            A fast, uncluttered home for your files. Drop anything in,
-            watch it organize itself, and hand a link to anyone. No
-            account required on their end.
+            A fast, uncluttered home for your files. Drop anything in, watch it
+            organize itself, and hand a link to anyone. No account required on
+            their end.
           </motion.p>
 
           <motion.div

@@ -46,7 +46,7 @@ function Pricing() {
           <h2 className="mt-5 font-serif text-4xl leading-[1.1] tracking-tight text-[#111827] sm:text-5xl">
             Simple, honest pricing.
           </h2>
-          <p className="mt-5 text-lg text-gray-500">
+          <p className="mt-5 text-base md:text-lg text-gray-500">
             Start free. Upgrade only when you actually need the room.
           </p>
         </motion.div>
@@ -78,8 +78,15 @@ function Pricing() {
 
               <ul className="mt-8 space-y-3">
                 {plan.features.map((f) => (
-                  <li key={f} className="flex items-center gap-2.5 text-sm text-gray-600">
-                    <Check size={16} className="text-[#5056FD]" strokeWidth={2.25} />
+                  <li
+                    key={f}
+                    className="flex items-center gap-2.5 text-sm text-gray-600"
+                  >
+                    <Check
+                      size={16}
+                      className="text-[#5056FD]"
+                      strokeWidth={2.25}
+                    />
                     {f}
                   </li>
                 ))}

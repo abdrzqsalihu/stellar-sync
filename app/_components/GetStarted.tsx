@@ -27,10 +27,10 @@ function GetStarted() {
           <h2 className="font-serif text-4xl leading-[1.1] tracking-tight text-[#111827] sm:text-5xl">
             Everything finds its place.
           </h2>
-          <p className="mt-6 max-w-md text-lg leading-relaxed text-gray-500">
-            No folders to build, no rules to configure. Every upload is
-            sorted by type the moment it lands, so your library stays
-            legible whether you have ten files or ten thousand.
+          <p className="mt-6 max-w-md text-base md:text-lg leading-relaxed text-gray-500">
+            No folders to build, no rules to configure. Every upload is sorted
+            by type the moment it lands, so your library stays legible whether
+            you have ten files or ten thousand.
           </p>
         </motion.div>
 
@@ -50,15 +50,21 @@ function GetStarted() {
               className="flex items-center gap-4 rounded-2xl border border-black/[0.05] bg-white p-4 shadow-[0_1px_2px_rgba(17,24,39,0.04)] transition-colors hover:border-[#5056FD]/25 hover:bg-[#5056FD]/[0.025]"
             >
               <div
-                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl"
+                className="flex h-10 w-10 md:h-11 md:w-11 shrink-0 items-center justify-center rounded-xl"
                 style={{ backgroundColor: `${cat.bg}1A` }}
               >
-                <cat.Icon className="h-5 w-5" style={{ color: cat.bg }} strokeWidth={1.75} />
+                <cat.Icon
+                  className="h-4 w-4 md:h-5 md:w-5"
+                  style={{ color: cat.bg }}
+                  strokeWidth={1.75}
+                />
               </div>
-              <span className="flex-1 text-[15px] font-medium text-[#111827]">
+              <span className="flex-1 text-sm md:text-[15px] font-medium text-[#111827]">
                 {cat.label}
               </span>
-              <span className="text-sm text-gray-400">{cat.count} files</span>
+              <span className="text-xs md:text-sm text-gray-400">
+                {cat.count} files
+              </span>
             </motion.div>
           ))}
         </motion.div>

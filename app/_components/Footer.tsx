@@ -7,21 +7,22 @@ function Footer() {
   return (
     <footer className="border-t border-black/[0.06] bg-white">
       <div className="mx-auto max-w-screen-xl px-5 py-14 sm:px-8">
-        <div className="flex flex-col items-start justify-between gap-10 sm:flex-row sm:items-center">
-          <div>
+        <div className="flex flex-col items-strt justify-between gap-10 sm:flex-row items-center">
+          <div className="flex flex-col items-center md:items-start">
             <Image
               src="/logo.png"
               width={120}
               height={28}
               style={{ width: "auto", height: "22px" }}
               alt="StellarSync"
+              className="flex justify-center items-center"
             />
             <p className="mt-3 max-w-xs text-sm text-gray-400">
               A fast, uncluttered home for your files.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+          <div className="flex flex-wrap justify-center items-center gap-x-5 md:gap-x-8 gap-y-3">
             {navLinks.map((link) => (
               <Link
                 key={link.id}
@@ -73,9 +74,9 @@ function Footer() {
         <div className="mt-12 flex flex-col items-center justify-between gap-2 border-t border-black/[0.06] pt-8 text-xs text-gray-400 sm:flex-row">
           <p>&copy; {new Date().getFullYear()} StellarSync.</p>
           <p>
-            Built with{" "}
+            Built by{" "}
             <a
-              href="https://abdrzqsalihu.vercel.app/"
+              href="https://abdrzqsalihu.space/"
               rel="noreferrer"
               target="_blank"
               className="font-medium text-gray-500 underline underline-offset-2 hover:text-[#111827]"

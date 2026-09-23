@@ -68,10 +68,10 @@ function Features() {
               <span className="font-serif text-lg text-white/25 transition-colors group-hover:text-[#5056FD]">
                 {String(i + 1).padStart(2, "0")}
               </span>
-              <h3 className="text-xl font-medium text-white transition-transform group-hover:translate-x-1">
+              <h3 className="text-lg md:text-xl font-medium text-white transition-transform group-hover:translate-x-1">
                 {item.title}
               </h3>
-              <p className="text-[15px] leading-relaxed text-gray-400">
+              <p className="text-sm md:text-[15px] leading-relaxed text-gray-400">
                 {item.copy}
               </p>
             </motion.div>
