@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import LenisScroll from "./LenisScroll";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
@@ -15,11 +16,26 @@ const fraunces = Fraunces({
   style: ["normal", "italic"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
+  metadataBase: new URL("https://stellar-sync.vercel.app"),
   title: "StellarSync",
   description: "Your files. Always within reach.",
   icons: {
     icon: "/favicon.png",
+  },
+  openGraph: {
+    images: [
+      {
+        url: "/social/stellar-sync-share.png",
+        width: 1200,
+        height: 630,
+        alt: "Your files. Always within reach.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    images: ["/social/stellar-sync-share.png"],
   },
 };
 
