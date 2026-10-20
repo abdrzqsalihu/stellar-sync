@@ -3,8 +3,20 @@ import { Download } from "lucide-react";
 import Image from "next/image";
 import React, { useState } from "react";
 
-function FileItem({ file }) {
+interface FileItemProps {
+  file: {
+    id: string;
+    fileName: string;
+    fileType: string;
+    fileSize: number;
+    userName: string;
+    password: string;
+  };
+}
+
+function FileItem({ file }: FileItemProps) {
   const [password, setPassword] = useState("");
+
   return (
     file && (
       <div>
@@ -39,20 +51,16 @@ function FileItem({ file }) {
           ) : null}
 
           <button
-            // href=""
             className="flex gap-2 p-2
        bg-primary text-white rounded-full w-full
        items-center hover:opacity-90
         text-[14px] mt-5 text-center  justify-center
         disabled:bg-gray-300"
-            onClick={() => window.open(file?.fileUrl)}
-            disabled={file.password !== password}
+            onClick={() => window.open(`/api/download?fileId=${file.id}`)}
+            disabled={file.password.length > 3 && file.password !== password}
           >
             <Download className="h-4 w-4" /> Download
           </button>
-          {/* <h2 className="text-gray-400 text-[12px]">
-            *Term and Condition apply
-          </h2> */}
         </div>
       </div>
     )

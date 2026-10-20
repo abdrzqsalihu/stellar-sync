@@ -17,7 +17,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const data = docSnap.data();
-    return NextResponse.json({ ok: true, password: data?.password });
+    return NextResponse.json({
+      ok: true,
+      password: data?.password,
+      shareExpiresAt: data?.shareExpiresAt ?? null,
+    });
   } catch (error) {
     console.error("Error fetching file:", error);
     return NextResponse.json({ ok: false, error: "Failed to fetch file" }, { status: 500 });
@@ -33,7 +37,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const { password } = await request.json();
+  const body = await request.json();
+  const { password } = body;
+  // Distinguish "field omitted" from "field explicitly set to null" (clear expiration)
+  const hasExpiryField = Object.prototype.hasOwnProperty.call(body, "shareExpiresAt");
+  const shareExpiresAt = body.shareExpiresAt;
 
   try {
     const docRef = dbAdmin.collection("uploadedFiles").doc(id);
@@ -43,16 +51,44 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ ok: false, error: "File not found" }, { status: 404 });
     }
 
-  
-    await docRef.update({
-      password: password || "",
+    const update: Record<string, unknown> = {
       updatedAt: new Date().toISOString(),
-    });
+    };
 
-    return NextResponse.json({ ok: true });
+    if (password !== undefined) {
+      update.password = password || "";
+    }
+
+    if (hasExpiryField) {
+      if (shareExpiresAt === null || shareExpiresAt === "") {
+        update.shareExpiresAt = null;
+      } else {
+        const parsed = new Date(shareExpiresAt);
+        if (isNaN(parsed.getTime())) {
+          return NextResponse.json(
+            { ok: false, error: "Invalid expiration date" },
+            { status: 400 }
+          );
+        }
+        if (parsed.getTime() <= Date.now()) {
+          return NextResponse.json(
+            { ok: false, error: "Expiration date must be in the future" },
+            { status: 400 }
+          );
+        }
+        update.shareExpiresAt = parsed.toISOString();
+      }
+      // Configuring share settings marks the file as actively shared,
+      // consistent with the existing "shared: true" side effect in /api/send-email
+      update.shared = true;
+    }
+
+    await docRef.update(update);
+
+    return NextResponse.json({ ok: true, shareExpiresAt: update.shareExpiresAt });
   } catch (error) {
-    console.error("Error setting password:", error);
-    return NextResponse.json({ ok: false, error: "Failed to set password" }, { status: 500 });
+    console.error("Error updating file:", error);
+    return NextResponse.json({ ok: false, error: "Failed to update file" }, { status: 500 });
   }
 }
 

@@ -329,6 +329,7 @@ export default function UploadButton({ hasFiles = false }: UploadButtonProps) {
         password: "",
         starred: false,
         shared: false,
+        shareExpiresAt: null,
         id: docId,
         shortUrl: `${process.env.NEXT_PUBLIC_BASE_URL}${docId}`,
         uploadedAt: new Date().toISOString(),

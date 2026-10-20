@@ -38,6 +38,7 @@ import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import UploadButton from "./upload-button";
+import ExpiryNote from "./expiry-note";
 
 export interface File {
   id: string;
@@ -48,6 +49,7 @@ export interface File {
   stared: boolean;
   shared: boolean;
   fileUrl?: string;
+  shareExpiresAt?: string | null;
 }
 
 interface RecentFilesProps {
@@ -363,6 +365,7 @@ export default function RecentFiles({
                                 </span>
                               )}
                             </div>
+                            <ExpiryNote shareExpiresAt={file.shareExpiresAt} />
                           </div>
                           <Star
                             className={`h-5 w-5 cursor-pointer ${
