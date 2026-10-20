@@ -1,35 +1,48 @@
-"use client";
-import React, { useEffect, useState } from "react";
-import { app } from "../../../firebaseConfig";
-import { doc, getDoc, getFirestore } from "firebase/firestore";
-import FileItem from "./_components/FileItem";
 import Link from "next/link";
 import Image from "next/image";
-function FileView({ params }) {
-  const db = getFirestore(app);
-  const [file, setFile] = useState();
-  useEffect(() => {
-    // console.log(params.fileId)
-    params.fileId && getFileInfo();
-  }, []);
+import { dbAdmin } from "../../../lib/firebase-admin";
+import FileItem from "./_components/FileItem";
+import ExpiredLink from "./_components/ExpiredLink";
 
-  const getFileInfo = async () => {
-    const docRef = doc(db, "uploadedFiles", params?.fileId);
-    const docSnap = await getDoc(docRef);
-    if (docSnap.exists()) {
-      // console.log("Document data:", docSnap.data());
-      setFile(docSnap.data() as any);
+// Public share link: resolved server-side so an expired link never sends the
+// file's download URL to the browser in the first place.
+export default async function FileView({
+  params,
+}: {
+  params: Promise<{ fileId: string }>;
+}) {
+  const { fileId } = await params;
+
+  const docSnap = await dbAdmin.collection("uploadedFiles").doc(fileId).get();
+
+  let content;
+  if (!docSnap.exists) {
+    content = <ExpiredLink reason="not-found" />;
+  } else {
+    const data = docSnap.data();
+    const expiresAt: string | null = data?.shareExpiresAt ?? null;
+    const isExpired = !!expiresAt && new Date(expiresAt).getTime() <= Date.now();
+
+    if (isExpired) {
+      content = <ExpiredLink reason="expired" expiresAt={expiresAt} />;
     } else {
-      // docSnap.data() will be undefined in this case
-      console.log("No such document!");
+      content = (
+        <FileItem
+          file={{
+            id: fileId,
+            fileName: data?.fileName ?? "",
+            fileType: data?.fileType ?? "",
+            fileSize: data?.fileSize ?? 0,
+            userName: data?.userName ?? "",
+            password: data?.password ?? "",
+          }}
+        />
+      );
     }
-  };
+  }
+
   return (
-    <div
-      className="
-    bg-gray-100 h-screen w-full flex justify-center
-    items-center flex-col gap-4"
-    >
+    <div className="bg-gray-100 min-h-screen w-full flex justify-center items-center flex-col gap-4 p-4">
       <Link href="/">
         <Image
           src="/logo.png"
@@ -39,9 +52,7 @@ function FileView({ params }) {
           className="mb-4"
         />
       </Link>
-      <FileItem file={file} />
+      {content}
     </div>
   );
 }
-
-export default FileView;

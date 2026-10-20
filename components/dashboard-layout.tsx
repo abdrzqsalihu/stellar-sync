@@ -40,6 +40,7 @@ import {
   SidebarTrigger,
 } from "./ui/sidebar";
 import { ThemeToggle } from "./theme-toggle";
+import FileSearch from "./file-search";
 import Image from "next/image";
 import { useClerk, UserButton, useUser } from "@clerk/nextjs";
 import toast from "react-hot-toast";
@@ -673,6 +674,7 @@ export default function DashboardLayout({
             <SidebarTrigger />
 
             <div className="flex flex-1 items-center gap-4 md:gap-8">
+              <FileSearch />
               <div className="ml-auto flex items-center gap-4 md:gap-6">
                 <ThemeToggle />
 

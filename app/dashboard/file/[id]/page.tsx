@@ -1,7 +1,6 @@
 import { Metadata } from "next";
 import {
   ArrowLeft,
-  Calendar,
   Download,
   Eye,
   FileText,
@@ -19,6 +18,7 @@ import {
   TabsTrigger,
 } from "../../../../components/ui/tabs";
 import ShareOptions from "../../../../components/share-options";
+import ShareExpiry from "../../../../components/share-expiry";
 import { getEmailFromUserId } from "../../../../lib/getEmailFromUserId";
 import { dbAdmin } from "../../../../lib/firebase-admin";
 import { headers } from "next/headers";
@@ -48,6 +48,7 @@ interface FileType {
   shared?: boolean;
   password?: string;
   userEmail?: string;
+  shareExpiresAt?: string | null;
 }
 
 const getFileIcon = (type: string) => {
@@ -311,7 +312,7 @@ export default async function FilePage({
             <FileActionsClient fileId={file.id} initialStarred={file.stared} />
 
             <Tabs defaultValue="share" className="w-full">
-              <TabsList className="grid w-full grid-cols-1 rounded-xl bg-[#5056FD]/5 p-1">
+              <TabsList className="grid w-full grid-cols-2 rounded-xl bg-[#5056FD]/5 p-1">
                 <TabsTrigger
                   value="share"
                   className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#5056FD] data-[state=active]:shadow-sm"
@@ -320,7 +321,7 @@ export default async function FilePage({
                 </TabsTrigger>
                 <TabsTrigger
                   value="expiry"
-                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#5056FD] data-[state=active]:shadow-sm hidden"
+                  className="rounded-lg data-[state=active]:bg-white data-[state=active]:text-[#5056FD] data-[state=active]:shadow-sm"
                 >
                   Expiry
                 </TabsTrigger>
@@ -329,28 +330,10 @@ export default async function FilePage({
                 <ShareOptions fileId={file.id} />
               </TabsContent>
               <TabsContent value="expiry" className="mt-6">
-                <Card className="overflow-hidden rounded-xl border shadow-sm">
-                  <CardContent className="p-6 space-y-4">
-                    <div className="space-y-2">
-                      <h3 className="font-medium">Set Expiry Date</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Choose when this shared file will expire
-                      </p>
-                    </div>
-                    <div className="grid gap-3">
-                      <Button
-                        variant="outline"
-                        className="justify-start rounded-lg border-[#5056FD]/20 hover:bg-[#5056FD]/5 hover:text-[#5056FD]"
-                      >
-                        <Calendar className="mr-2 h-4 w-4" />
-                        Select Date
-                      </Button>
-                      <Button className="rounded-lg bg-[#5056FD] hover:bg-[#4045e0]">
-                        Save Expiry Settings
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
+                <ShareExpiry
+                  fileId={file.id}
+                  initialExpiresAt={file.shareExpiresAt ?? null}
+                />
               </TabsContent>
             </Tabs>
           </div>

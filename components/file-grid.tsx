@@ -33,6 +33,7 @@ import {
 } from "./ui/alert-dialog";
 import { useState } from "react";
 import UploadedAt from "./uploaded-at";
+import ExpiryNote from "./expiry-note";
 
 export interface File {
   id: string;
@@ -43,11 +44,12 @@ export interface File {
   stared: boolean;
   shared: boolean;
   fileUrl?: string;
+  shareExpiresAt?: string | null;
 }
 
 interface FileGridProps {
   fileList: File[];
-  view?: "all" | "shared" | "favorites";
+  view?: "all" | "shared" | "favorites" | "search";
 }
 
 export default function FileGrid({ fileList, view }: FileGridProps) {
@@ -143,6 +145,11 @@ export default function FileGrid({ fileList, view }: FileGridProps) {
           title: "No favorites yet",
           message: "You haven't added any files to favorites yet.",
         };
+      case "search":
+        return {
+          title: "No files match your search",
+          message: "Try a different name, or clear the search to see all files.",
+        };
       default:
         return {
           title: "No files found",
@@ -206,6 +213,7 @@ export default function FileGrid({ fileList, view }: FileGridProps) {
                     </span>
                   )}
                 </div>
+                <ExpiryNote shareExpiresAt={f.shareExpiresAt} />
               </div>
             </Link>
 
